@@ -1,0 +1,3575 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ff0000">
+<title>ArtViSiON — 3D Showroom Environment · Production Design, Indore</title>
+<meta name="description" content="ArtViSiON Production Design, Indore — interactive 3D showroom. Signage, branding, vector art, fabrication aur 360° creative-to-execution services ka virtual experience.">
+<meta property="og:title" content="ArtViSiON — Interactive 3D Showroom">
+<meta property="og:description" content="Production Design · Branding · Signage · Vector Art — Indore. Walk through our virtual showroom.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/sign-face.png">
+<link rel="icon" type="image/png" href="assets/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f6f5f2; --ink:#171717; --red:#ff0000; --red-deep:#c40000; --muted:#6b6965;
+    --serif:'Playfair Display',Georgia,serif; --sans:Montserrat,'Noto Sans Devanagari',Arial,sans-serif;
+    --glass-light:rgba(246,245,242,.92); --glass-dark:rgba(20,20,22,.78);
+    --shadow-lg:0 24px 70px rgba(0,0,0,.35); --shadow-sm:0 8px 30px rgba(0,0,0,.22);
+    --ease-out:cubic-bezier(.22,.8,.24,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#0e0e0e;font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--red);color:#fff}
+  /* custom scrollbars — panels/gallery ke liye */
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(120,120,120,.4);border-radius:99px;border:2px solid transparent;background-clip:content-box}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(255,0,0,.55);border:2px solid transparent;background-clip:content-box}
+  #scene{position:fixed;inset:0;display:block;cursor:grab}
+  #scene.dragging{cursor:grabbing}
+  #scene.hovering{cursor:pointer}
+  /* cinematic vignette — 3D scene ko depth deta hai */
+  .vignette{position:fixed;inset:0;z-index:5;pointer-events:none;background:radial-gradient(ellipse at center, transparent 58%, rgba(0,0,0,.28) 100%)}
+
+  /* ---------- HUD ---------- */
+  .hud{position:fixed;z-index:20;pointer-events:none}
+  .brand-chip{top:18px;left:18px;display:flex;align-items:center;gap:12px;background:var(--glass-light);backdrop-filter:blur(14px);padding:10px 20px 10px 12px;border-radius:999px;box-shadow:var(--shadow-sm);border:1px solid rgba(255,255,255,.5);animation:hudIn .8s var(--ease-out) both;animation-delay:.4s}
+  @keyframes hudIn{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+  .brand-dot{width:40px;height:40px;border-radius:50%;background:#0c0c0d;display:grid;place-items:center;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(255,255,255,.08)}
+  .brand-dot img{width:82%;height:auto;display:block}
+  .brand-chip h1{margin:0;font-size:13px;letter-spacing:.08em;font-weight:700;text-transform:uppercase}
+  .brand-chip h1 span{color:var(--red)}
+  .brand-chip p{margin:0;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+  /* top-right control cluster */
+  .ctrl-cluster{position:fixed;z-index:22;top:18px;right:18px;display:flex;gap:8px;animation:hudIn .8s var(--ease-out) both;animation-delay:.55s}
+  .ctrl-btn{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.5);background:var(--glass-light);backdrop-filter:blur(12px);box-shadow:var(--shadow-sm);cursor:pointer;display:grid;place-items:center;transition:.22s;color:var(--ink)}
+  .ctrl-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .ctrl-btn:hover{background:var(--ink);color:#fff;transform:translateY(-2px)}
+  .ctrl-btn.muted{color:var(--red)}
+  .climate-chip{position:static;background:var(--glass-dark);backdrop-filter:blur(8px);color:#fff;padding:0 18px;border-radius:999px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;display:none;align-items:center;border:1px solid rgba(255,255,255,.12)}
+  .climate-chip.show{display:flex}
+
+  .hint{bottom:18px;left:50%;transform:translateX(-50%);background:var(--glass-dark);backdrop-filter:blur(10px);color:#fff;font-size:10px;letter-spacing:.13em;text-transform:uppercase;font-weight:600;padding:12px 22px;border-radius:999px;display:flex;gap:20px;white-space:nowrap;transition:opacity .5s;border:1px solid rgba(255,255,255,.12);box-shadow:var(--shadow-sm);animation:hudIn .8s var(--ease-out) both;animation-delay:.7s}
+  .hint b{color:#ff6b6b;font-weight:700}
+  .hint .kbd{display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:5px;padding:2px 7px;font-size:9px;margin-right:6px;letter-spacing:.08em}
+  .hint.hidden{opacity:0}
+  @media(max-width:640px){.hint{gap:10px;padding:10px 14px;font-size:8.5px}}
+
+  .tooltip{z-index:30;background:var(--red);color:#fff;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:9px 15px;border-radius:6px;transform:translate(14px,-34px);opacity:0;transition:opacity .15s;box-shadow:0 10px 26px rgba(255,0,0,.4)}
+  .tooltip::after{content:"";position:absolute;left:-4px;bottom:-4px;width:10px;height:10px;background:var(--red);transform:rotate(45deg)}
+  .tooltip.show{opacity:1}
+
+  /* ---------- Info Panel (product focus) ---------- */
+  .info-panel{position:fixed;z-index:40;top:0;right:0;height:100%;width:min(430px,92vw);background:rgba(246,245,242,.97);backdrop-filter:blur(16px);box-shadow:-30px 0 80px rgba(0,0,0,.45);transform:translateX(105%);transition:transform .6s var(--ease-out);display:flex;flex-direction:column;padding:0;border-left:3px solid var(--red)}
+  .info-panel.open{transform:translateX(0)}
+  .info-head{padding:30px 32px 20px;border-bottom:1px solid rgba(23,23,23,.12);position:relative}
+  .info-close{position:absolute;top:20px;right:20px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(23,23,23,.25);background:transparent;color:var(--ink);cursor:pointer;font-size:15px;line-height:1;transition:.2s;display:grid;place-items:center}
+  .info-close:hover{background:var(--red);border-color:var(--red);color:#fff;transform:rotate(90deg)}
+  .info-eyebrow{display:flex;align-items:center;gap:10px;font-size:9px;letter-spacing:.26em;text-transform:uppercase;font-weight:700;color:var(--red)}
+  .info-eyebrow::before{content:"";width:26px;height:2px;background:var(--red)}
+  .info-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(26px,3vw,34px);line-height:1.05;margin:14px 0 6px;letter-spacing:-.02em}
+  .info-head h3{margin:0;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em}
+  .info-body{padding:24px 32px;overflow-y:auto;flex:1}
+  .info-body p{font-size:13.5px;line-height:1.85;color:#3f3b37;margin:0 0 20px}
+  .spec-list{list-style:none;margin:0 0 24px;padding:18px 20px;display:flex;flex-direction:column;gap:0;background:#fff;border-radius:12px;box-shadow:0 4px 18px rgba(29,16,12,.06)}
+  .spec-list li{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px dashed rgba(23,23,23,.13);font-size:11.5px}
+  .spec-list li:last-child{border-bottom:0}
+  .spec-list li b{font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:10px;color:var(--ink)}
+  .spec-list li span{color:var(--muted);text-align:right}
+  .tag-row{display:flex;flex-wrap:wrap;gap:8px}
+  .tag{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--ink);padding:7px 13px;border-radius:999px;transition:.2s}
+  .tag:hover{background:var(--ink);color:#fff}
+  .tag.red{background:var(--red);border-color:var(--red);color:#fff}
+  .info-foot{padding:20px 32px 28px;border-top:1px solid rgba(23,23,23,.12);display:flex;gap:12px;background:rgba(255,255,255,.5)}
+  .btn{flex:1;border:1px solid var(--ink);background:transparent;color:var(--ink);font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;padding:15px 10px;cursor:pointer;transition:.25s;position:relative;overflow:hidden}
+  .btn:hover{background:var(--ink);color:#fff;transform:translateY(-1px);box-shadow:0 8px 20px rgba(23,23,23,.25)}
+  .btn.red{background:var(--red);border-color:var(--red);color:#fff}
+  .btn.red:hover{background:var(--red-deep);border-color:var(--red-deep);box-shadow:0 8px 22px rgba(255,0,0,.35)}
+
+  .counter-nav{position:fixed;z-index:41;left:50%;transform:translateX(-50%);bottom:24px;display:none;align-items:center;gap:14px}
+  .counter-nav.show{display:flex}
+  .counter-nav button{width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.45);background:var(--glass-dark);color:#fff;font-size:17px;cursor:pointer;backdrop-filter:blur(10px);transition:.22s;box-shadow:var(--shadow-sm)}
+  .counter-nav button:hover{background:var(--red);border-color:var(--red);transform:translateY(-2px)}
+  .counter-nav .count{color:#fff;font-size:11px;letter-spacing:.2em;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+  .counter-nav .count b{font-size:17px;color:#ff6b6b}
+
+  /* ---------- Help modal ---------- */
+  .help-modal{position:fixed;inset:0;z-index:90;background:rgba(10,10,11,.82);backdrop-filter:blur(10px);display:none;place-items:center;padding:20px}
+  .help-modal.show{display:grid}
+  .help-card{width:min(460px,94vw);background:var(--paper);border-top:4px solid var(--red);box-shadow:var(--shadow-lg);padding:34px 38px;animation:helpIn .45s var(--ease-out) both;border-radius:4px}
+  @keyframes helpIn{from{opacity:0;transform:translateY(26px) scale(.97)}to{opacity:1;transform:none}}
+  .help-card h2{font-family:var(--serif);font-weight:600;margin:0 0 4px;font-size:26px;letter-spacing:-.02em}
+  .help-card h2 span{color:var(--red)}
+  .help-card .sub{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 20px}
+  .help-list{list-style:none;margin:0 0 24px;padding:0}
+  .help-list li{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px dashed rgba(23,23,23,.14);font-size:12.5px;color:#3f3b37}
+  .help-list li:last-child{border-bottom:0}
+  .help-key{flex:none;min-width:86px;text-align:center;background:var(--ink);color:#fff;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:7px 10px;border-radius:6px}
+  .help-card .btn{width:100%}
+
+  /* ---------- Welcome splash ---------- */
+  .splash{position:fixed;inset:0;z-index:80;background:radial-gradient(circle at 50% 42%, #ff2a00 0%, var(--red) 55%, #c40000 100%);display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .8s}
+  .splash.show{opacity:1;pointer-events:auto}
+  .splash-inner{text-align:center;color:#fff;transform:scale(.85);transition:transform 1.2s cubic-bezier(.16,1,.3,1)}
+  .splash.show .splash-inner{transform:scale(1)}
+  .splash-inner .small{font-size:11px;letter-spacing:.5em;text-transform:uppercase;font-weight:600;opacity:.85}
+  .splash-inner h2{font-family:var(--serif);font-style:italic;font-weight:500;font-size:clamp(56px,11vw,140px);margin:10px 0 14px;letter-spacing:-.03em;line-height:1;text-shadow:0 12px 50px rgba(0,0,0,.3)}
+  .splash-inner .sub{font-size:12px;letter-spacing:.3em;text-transform:uppercase;font-weight:600;opacity:.9}
+  .splash-inner::after{content:"";display:block;width:60px;height:2px;background:rgba(255,255,255,.7);margin:22px auto 0}
+
+  /* ---------- Interior welcome ribbon ---------- */
+  .interior-ui{position:fixed;z-index:50;inset:auto 0 0 0;display:none;flex-direction:column;align-items:center;gap:14px;padding:0 20px 26px;pointer-events:none}
+  .interior-ui.show{display:flex}
+  .interior-card{background:rgba(246,245,242,.95);backdrop-filter:blur(12px);padding:20px 34px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.45);border-top:3px solid var(--red)}
+  .interior-card .small{font-size:9px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;color:var(--red)}
+  .interior-card h2{font-family:var(--serif);font-weight:600;font-size:clamp(22px,3.4vw,34px);margin:8px 0 6px;letter-spacing:-.02em}
+  .interior-card p{margin:0;font-size:11px;color:var(--muted);letter-spacing:.06em}
+  .interior-ui .btn{pointer-events:auto;flex:none;padding:14px 30px;background:rgba(23,23,23,.85);color:#fff;border-color:transparent}
+  .interior-ui .btn:hover{background:var(--red)}
+
+  /* ---------- Division Gallery overlay ---------- */
+  .gallery-overlay{position:fixed;inset:0;z-index:70;background:rgba(10,10,11,.97);backdrop-filter:blur(10px);display:none;flex-direction:column;opacity:0;transition:opacity .4s}
+  .gallery-overlay.show{display:flex;opacity:1}
+  .gallery-head{display:flex;align-items:center;justify-content:space-between;padding:22px clamp(20px,4vw,54px);border-bottom:1px solid rgba(255,255,255,.12)}
+  .gallery-title{display:flex;align-items:center;gap:16px}
+  .gallery-title img{width:54px;height:54px;border:2px solid #fff;object-fit:cover}
+  .gallery-title h2{margin:0;font-family:var(--serif);font-weight:600;font-size:clamp(22px,3vw,32px);color:#fff;letter-spacing:.04em}
+  .gallery-title p{margin:2px 0 0;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.45);font-weight:600}
+  .gallery-close{border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;padding:13px 22px;cursor:pointer;transition:.2s}
+  .gallery-close:hover{background:var(--red);border-color:var(--red)}
+  .gallery-body{flex:1;overflow-y:auto;display:grid;grid-template-columns:minmax(300px,.85fr) minmax(0,1.5fr);align-items:start}
+  @media(max-width:900px){.gallery-body{display:flex;flex-direction:column}}
+  .gallery-services{padding:28px clamp(20px,3vw,44px) 40px;border-right:1px solid rgba(255,255,255,.1)}
+  @media(max-width:900px){.gallery-services{border-right:0;border-bottom:1px solid rgba(255,255,255,.1)}}
+  .gs-letter{font-family:var(--serif);font-size:64px;line-height:1;color:var(--red);font-weight:600;margin:0}
+  .gs-tag{font-size:12.5px;line-height:1.75;color:rgba(255,255,255,.62);margin:12px 0 22px;max-width:340px}
+  .gs-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+  .gs-list li{display:flex;gap:14px;align-items:baseline;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:12.5px;color:#f2f2f2;letter-spacing:.02em}
+  .gs-list li b{font-size:10px;color:var(--red);font-weight:700;letter-spacing:.1em;min-width:22px}
+  /* collage / mosaic grid — dense flow, varied tile sizes */
+  .gallery-grid{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:110px;grid-auto-flow:dense;gap:10px;padding:28px clamp(20px,3vw,44px) 40px;align-content:start}
+  @media(max-width:1100px){.gallery-grid{grid-template-columns:repeat(4,1fr)}}
+  @media(max-width:640px){.gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:90px}}
+  .gallery-item{position:relative;border:1px solid rgba(255,255,255,.16);background:#161618;overflow:hidden;cursor:zoom-in;transition:border-color .2s, transform .25s}
+  .gallery-item:hover{border-color:var(--red);transform:scale(1.02);z-index:2}
+  .gallery-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+  .gallery-item:hover img{transform:scale(1.06)}
+  /* collage tile size variants */
+  .gallery-item.t-big{grid-column:span 3;grid-row:span 3}
+  .gallery-item.t-tall{grid-column:span 2;grid-row:span 3}
+  .gallery-item.t-med{grid-column:span 2;grid-row:span 2}
+  .gallery-item.t-sm{grid-column:span 1;grid-row:span 2}
+  .gallery-item.wide{grid-column:1 / -1;grid-row:span 4}
+  @media(max-width:640px){
+    .gallery-item.t-big,.gallery-item.t-tall,.gallery-item.t-med{grid-column:span 2;grid-row:span 2}
+    .gallery-item.t-sm{grid-column:span 1;grid-row:span 1}
+    .gallery-item.wide{grid-row:span 3}
+  }
+  .ba-badge{position:absolute;top:10px;left:10px;background:var(--red);color:#fff;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:6px 12px;z-index:2}
+  .gallery-tabs{display:flex;gap:8px;padding:14px clamp(20px,4vw,54px) 0;flex-wrap:wrap}
+  .gallery-tab{border:1px solid rgba(255,255,255,.25);background:transparent;color:rgba(255,255,255,.6);font-family:var(--sans);font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:9px 16px;cursor:pointer;transition:.2s}
+  .gallery-tab:hover{color:#fff;border-color:#fff}
+  .gallery-tab.active{background:var(--red);border-color:var(--red);color:#fff}
+  .lightview{position:fixed;inset:0;z-index:75;background:rgba(0,0,0,.95);display:none;place-items:center;cursor:zoom-out}
+  .lightview.show{display:grid}
+  .lightview img{max-width:92vw;max-height:88vh;border:2px solid #fff;box-shadow:0 30px 90px rgba(0,0,0,.8)}
+
+  /* ---------- Loader ---------- */
+  .loader{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 45%, #fdfcf9 0%, #f6f5f2 60%, #ece9e2 100%);display:grid;place-items:center;transition:opacity .9s,visibility .9s}
+  .loader.done{opacity:0;pointer-events:none;visibility:hidden}
+  .loader-inner{text-align:center;animation:loaderIn .9s var(--ease-out) both}
+  @keyframes loaderIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .loader-bar{width:150px;height:2px;background:rgba(23,23,23,.12);margin:18px auto 0;border-radius:99px;overflow:hidden}
+  .loader-bar span{display:block;height:100%;width:40%;background:var(--red);border-radius:99px;animation:barSlide 1.2s ease-in-out infinite}
+  @keyframes barSlide{0%{transform:translateX(-110%)}100%{transform:translateX(400%)}}
+  .loader-ring-wrap{position:relative;width:84px;height:84px;margin:0 auto 20px}
+  .loader-ring-wrap .ring{position:absolute;inset:0;width:84px;height:84px;border-radius:50%;border:2px solid rgba(23,23,23,.15);border-top-color:var(--red);animation:spin 1s linear infinite}
+  .loader-ring-wrap .logo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:auto;display:block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loader-inner h2{font-family:var(--serif);font-weight:600;margin:0;font-size:26px;letter-spacing:-.02em}
+  .loader-inner h2 span{color:var(--red)}
+  .loader-inner p{margin:8px 0 0;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);font-weight:600}
+</style>
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+
+
+<div class="loader" id="loader">
+  <div class="loader-inner">
+    <div class="loader-ring-wrap">
+      <div class="ring"></div>
+      <img class="logo" src="assets/icon.png" alt="">
+    </div>
+    <h2>Art<span>ViSiON</span></h2>
+    <p>Production Design · Indore</p>
+    <div class="loader-bar"><span></span></div>
+  </div>
+</div>
+
+<div class="ctrl-cluster">
+  <div class="climate-chip" id="climateChip">🌧️ बारिश</div>
+  <button class="ctrl-btn" id="btnSound" title="Sound on/off">
+    <svg viewBox="0 0 24 24" id="icoSoundOn"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18 6a8.5 8.5 0 0 1 0 12"/></svg>
+  </button>
+  <button class="ctrl-btn" id="btnHome" title="शुरुआती व्यू — पूरा शोरूम">
+    <svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>
+  </button>
+  <button class="ctrl-btn" id="btnFull" title="Fullscreen">
+    <svg viewBox="0 0 24 24"><path d="M8 3H3v5"/><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M16 21h5v-5"/></svg>
+  </button>
+  <button class="ctrl-btn" id="btnHelp" title="Guide">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.5 2.5 0 1 1 3.6 2.24c-.72.36-1.1.86-1.1 1.66v.3"/><path d="M12 17h.01"/></svg>
+  </button>
+</div>
+
+<div class="hud hint" id="hint">
+  <span><span class="kbd">Scroll</span>Zoom</span>
+  <span><span class="kbd">Drag</span>घुमाएँ</span>
+  <span><span class="kbd">Click</span>Product Details</span>
+  <span><b>Welcome Gate</b>&nbsp;= अंदर एंट्री</span>
+</div>
+
+<div class="hud tooltip" id="tooltip"></div>
+
+<div class="help-modal" id="helpModal">
+  <div class="help-card">
+    <h2>Art<span>ViSiON</span> Showroom Guide</h2>
+    <p class="sub">Virtual Experience · कैसे घूमें</p>
+    <ul class="help-list">
+      <li><span class="help-key">Scroll</span> ज़ूम इन / आउट — प्रोडक्ट के पास जाने पर फोकस</li>
+      <li><span class="help-key">Drag</span> कैमरा घुमाएँ, पूरा प्लाज़ा देखें</li>
+      <li><span class="help-key">Click</span> किसी भी प्रोडक्ट पर — डिटेल्स पैनल खुलेगा</li>
+      <li><span class="help-key">Welcome</span> गेट या रूफ स्ट्रक्चर पर क्लिक = शोरूम में एंट्री</li>
+      <li><span class="help-key">Canvas</span> अंदर कैनवास पर क्लिक = उस डिविज़न की गैलरी</li>
+      <li><span class="help-key">← →</span> फोकस में अगला / पिछला प्रोडक्ट</li>
+      <li><span class="help-key">Esc</span> वापस / बाहर</li>
+    </ul>
+    <button class="btn red" id="helpClose">शुरू करें →</button>
+  </div>
+</div>
+
+<aside class="info-panel" id="infoPanel">
+  <div class="info-head">
+    <button class="info-close" id="infoClose" title="बंद करें">✕</button>
+    <div class="info-eyebrow" id="infoIndex">Product 01 / 18</div>
+    <h2 id="infoTitle">—</h2>
+    <h3 id="infoSub">—</h3>
+  </div>
+  <div class="info-body">
+    <p id="infoDesc">—</p>
+    <ul class="spec-list" id="infoSpecs"></ul>
+    <div class="tag-row" id="infoTags"></div>
+  </div>
+  <div class="info-foot">
+    <button class="btn" id="btnBack">← बाहर देखें</button>
+    <button class="btn red" id="btnNext">अगला प्रोडक्ट →</button>
+  </div>
+</aside>
+
+<div class="counter-nav" id="counterNav">
+  <button id="navPrev" title="पिछला प्रोडक्ट">←</button>
+  <div class="count"><b id="navNum">01</b> / <span id="navTotal">18</span></div>
+  <button id="navNext" title="अगला प्रोडक्ट">→</button>
+</div>
+
+<div class="gallery-overlay" id="galleryOverlay">
+  <div class="gallery-head">
+    <div class="gallery-title">
+      <img id="galIcon" src="assets/div-advertising.png" alt="">
+      <div>
+        <h2 id="galName">ADVERTiSiNG</h2>
+        <p>ArtViSiON · Division Gallery</p>
+      </div>
+    </div>
+    <button class="gallery-close" id="galClose">✕ बंद करें</button>
+  </div>
+  <div class="gallery-tabs" id="galTabs"></div>
+  <div class="gallery-body">
+    <div class="gallery-services">
+      <p class="gs-letter" id="gsLetter">A</p>
+      <p class="gs-tag" id="gsTag"></p>
+      <ul class="gs-list" id="gsList"></ul>
+    </div>
+    <div class="gallery-grid" id="galGrid"></div>
+  </div>
+</div>
+<div class="lightview" id="lightview"><img id="lightviewImg" src="" alt=""></div>
+
+<div class="splash" id="splash">
+  <div class="splash-inner">
+    <div class="small">ArtViSiON · Production Design</div>
+    <h2>Welcome</h2>
+    <div class="sub">आपका स्वागत है — शोरूम, इंदौर</div>
+  </div>
+</div>
+
+<div class="interior-ui" id="interiorUI">
+  <div class="interior-card">
+    <div class="small">Welcome · आपका स्वागत है</div>
+    <h2>ArtViSiON Production Design Studio</h2>
+    <p>Branding · Signage · Vector Art · 360° Creative-to-Execution — Indore</p>
+  </div>
+  <button class="btn" id="btnExit">← शोरूम से बाहर जाएँ</button>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "./lib/three.module.js" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from './lib/OrbitControls.js';
+
+/* ================= BRAND ================= */
+const RED = 0xff0000, INK = 0x171717, PAPER = 0xf6f5f2, CREAM = 0xefe9df;
+
+/* ================= RENDERER / SCENE ================= */
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const scene = new THREE.Scene();
+
+/* sky gradient (mid colour + optional stars for night) */
+function skyTexture(top, bottom, mid = '#dcd7cf', stars = false){
+  const c = document.createElement('canvas'); c.width = stars ? 256 : 4; c.height = 512;
+  const g = c.getContext('2d');
+  const gr = g.createLinearGradient(0,0,0,512);
+  gr.addColorStop(0, top); gr.addColorStop(.55, mid); gr.addColorStop(1, bottom);
+  g.fillStyle = gr; g.fillRect(0,0,c.width,512);
+  if(stars){
+    for(let i=0;i<150;i++){
+      g.fillStyle = `rgba(255,255,240,${.25+Math.random()*.65})`;
+      g.fillRect(Math.random()*256, Math.random()*300, 1.6, 1.6);
+    }
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+let outsideSky = skyTexture('#8fa3b8', '#f0ece4');
+scene.background = outsideSky;
+scene.fog = new THREE.Fog(0xe8e3da, 70, 160);
+
+const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, .1, 400);
+camera.position.set(26, 14, 58);
+
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = .07;
+controls.maxPolarAngle = 1.52;
+controls.minDistance = 3.5;
+controls.maxDistance = 78;
+controls.target.set(0, 4, 0);
+
+/* ================= LIGHTS ================= */
+const hemi = new THREE.HemisphereLight(0xdfe8f5, 0x8c8377, 1.0);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff2df, 2.1);
+sun.position.set(-28, 38, 26);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.camera.left = -45; sun.shadow.camera.right = 45;
+sun.shadow.camera.top = 45; sun.shadow.camera.bottom = -45;
+sun.shadow.camera.far = 120;
+sun.shadow.bias = -0.0004;
+scene.add(sun);
+
+/* ================= OUTSIDE CLIMATE — real local time se day/night ================= */
+/* phases: dawn 5-7, day 7-16.5, sunset 16.5-19, night 19-5 */
+let outsidePhase = '';
+function computePhase(){
+  const h = new Date().getHours() + new Date().getMinutes()/60;
+  if(h >= 5 && h < 7) return 'dawn';
+  if(h >= 7 && h < 16.5) return 'day';
+  if(h >= 16.5 && h < 19) return 'sunset';
+  return 'night';
+}
+const PHASES = {
+  dawn:   { top:'#7e86b8', mid:'#e8b08a', bot:'#f6dcc0', stars:false, fog:0xe9d9c8,
+            sunColor:0xffd9b0, sunInt:1.3, hemiSky:0xd9d2e8, hemiGnd:0x8a7f70, hemiInt:.8, fogNear:70, fogFar:160, exposure:1.0 },
+  day:    { top:'#8fa3b8', mid:'#dcd7cf', bot:'#f0ece4', stars:false, fog:0xe8e3da,
+            sunColor:0xfff2df, sunInt:2.1, hemiSky:0xdfe8f5, hemiGnd:0x8c8377, hemiInt:1.0, fogNear:70, fogFar:160, exposure:1.05 },
+  sunset: { top:'#4a3a63', mid:'#d4693f', bot:'#ffca7a', stars:false, fog:0xd9a077,
+            sunColor:0xffb070, sunInt:1.5, hemiSky:0xc79a8f, hemiGnd:0x6f5c4e, hemiInt:.75, fogNear:65, fogFar:150, exposure:1.0 },
+  night:  { top:'#070b1c', mid:'#121b36', bot:'#20294a', stars:true, fog:0x10182e,
+            sunColor:0x9db4dd, sunInt:.35, hemiSky:0x2a3554, hemiGnd:0x14161f, hemiInt:.45, fogNear:55, fogFar:130, exposure:.92 },
+};
+function applyOutsideClimate(force){
+  const ph = computePhase();
+  if(ph === outsidePhase && !force) return;
+  outsidePhase = ph;
+  const P = PHASES[ph];
+  outsideSky = skyTexture(P.top, P.bot, P.mid, P.stars);
+  if(outside.visible){
+    scene.background = outsideSky;
+    scene.fog = new THREE.Fog(P.fog, P.fogNear, P.fogFar);
+  }
+  sun.color.setHex(P.sunColor); sun.intensity = P.sunInt;
+  hemi.color.setHex(P.hemiSky); hemi.groundColor.setHex(P.hemiGnd); hemi.intensity = P.hemiInt;
+  renderer.toneMappingExposure = P.exposure;
+}
+/* har 30 second me time-phase check */
+setInterval(()=> applyOutsideClimate(false), 30000);
+
+/* ================= TEXTURE HELPERS (no text anywhere — only colour & texture) ================= */
+function makeTex(w, h, draw, repeat){
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  if(repeat){ t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeat[0], repeat[1]); }
+  return t;
+}
+
+/* plaza pavers — warm sandstone + charcoal border pattern */
+const paverTex = makeTex(512, 512, (g)=>{
+  g.fillStyle = '#d9cbb2'; g.fillRect(0,0,512,512);
+  for(let y=0;y<8;y++) for(let x=0;x<8;x++){
+    const s = 62, p = 2;
+    /* har 4th tile charcoal accent — designer plaza feel */
+    const accent = (x%4===0 && y%4===0);
+    g.fillStyle = accent ? '#3a3733' : ((x+y)%2 ? '#d4c4a8' : '#e0d2b8');
+    g.fillRect(x*64+p, y*64+p, s, s);
+    /* stone texture speckle */
+    if(!accent){
+      g.fillStyle = 'rgba(120,100,70,.12)';
+      for(let i=0;i<6;i++) g.fillRect(x*64+6+((x*7+i*13)%50), y*64+6+((y*11+i*17)%50), 2, 2);
+    }
+    g.fillStyle = 'rgba(60,45,25,.15)';
+    g.fillRect(x*64+p, y*64+p+s-3, s, 3);
+  }
+}, [16,16]);
+
+/* ACP cladding — matte silver panels with grooves */
+const acpTex = makeTex(512, 512, (g)=>{
+  g.fillStyle = '#a9adb2'; g.fillRect(0,0,512,512);
+  for(let y=0;y<4;y++) for(let x=0;x<3;x++){
+    const gr = g.createLinearGradient(x*171,y*128,x*171+171,y*128+128);
+    gr.addColorStop(0,'#c3c7cc'); gr.addColorStop(.5,'#cdd1d6'); gr.addColorStop(1,'#b6bac0');
+    g.fillStyle = gr; g.fillRect(x*171+3, y*128+3, 165, 122);
+  }
+  g.strokeStyle = '#82868c'; g.lineWidth = 5;
+  for(let y=0;y<=4;y++){ g.beginPath(); g.moveTo(0,y*128); g.lineTo(512,y*128); g.stroke(); }
+  for(let x=0;x<=3;x++){ g.beginPath(); g.moveTo(x*171,0); g.lineTo(x*171,512); g.stroke(); }
+}, [3,1]);
+
+/* red ACP band */
+const redAcpTex = makeTex(512, 256, (g)=>{
+  g.fillStyle = '#d40000'; g.fillRect(0,0,512,256);
+  for(let x=0;x<4;x++){
+    const gr = g.createLinearGradient(x*128,0,x*128+128,256);
+    gr.addColorStop(0,'#ff0000'); gr.addColorStop(1,'#cc0000');
+    g.fillStyle = gr; g.fillRect(x*128+3, 3, 122, 250);
+  }
+  g.strokeStyle = '#8f0000'; g.lineWidth = 5;
+  for(let x=0;x<=4;x++){ g.beginPath(); g.moveTo(x*128,0); g.lineTo(x*128,256); g.stroke(); }
+}, [4,1]);
+
+/* frosted vinyl window graphic — geometric pattern, no letters */
+const vinylTex = makeTex(512, 512, (g)=>{
+  g.fillStyle = 'rgba(235,240,246,1)'; g.fillRect(0,0,512,512);
+  g.globalAlpha = .92;
+  g.fillStyle = '#ff0000';
+  g.beginPath(); g.arc(140,200,95,0,7); g.fill();
+  g.fillStyle = '#171717';
+  g.beginPath(); g.arc(150,210,95,0,7); g.globalCompositeOperation='destination-out'; g.fill();
+  g.globalCompositeOperation='source-over';
+  g.fillStyle = '#171717';
+  g.fillRect(300, 90, 26, 340); g.fillRect(354, 150, 26, 280); g.fillRect(408, 210, 26, 220);
+  g.fillStyle = '#ff0000';
+  g.beginPath(); g.moveTo(60,470); g.lineTo(250,470); g.lineTo(155,330); g.closePath(); g.fill();
+  g.globalAlpha = .35; g.fillStyle = '#9aa7b5';
+  for(let i=0;i<7;i++) g.fillRect(0, i*76, 512, 22);
+});
+
+/* banner fabric — brand pattern */
+const bannerTex = makeTex(512, 1024, (g)=>{
+  const gr = g.createLinearGradient(0,0,0,1024);
+  gr.addColorStop(0,'#ff1a00'); gr.addColorStop(.6,'#e60000'); gr.addColorStop(1,'#b30000');
+  g.fillStyle = gr; g.fillRect(0,0,512,1024);
+  g.globalAlpha = .14; g.fillStyle = '#fff';
+  for(let i=-6;i<14;i++){ g.save(); g.translate(0, i*90); g.rotate(-.28); g.fillRect(-100, 0, 800, 26); g.restore(); }
+  g.globalAlpha = 1;
+  g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(256, 300, 118, 0, 7); g.fill();
+  g.fillStyle = '#171717'; g.beginPath(); g.arc(256, 300, 74, 0, 7); g.fill();
+  g.fillStyle = '#ff0000'; g.beginPath(); g.arc(256, 300, 36, 0, 7); g.fill();
+  g.fillStyle = '#171717'; g.fillRect(90, 640, 332, 16);
+  g.fillStyle = '#f6f5f2'; g.fillRect(90, 690, 332, 8); g.fillRect(90, 730, 332, 8);
+  g.fillStyle = '#171717'; g.beginPath(); g.moveTo(150,860); g.lineTo(256,960); g.lineTo(362,860); g.closePath(); g.fill();
+});
+
+/* standee graphic — abstract offer burst */
+const standeeTex = makeTex(512, 1024, (g)=>{
+  const gr = g.createLinearGradient(0,0,512,1024);
+  gr.addColorStop(0,'#f6f5f2'); gr.addColorStop(1,'#e7e2d8');
+  g.fillStyle = gr; g.fillRect(0,0,512,1024);
+  g.fillStyle = '#ff0000';
+  g.beginPath(); g.moveTo(0,0); g.lineTo(512,0); g.lineTo(512,180); g.lineTo(0,320); g.closePath(); g.fill();
+  g.fillStyle = '#171717';
+  g.beginPath(); g.moveTo(0,320); g.lineTo(512,180); g.lineTo(512,225); g.lineTo(0,365); g.closePath(); g.fill();
+  // starburst
+  g.save(); g.translate(256, 560);
+  g.fillStyle = '#ff0000';
+  g.beginPath();
+  for(let i=0;i<24;i++){
+    const a = i/24*Math.PI*2, r = i%2 ? 150 : 195;
+    g[i?'lineTo':'moveTo'](Math.cos(a)*r, Math.sin(a)*r);
+  }
+  g.closePath(); g.fill();
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(0,0,118,0,7); g.fill();
+  g.fillStyle = '#171717'; g.beginPath(); g.arc(0,0,84,0,7); g.fill();
+  g.fillStyle = '#ff0000'; g.beginPath(); g.arc(0,0,40,0,7); g.fill();
+  g.restore();
+  g.fillStyle = '#171717'; g.fillRect(96, 830, 320, 14);
+  g.fillStyle = '#ff0000'; g.fillRect(96, 866, 240, 14);
+  g.fillStyle = '#171717'; g.fillRect(0, 950, 512, 74);
+});
+
+/* backlight fabric — glowing gradient shapes */
+const backlitTex = makeTex(1024, 512, (g)=>{
+  const gr = g.createLinearGradient(0,0,1024,512);
+  gr.addColorStop(0,'#ff3300'); gr.addColorStop(.45,'#ff0000'); gr.addColorStop(1,'#b90000');
+  g.fillStyle = gr; g.fillRect(0,0,1024,512);
+  g.globalAlpha = .8;
+  const rg = g.createRadialGradient(300,256,20,300,256,300);
+  rg.addColorStop(0,'rgba(255,240,220,.95)'); rg.addColorStop(1,'rgba(255,240,220,0)');
+  g.fillStyle = rg; g.beginPath(); g.arc(300,256,300,0,7); g.fill();
+  g.globalAlpha = .9; g.fillStyle = '#fff';
+  g.beginPath(); g.arc(300,256,90,0,7); g.fill();
+  g.globalAlpha = .55;
+  g.strokeStyle = '#fff'; g.lineWidth = 10;
+  g.beginPath(); g.arc(300,256,140,0,7); g.stroke();
+  g.globalAlpha = .85; g.fillStyle = '#171717';
+  g.fillRect(560, 150, 30, 212); g.fillRect(640, 110, 30, 292); g.fillRect(720, 180, 30, 152);
+  g.fillStyle = '#fff'; g.fillRect(800, 140, 150, 26); g.fillRect(800, 210, 110, 18); g.fillRect(800, 262, 130, 18);
+  g.globalAlpha = 1;
+});
+
+/* canvas vector art — abstract owl-mandala, pure vector feel */
+const artTex = makeTex(768, 768, (g)=>{
+  g.fillStyle = '#efe9df'; g.fillRect(0,0,768,768);
+  g.save(); g.translate(384, 384);
+  g.fillStyle = '#171717'; g.beginPath(); g.arc(0,0,300,0,7); g.fill();
+  g.fillStyle = '#ff0000'; g.beginPath(); g.arc(0,0,252,0,7); g.fill();
+  for(let i=0;i<16;i++){
+    g.save(); g.rotate(i/16*Math.PI*2);
+    g.fillStyle = i%2 ? '#f6f5f2' : '#171717';
+    g.beginPath(); g.moveTo(0,-252); g.lineTo(26,-190); g.lineTo(-26,-190); g.closePath(); g.fill();
+    g.restore();
+  }
+  g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(0,0,178,0,7); g.fill();
+  // owl face abstract
+  g.fillStyle = '#171717';
+  g.beginPath(); g.arc(-62,-30,58,0,7); g.arc(62,-30,58,0,7); g.fill();
+  g.fillStyle = '#fff';
+  g.beginPath(); g.arc(-62,-30,40,0,7); g.arc(62,-30,40,0,7); g.fill();
+  g.fillStyle = '#ff0000';
+  g.beginPath(); g.arc(-62,-30,17,0,7); g.arc(62,-30,17,0,7); g.fill();
+  g.fillStyle = '#ff0000';
+  g.beginPath(); g.moveTo(0,-6); g.lineTo(26,40); g.lineTo(-26,40); g.closePath(); g.fill();
+  g.strokeStyle = '#171717'; g.lineWidth = 7;
+  for(let i=0;i<3;i++){ g.beginPath(); g.arc(0, 92+i*24, 54+i*18, .35, Math.PI-.35); g.stroke(); }
+  g.restore();
+});
+
+/* mehrab-arch brand backdrop — interior wall + window display dono me use hota hai */
+function makeMehrabTex(){
+  return makeTex(1024, 512, (g)=>{
+    g.fillStyle = '#f6f5f2'; g.fillRect(0,0,1024,512);
+    for(let i=0;i<5;i++){
+      const cx = 102 + i*205;
+      g.fillStyle = i%2 ? '#e20000' : '#171717';
+      g.beginPath();
+      g.moveTo(cx-72, 512); g.lineTo(cx-72, 220);
+      g.quadraticCurveTo(cx, 60, cx+72, 220);
+      g.lineTo(cx+72, 512); g.closePath(); g.fill();
+      g.fillStyle = '#f6f5f2';
+      g.beginPath();
+      g.moveTo(cx-48, 512); g.lineTo(cx-48, 240);
+      g.quadraticCurveTo(cx, 120, cx+48, 240);
+      g.lineTo(cx+48, 512); g.closePath(); g.fill();
+      g.fillStyle = i%2 ? '#171717' : '#e20000';
+      g.beginPath(); g.arc(cx, 300, 26, 0, 7); g.fill();
+    }
+    g.fillStyle = '#e20000';
+    for(let x=0;x<1024;x+=64){ g.beginPath(); g.arc(x+32, 26, 32, 0, Math.PI); g.fill(); }
+    g.fillStyle = '#171717';
+    for(let x=16;x<1024;x+=42){ g.beginPath(); g.arc(x, 80, 5, 0, 7); g.fill(); }
+  });
+}
+
+/* WELCOME sign — the ONLY text in the whole environment */
+function drawWelcome(g){
+  g.fillStyle = '#ff0000'; g.fillRect(0,0,1024,300);
+  const gr = g.createLinearGradient(0,0,0,300);
+  gr.addColorStop(0,'rgba(255,255,255,.22)'); gr.addColorStop(.4,'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(0,0,1024,300);
+  g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 6;
+  g.strokeRect(18,18,988,264);
+  g.fillStyle = '#ffffff';
+  g.font = 'italic 600 150px "Playfair Display", Georgia, serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('Welcome', 512, 148);
+}
+const welcomeTex = makeTex(1024, 300, drawWelcome);
+/* redraw once the Playfair webfont is ready, so the sign uses the brand serif */
+if(document.fonts && document.fonts.load){
+  document.fonts.load('italic 600 150px "Playfair Display"').then(()=>{
+    drawWelcome(welcomeTex.image.getContext('2d'));
+    welcomeTex.needsUpdate = true;
+  }).catch(()=>{});
+}
+
+/* ================= MATERIAL SHORTCUTS ================= */
+const M = {
+  ink:   new THREE.MeshStandardMaterial({ color: INK, roughness:.6 }),
+  dark:  new THREE.MeshStandardMaterial({ color: 0x24272c, roughness:.55, metalness:.35 }),
+  steel: new THREE.MeshStandardMaterial({ color: 0x9aa0a8, roughness:.35, metalness:.8 }),
+  redGloss: new THREE.MeshPhysicalMaterial({ color: RED, roughness:.15, metalness:.1, clearcoat:1, clearcoatRoughness:.15 }),
+  cream: new THREE.MeshStandardMaterial({ color: CREAM, roughness:.9 }),
+  paper: new THREE.MeshStandardMaterial({ color: PAPER, roughness:.92 }),
+  glass: new THREE.MeshPhysicalMaterial({ color:0xbfd4e2, roughness:.08, metalness:.1, transparent:true, opacity:.4, transmission:0, reflectivity:.6 }),
+};
+
+const outside = new THREE.Group();
+scene.add(outside);
+
+function box(w,h,d,mat,x=0,y=0,z=0,parent=outside,shadow=true){
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+  m.position.set(x,y,z);
+  m.castShadow = shadow; m.receiveShadow = true;
+  parent.add(m); return m;
+}
+function cyl(rt,rb,h,mat,x=0,y=0,z=0,parent=outside,seg=24){
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg), mat);
+  m.position.set(x,y,z); m.castShadow = true; m.receiveShadow = true;
+  parent.add(m); return m;
+}
+
+/* ================= GROUND ================= */
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(240, 240),
+  new THREE.MeshStandardMaterial({ map: paverTex, roughness:.95 }));
+ground.rotation.x = -Math.PI/2;
+ground.receiveShadow = true;
+outside.add(ground);
+
+/* red carpet path from gate to door */
+const carpet = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 30),
+  new THREE.MeshStandardMaterial({ color: 0xd40000, roughness:.98 }));
+carpet.rotation.x = -Math.PI/2;
+carpet.position.set(0, .02, 6);
+carpet.receiveShadow = true;
+outside.add(carpet);
+
+/* ================= SHOWROOM BUILDING ================= */
+const building = new THREE.Group();
+outside.add(building);
+
+/* main mass */
+/* front facade — WHITE WOOD planks (warm designer look) */
+const woodTex = makeTex(512, 512, (g)=>{
+  g.fillStyle = '#f7f3ea'; g.fillRect(0,0,512,512);
+  /* vertical warm-white planks with subtle tone variety */
+  const tones = ['#f6f1e6','#efe9db','#f9f5ec','#ece5d5','#f4efe3','#f1ebdd','#f8f3e9','#eee7d8'];
+  for(let x=0;x<8;x++){
+    const px = x*64;
+    const gr = g.createLinearGradient(px,0,px+64,0);
+    gr.addColorStop(0, tones[x]); gr.addColorStop(.5, '#faf6ee'); gr.addColorStop(1, tones[(x+3)%8]);
+    g.fillStyle = gr; g.fillRect(px+2, 0, 60, 512);
+    g.strokeStyle = 'rgba(172,150,118,.3)'; g.lineWidth = 1.2;
+    for(let i=0;i<5;i++){
+      g.beginPath();
+      const gx = px + 10 + i*11;
+      g.moveTo(gx, 0);
+      for(let y=0;y<=512;y+=32) g.lineTo(gx + Math.sin(y*.04 + i + x)*3, y);
+      g.stroke();
+    }
+    if(x%3===1){
+      g.fillStyle = 'rgba(160,140,110,.4)';
+      g.beginPath(); g.ellipse(px+32, 120+x*40, 5, 9, .3, 0, 7); g.fill();
+    }
+  }
+  g.strokeStyle = 'rgba(120,104,82,.5)'; g.lineWidth = 3;
+  for(let x=0;x<=8;x++){ g.beginPath(); g.moveTo(x*64,0); g.lineTo(x*64,512); g.stroke(); }
+}, [4,2]);
+
+/* main mass — bada showroom, white wood front */
+const mainWall = box(46, 15.5, 12, new THREE.MeshStandardMaterial({ map: woodTex, roughness:.85, metalness:.02 }), 0, 7.75, -11, building);
+/* side wings — BLACK wood contrast */
+const walnutTex = makeTex(256, 512, (g)=>{
+  g.fillStyle = '#141416'; g.fillRect(0,0,256,512);
+  for(let x=0;x<4;x++){
+    const gr = g.createLinearGradient(x*64,0,x*64+64,0);
+    gr.addColorStop(0,'#1a1a1d'); gr.addColorStop(.5,'#232326'); gr.addColorStop(1,'#151517');
+    g.fillStyle = gr; g.fillRect(x*64+2, 0, 60, 512);
+    g.strokeStyle = 'rgba(255,255,255,.05)'; g.lineWidth = 1.4;
+    for(let i=0;i<4;i++){
+      g.beginPath();
+      const gx = x*64 + 12 + i*14;
+      g.moveTo(gx, 0);
+      for(let y=0;y<=512;y+=32) g.lineTo(gx + Math.sin(y*.03 + i + x)*4, y);
+      g.stroke();
+    }
+  }
+  g.strokeStyle = 'rgba(0,0,0,.8)'; g.lineWidth = 3;
+  for(let x=0;x<=4;x++){ g.beginPath(); g.moveTo(x*64,0); g.lineTo(x*64,512); g.stroke(); }
+}, [3,2]);
+const wingMat = new THREE.MeshStandardMaterial({ map: walnutTex, roughness:.75, metalness:.05 });
+box(7, 12, 10, wingMat, -26.5, 6, -11, building);
+box(7, 12, 10, wingMat, 26.5, 6, -11, building);
+/* wings par golden lip */
+const goldTrim = new THREE.MeshStandardMaterial({ color: 0xc9a24a, roughness:.3, metalness:.7 });
+box(7.3, .3, 10.3, goldTrim, -26.5, 12.1, -11, building);
+box(7.3, .3, 10.3, goldTrim, 26.5, 12.1, -11, building);
+/* roof lip — dark walnut + gold edge */
+const glossSilver = new THREE.MeshPhysicalMaterial({ color: 0xc9cdd3, roughness:.12, metalness:.85, clearcoat:1, clearcoatRoughness:.1 });
+box(48, .7, 13.4, new THREE.MeshStandardMaterial({ map: walnutTex, roughness:.6, metalness:.15 }), 0, 15.85, -11, building);
+box(48.3, .16, 13.6, goldTrim, 0, 16.28, -11, building);
+/* facade ke LEFT-RIGHT corners par RED pillars — full height */
+const finMat = new THREE.MeshPhysicalMaterial({ color: RED, roughness:.28, metalness:.15, clearcoat:.8 });
+[-22.7, 22.7].forEach(x=>{
+  box(.7, 15.3, .6, finMat, x, 7.65, -4.78, building);
+});
+/* walnut horizontal band facade ke beech (design layer) */
+box(46.2, 1.1, .25, new THREE.MeshStandardMaterial({ map: walnutTex, roughness:.7 }), 0, 10.9, -4.85, building);
+/* black granite base band */
+box(46.2, 1.6, .3, new THREE.MeshStandardMaterial({ color: 0x1b1d20, roughness:.35, metalness:.3 }), 0, .8, -4.82, building);
+/* plinth */
+box(47, .8, 13, new THREE.MeshStandardMaterial({ color:0x2e3033, roughness:.7 }), 0, .4, -11, building);
+/* facade wash lights removed for performance — emissive glow kafi hai */
+
+/* ================= PRODUCT REGISTRY ================= */
+const products = [];  // {group, name, sub, desc, specs, tags, camPos, camTarget}
+function register(group, data){
+  group.traverse(o => { o.userData.productIndex = products.length; });
+  group.userData.productIndex = products.length;
+  products.push({ group, ...data });
+}
+
+/* ---------- 1. ACP CLADDING SIGNAGE (facade band + glowing sign box, blank) ---------- */
+const acpSign = new THREE.Group();
+building.add(acpSign);
+{
+  const band = new THREE.Mesh(new THREE.BoxGeometry(30, 3.4, .5),
+    new THREE.MeshStandardMaterial({ map: redAcpTex, roughness:.4, metalness:.25 }));
+  band.position.set(0, 13.2, -4.7); band.castShadow = true; acpSign.add(band);
+  /* silver sign tray for the white lightbox face */
+  const tray = new THREE.Mesh(new THREE.BoxGeometry(16.4, 3.15, .3),
+    new THREE.MeshStandardMaterial({ color: 0xb9bdc3, roughness:.35, metalness:.6 }));
+  tray.position.set(0, 13.2, -4.42); acpSign.add(tray);
+
+  /* acrylic lit-letter LOGO lightbox (icon + ArtViSiON) — opaque pre-composed face */
+  const texLoader = new THREE.TextureLoader();
+  const signFace = texLoader.load('assets/sign-face.png', t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; });
+  const LW = 16, LH = LW/4;   // sign-face is 4:1
+  const logo = new THREE.Mesh(new THREE.PlaneGeometry(LW, LH),
+    new THREE.MeshStandardMaterial({ map: signFace,
+      emissive: 0xffffff, emissiveMap: signFace, emissiveIntensity: .22, roughness:.6 }));
+  logo.position.set(0, 13.2, -4.26); acpSign.add(logo);
+
+  /* ---- professional lighting rig: gooseneck downlighters over the sign ---- */
+  const armMat = new THREE.MeshStandardMaterial({ color: 0x2c2f33, roughness:.4, metalness:.7 });
+  [-5.5, 0, 5.5].forEach(x=>{
+    /* curved gooseneck arm */
+    const arm = new THREE.Mesh(new THREE.TorusGeometry(.85, .05, 10, 24, Math.PI/1.9), armMat);
+    arm.position.set(x, 15.7, -4.05); arm.rotation.y = Math.PI/2; arm.rotation.z = Math.PI;
+    acpSign.add(arm);
+    /* lamp shade */
+    const shade = new THREE.Mesh(new THREE.CylinderGeometry(.3, .42, .38, 20), armMat);
+    shade.position.set(x, 15.5, -3.35); shade.rotation.x = .55; acpSign.add(shade);
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(.12, 12, 10),
+      new THREE.MeshStandardMaterial({ color: 0xfff6e6, emissive: 0xffedd0, emissiveIntensity: 1.6 }));
+    bulb.position.set(x, 15.37, -3.28); acpSign.add(bulb);
+    /* focused spotlight washing down the sign face */
+    const spot = new THREE.SpotLight(0xfff0dc, 55, 9, .62, .45, 1.4);
+    spot.position.set(x, 15.55, -3.2);
+    spot.target.position.set(x, 12.8, -4.4);
+    acpSign.add(spot); acpSign.add(spot.target);
+  });
+}
+register(acpSign, {
+  name:'ACP Cladding Signage', sub:'Matte Silver ACP Facade + White Lightbox Sign Band',
+  desc:'Showroom ke facade par premium matte silver ACP cladding — groove-line panels, weather-proof finish, aur sign band par clean white lightbox. Board abhi blank hai — isi par aapka brand logo acrylic lit letters me lagta hai. Upar gooseneck focus lights ka professional setup din-raat even lighting deta hai.',
+  specs:[['Cladding','Matte silver ACP, PVDF coat'],['Sign band','White lightbox, silver tray'],['Lighting','Gooseneck focus downlighters'],['Structure','MS frame + aluminium tray'],['Life','8–10 saal outdoor warranty']],
+  tags:['Facade','Lightbox','Professional Lit'],
+  camPos:[0, 13.6, 6.5], camTarget:[0, 13.2, -4.6]
+});
+
+/* ---------- 2. ACRYLIC LETTERS (abstract red acrylic forms — no letters/text) ---------- */
+const acrylic = new THREE.Group();
+building.add(acrylic);
+{
+  /* ACP Cladding Signage ke WHITE LIGHTBOX par hi mounted — jaisa real me hota hai */
+  const y = 13.2, z = -4.2, cx = 0;
+  /* plain matte red — koi glossy/clearcoat effect nahi */
+  const redFlat = new THREE.MeshStandardMaterial({ color: RED, roughness:.85, metalness:0, transparent:true, opacity:.5 });
+  const shapes = [
+    () => new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,.3,40), redFlat),
+    () => new THREE.Mesh(new THREE.BoxGeometry(.85,.4,.3), redFlat),
+    () => new THREE.Mesh(new THREE.CylinderGeometry(.46,.46,.3,3), redFlat),
+    () => new THREE.Mesh(new THREE.TorusGeometry(.38,.14,16,40), redFlat),
+    () => new THREE.Mesh(new THREE.BoxGeometry(.38,.85,.3), redFlat),
+    () => new THREE.Mesh(new THREE.CylinderGeometry(.48,.48,.3,6), redFlat),
+  ];
+  /* even spacing, sab lightbox ke center-line par */
+  const xs = [-5.4, -3.25, -1.15, 1.0, 3.05, 5.1];
+  shapes.forEach((make, i)=>{
+    const s = make();
+    if(s.geometry.type.includes('Cylinder')) s.rotation.x = Math.PI/2;
+    s.position.set(cx + xs[i], y, z + .1);
+    s.castShadow = true;
+    acrylic.add(s);
+
+  });
+}
+register(acrylic, {
+  name:'Acrylic Letters (3D)', sub:'Cast Acrylic — Translucent Red, LED Halo Glow',
+  desc:'Cast acrylic 3D letters aur brand shapes — translucent red acrylic jisme roshni aar-paar jhalakti hai, bilkul real acrylic ki tarah. Laser-cut clean edges aur pichhe se LED halo-lit glow. Din me bold, raat me premium.',
+  specs:[['Material','8–18mm cast acrylic'],['Cutting','CNC laser, polished edge'],['Lighting','Front-lit / Halo back-lit LED'],['Mounting','Stud + spacer, wall-safe'],['Colours','Solid red, jet black, frost']],
+  tags:['3D Letters','Laser Cut','Halo Lit'],
+  camPos:[0, 13.4, 4.5], camTarget:[0, 13.2, -4.4]
+});
+
+/* ---------- 3. BRAND STARTUP WINDOW DISPLAY (glass + vinyl graphics) ---------- */
+const windowDisplay = new THREE.Group();
+building.add(windowDisplay);
+/* vitrine ADHA wall ke andar dhasa hua — bay window look */
+windowDisplay.position.z = -1.3;
+{
+  /* ===== GLASS VITRINE — adha facade ke andar, adha bahar ===== */
+  const WX = 13.1;                // center x — door se right red pillar tak
+  const BAYD = 2.6;               // kitna bahar nikla
+  /* backdrop (wall par) — wahi mehrab-arch design jo andar back wall par hai */
+  const wdBdTex = makeMehrabTex();
+  const wdBd = new THREE.Mesh(new THREE.PlaneGeometry(18.2, 5.9),
+    new THREE.MeshStandardMaterial({ map: wdBdTex, roughness:.9 }));
+  wdBd.position.set(WX, 3, -3.62); windowDisplay.add(wdBd);   // wall face ke thik aage (group -1.3 shift ke baad)
+  /* vitrine floor — plinth jaisa bahar aata hua */
+  box(18.4, .5, BAYD + .4, new THREE.MeshStandardMaterial({ color: 0x26282c, roughness:.6 }), WX, .25, -4.9 + (BAYD+.4)/2, windowDisplay);
+  /* top canopy */
+  box(18.4, .3, BAYD + .4, M.ink, WX, 6.15, -4.9 + (BAYD+.4)/2, windowDisplay);
+  /* front glass */
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(18, 5.7), M.glass);
+  glass.position.set(WX, 3.05, -4.9 + BAYD); windowDisplay.add(glass);
+  /* side glass */
+  [-9.1, 9.1].forEach(dx=>{
+    const sg = new THREE.Mesh(new THREE.PlaneGeometry(BAYD, 5.7), M.glass);
+    sg.rotation.y = Math.PI/2;
+    sg.position.set(WX + dx, 3.05, -4.9 + BAYD/2);
+    windowDisplay.add(sg);
+  });
+  /* corner posts */
+  [-9.15, 9.15].forEach(dx=> box(.18, 5.9, .18, M.ink, WX + dx, 3, -4.9 + BAYD, windowDisplay));
+  /* vinyl accent sirf left corner par halka */
+  const vinyl = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 4.6),
+    new THREE.MeshStandardMaterial({ map: vinylTex, transparent:true, opacity:.4, roughness:.7 }));
+  vinyl.position.set(WX - 7.8, 2.9, -4.88 + BAYD); windowDisplay.add(vinyl);
+
+  const ZP = -3.4;   // products ki depth line (bahar, dikhne wali)
+  /* --- PRODUCT 1: mini glowing lightbox sign --- */
+  box(1.4, 1, 1, M.paper, WX - 3.4, .95, ZP, windowDisplay);
+  box(1.6, .85, .16, M.dark, WX - 3.4, 1.95, ZP, windowDisplay);
+  const miniFace = new THREE.Mesh(new THREE.PlaneGeometry(1.4, .65),
+    new THREE.MeshStandardMaterial({ color: 0xfff4e2, emissive: 0xffe9c4, emissiveIntensity: 1.6 }));
+  miniFace.position.set(WX - 3.4, 1.95, ZP + .09); windowDisplay.add(miniFace);
+  const miniDot = new THREE.Mesh(new THREE.CircleGeometry(.2, 32), new THREE.MeshStandardMaterial({ color: RED }));
+  miniDot.position.set(WX - 3.4, 1.95, ZP + .1); windowDisplay.add(miniDot);
+
+  /* --- PRODUCT 2: golden trophy --- */
+  const goldM = new THREE.MeshPhysicalMaterial({ color: 0xd4af37, roughness:.2, metalness:.9, clearcoat:.6 });
+  box(1.2, 1.4, 1, M.paper, WX - 1.7, 1.15, ZP - .6, windowDisplay);
+  cyl(.28, .35, .12, goldM, WX - 1.7, 1.92, ZP - .6, windowDisplay);
+  cyl(.06, .11, .32, goldM, WX - 1.7, 2.12, ZP - .6, windowDisplay);
+  const cup = new THREE.Mesh(new THREE.SphereGeometry(.3, 24, 16, 0, Math.PI*2, 0, Math.PI/1.8), goldM);
+  cup.rotation.x = Math.PI; cup.position.set(WX - 1.7, 2.5, ZP - .6); cup.castShadow = true; windowDisplay.add(cup);
+
+  /* --- PRODUCT 3: mini easel + canvas art --- */
+  const el = new THREE.MeshStandardMaterial({ color: 0x4a3526, roughness:.8 });
+  const e1 = cyl(.035,.045,1.9, el, WX + 2.55, .95, ZP, windowDisplay); e1.rotation.z = .12;
+  const e2 = cyl(.035,.045,1.9, el, WX + 3.05, .95, ZP, windowDisplay); e2.rotation.z = -.12;
+  const e3 = cyl(.035,.045,1.8, el, WX + 2.8, .9, ZP - .4, windowDisplay); e3.rotation.x = -.25;
+  const miniArt = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 1.25),
+    new THREE.MeshStandardMaterial({ map: artTex, roughness:.95 }));
+  miniArt.position.set(WX + 2.8, 1.55, ZP + .08); miniArt.rotation.x = -.06; windowDisplay.add(miniArt);
+
+  /* --- PRODUCT 4: rolled banner prints --- */
+  box(.85, .65, .85, M.ink, WX + 4.3, .68, ZP - .5, windowDisplay);
+  [[-.16, .08, 0], [.14, .04, .35], [0, .16, -.3]].forEach(([dx, dz, rz], i)=>{
+    const roll = cyl(.1, .1, 1.5, i%2 ? M.redGloss : M.paper, WX + 4.3 + dx, 1.45, ZP - .5 + dz, windowDisplay);
+    roll.rotation.z = rz * .3;
+  });
+
+  /* --- STAR: BENGALI FASHIONABLE GIRL MANNEQUIN (laal-paar saree) --- */
+  const mq = new THREE.Group(); windowDisplay.add(mq);
+  mq.position.set(WX + .6, 0, ZP + .3);
+  mq.rotation.y = -.2;
+  /* Bengali laal-paar saree: off-white body + chaudi RED border + golden buti */
+  const dressTex = makeTex(256, 512, (g)=>{
+    g.fillStyle = '#f7f2e6'; g.fillRect(0,0,256,512);           // cream/white body
+    /* golden buti (chhote motifs) */
+    g.fillStyle = 'rgba(201,162,74,.75)';
+    for(let y=0;y<9;y++) for(let x=0;x<6;x++){
+      const cx = x*44+20 + (y%2)*22, cy = y*48+22;
+      g.beginPath();
+      g.moveTo(cx, cy-5); g.quadraticCurveTo(cx+6, cy, cx, cy+5); g.quadraticCurveTo(cx-6, cy, cx, cy-5);
+      g.fill();
+    }
+    /* chaudi RED border neeche (Bengali signature) */
+    g.fillStyle = '#c40000'; g.fillRect(0, 428, 256, 84);
+    g.fillStyle = '#e20000'; g.fillRect(0, 436, 256, 68);
+    /* border par golden temple-motif zigzag */
+    g.fillStyle = '#e8b923';
+    for(let x=0;x<256;x+=24){
+      g.beginPath(); g.moveTo(x, 452); g.lineTo(x+12, 436); g.lineTo(x+24, 452); g.closePath(); g.fill();
+    }
+    g.fillStyle = '#c9a24a'; g.fillRect(0, 424, 256, 5); g.fillRect(0, 500, 256, 5);
+  });
+  const dressM = new THREE.MeshStandardMaterial({ map: dressTex, roughness:.65 });
+  const blouseM = new THREE.MeshStandardMaterial({ color: 0xc40000, roughness:.5 });
+  const skinM = new THREE.MeshStandardMaterial({ color: 0xe9d3b8, roughness:.5 });   // warm skin tone
+  /* round display base */
+  cyl(.55, .62, .12, M.dark, 0, .42, 0, mq);
+  /* --- FIGURE — natural feminine silhouette --- */
+  /* saree lower: kamar se pair tak, seedha girta hua (real saree drape) */
+  const lowerPts = [];
+  [[.04,0],[.42,0],[.46,.1],[.44,.4],[.4,.8],[.33,1.15],[.27,1.4],[.24,1.52]].forEach(([r,y])=> lowerPts.push(new THREE.Vector2(r, y)));
+  const lower = new THREE.Mesh(new THREE.LatheGeometry(lowerPts, 32), dressM);
+  lower.scale.set(1, 1.32, .9);
+  lower.position.y = .54; lower.castShadow = true; mq.add(lower);
+  /* kamar */
+  const waist = new THREE.Mesh(new THREE.CylinderGeometry(.19, .25, .38, 24), skinM);
+  waist.scale.z = .82;
+  waist.position.y = 2.62; waist.castShadow = true; mq.add(waist);
+  /* blouse — fitted, natural */
+  const bustPts = [];
+  [[.2,0],[.28,.13],[.31,.28],[.28,.44],[.21,.56],[.15,.64]].forEach(([r,y])=> bustPts.push(new THREE.Vector2(r, y)));
+  const bust = new THREE.Mesh(new THREE.LatheGeometry(bustPts, 28), blouseM);
+  bust.scale.set(1, 1, .9);
+  bust.position.y = 2.84; bust.castShadow = true; mq.add(bust);
+  /* shoulders — chaude, body se properly jude */
+  const shoulder = new THREE.Mesh(new THREE.SphereGeometry(.19, 20, 14), blouseM);
+  shoulder.scale.set(1.75, .52, .8); shoulder.position.y = 3.44; mq.add(shoulder);
+  /* shoulder joint balls — jahan se arms judte hain */
+  [-.3,.3].forEach(x=>{
+    const sj = new THREE.Mesh(new THREE.SphereGeometry(.075, 14, 10), blouseM);
+    sj.position.set(x, 3.42, 0); mq.add(sj);
+  });
+  /* neck + head */
+  cyl(.06, .07, .2, skinM, 0, 3.58, 0, mq);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(.2, 24, 18), skinM);
+  head.scale.y = 1.12;
+  head.position.y = 3.9; head.castShadow = true; mq.add(head);
+  /* lips — real shape: upar 2 lobes (cupid's bow) + neeche bhara hua lower lip */
+  const lipM = new THREE.MeshPhysicalMaterial({ color: 0xc4103a, roughness:.25, clearcoat:.9, clearcoatRoughness:.2 });
+  const lipTop1 = new THREE.Mesh(new THREE.SphereGeometry(.028, 12, 10), lipM);
+  lipTop1.scale.set(1.25, .62, .62); lipTop1.position.set(-.024, 3.845, .186); mq.add(lipTop1);
+  const lipTop2 = new THREE.Mesh(new THREE.SphereGeometry(.028, 12, 10), lipM);
+  lipTop2.scale.set(1.25, .62, .62); lipTop2.position.set(.024, 3.845, .186); mq.add(lipTop2);
+  const lipBot = new THREE.Mesh(new THREE.SphereGeometry(.042, 14, 12), lipM);
+  lipBot.scale.set(1.35, .68, .72); lipBot.position.set(0, 3.812, .188); mq.add(lipBot);
+  /* lip crease shadow */
+  const lipLine = new THREE.Mesh(new THREE.SphereGeometry(.036, 10, 8), new THREE.MeshBasicMaterial({ color: 0x6e0a20 }));
+  lipLine.scale.set(1.55, .12, .5); lipLine.position.set(0, 3.83, .19); mq.add(lipLine);
+  /* Bengali hairstyle — center-part hair + peeche KHOPA (bun) + jasmine gajra */
+  const hairM = new THREE.MeshStandardMaterial({ color: 0x131315, roughness:.5 });
+  const hairTop = new THREE.Mesh(new THREE.SphereGeometry(.215, 22, 16, 0, Math.PI*2, 0, Math.PI/1.6), hairM);
+  hairTop.position.y = 3.96; hairTop.scale.y = 1.08; mq.add(hairTop);
+  /* center parting line */
+  const parting = box(.012, .015, .2, new THREE.MeshStandardMaterial({ color: 0xe9d3b8 }), 0, 4.13, .09, mq);
+  const khopa = new THREE.Mesh(new THREE.SphereGeometry(.13, 16, 12), hairM);
+  khopa.position.set(0, 3.92, -.2); khopa.scale.set(1, .95, .8); mq.add(khopa);
+  /* gajra — khope ke chaaron or safed phool */
+  for(let i=0;i<8;i++){
+    const a = i/8*Math.PI*2;
+    const fl = new THREE.Mesh(new THREE.SphereGeometry(.024, 8, 6),
+      new THREE.MeshStandardMaterial({ color: 0xfff8ee, roughness:.8 }));
+    fl.position.set(Math.cos(a)*.13, 3.92 + Math.sin(a)*.11, -.21);
+    mq.add(fl);
+  }
+  /* sindoor line + BADI Bengali bindi */
+  const sindoor = box(.014, .06, .01, new THREE.MeshStandardMaterial({ color: RED }), 0, 4.12, .16, mq);
+  sindoor.rotation.x = -.5;
+  const bindi = new THREE.Mesh(new THREE.CircleGeometry(.032, 16), new THREE.MeshStandardMaterial({ color: RED }));
+  bindi.position.set(0, 3.99, .195); mq.add(bindi);
+  /* jhumka earrings */
+  [-.19,.19].forEach(x=>{
+    const j = new THREE.Mesh(new THREE.ConeGeometry(.028, .06, 10), goldM);
+    j.rotation.x = Math.PI; j.position.set(x, 3.8, .02); mq.add(j);
+  });
+  /* --- LEFT arm: jointed pivot — kandhe se neeche, kohni se kamar par (natural) --- */
+  const armL = new THREE.Group();
+  armL.position.set(-.3, 3.42, 0);            // left shoulder joint par
+  mq.add(armL);
+  cyl(.05, .045, .5, skinM, 0, -.24, 0, armL); // upper arm neeche
+  const foreL = new THREE.Group();
+  foreL.position.set(0, -.48, 0);              // elbow pivot
+  armL.add(foreL);
+  cyl(.045, .04, .42, skinM, 0, -.19, 0, foreL);
+  const handL = new THREE.Mesh(new THREE.SphereGeometry(.06, 12, 10), skinM);
+  handL.scale.set(.85, 1.15, .6);
+  handL.position.set(0, -.42, 0); foreL.add(handL);
+  armL.rotation.z = -.22;                      // halka bahar
+  foreL.rotation.z = 1.35; foreL.rotation.y = .35;  // kohni mud ke haath kamar par
+  /* choodi (bangles) left wrist */
+  for(let i=0;i<3;i++){
+    const bgl = new THREE.Mesh(new THREE.TorusGeometry(.052, .008, 8, 20), i===1 ? new THREE.MeshStandardMaterial({ color: RED, roughness:.4 }) : goldM);
+    bgl.position.set(0, -.34 - i*.025, 0); bgl.rotation.x = Math.PI/2; foreL.add(bgl);
+  }
+  /* --- RIGHT arm: FLYING KISS pivot (jointed, natural) --- */
+  const kissArm = new THREE.Group();
+  kissArm.position.set(.3, 3.42, 0);           // right shoulder joint par
+  mq.add(kissArm);
+  cyl(.05, .045, .5, skinM, 0, -.24, 0, kissArm);
+  const foreArm = new THREE.Group();
+  foreArm.position.set(0, -.48, 0);
+  kissArm.add(foreArm);
+  cyl(.045, .04, .42, skinM, 0, -.19, 0, foreArm);
+  const hand = new THREE.Mesh(new THREE.SphereGeometry(.06, 12, 10), skinM);
+  hand.scale.set(.85, 1.15, .6);
+  hand.position.set(0, -.42, 0); foreArm.add(hand);
+  /* choodi right wrist bhi */
+  for(let i=0;i<3;i++){
+    const bgl = new THREE.Mesh(new THREE.TorusGeometry(.052, .008, 8, 20), i===1 ? new THREE.MeshStandardMaterial({ color: RED, roughness:.4 }) : goldM);
+    bgl.position.set(0, -.34 - i*.025, 0); bgl.rotation.x = Math.PI/2; foreArm.add(bgl);
+  }
+  kissArm.rotation.z = -.15;                   // rest — haath seedha neeche
+  /* jewellery */
+  const neck = new THREE.Mesh(new THREE.TorusGeometry(.1, .018, 10, 28), goldM);
+  neck.position.set(0, 3.54, .08); neck.rotation.x = 1.25; mq.add(neck);
+  const neck2 = new THREE.Mesh(new THREE.TorusGeometry(.14, .012, 10, 28), goldM);
+  neck2.position.set(0, 3.44, .1); neck2.rotation.x = 1.3; mq.add(neck2);
+  /* kiss heart particle (hidden by default, kiss ke waqt udta hai) */
+  const heartM = new THREE.MeshStandardMaterial({ color: 0xff2050, emissive: 0x881020, emissiveIntensity: .8, transparent: true, opacity: 0 });
+  const heart = new THREE.Group();
+  const h1 = new THREE.Mesh(new THREE.SphereGeometry(.055, 12, 10), heartM); h1.position.x = -.04; heart.add(h1);
+  const h2 = new THREE.Mesh(new THREE.SphereGeometry(.055, 12, 10), heartM); h2.position.x = .04; heart.add(h2);
+  const h3 = new THREE.Mesh(new THREE.ConeGeometry(.085, .12, 4), heartM); h3.position.y = -.07; h3.rotation.x = Math.PI; h3.rotation.y = Math.PI/4; heart.add(h3);
+  heart.position.set(.3, 3.9, .4); heart.visible = false;
+  mq.add(heart);
+  /* spotlight on mannequin */
+  const mqSpot = new THREE.SpotLight(0xfff0dc, 45, 10, .5, .5, 1.3);
+  mqSpot.position.set(WX + .6, 6, -1.5);
+  mqSpot.target.position.set(WX + .6, 2.2, ZP + .3);
+  windowDisplay.add(mqSpot); windowDisplay.add(mqSpot.target);
+  windowDisplay.userData.mannequin = mq;
+  windowDisplay.userData.kissArm = kissArm;
+  windowDisplay.userData.foreArm = foreArm;
+  windowDisplay.userData.kissHeart = heart;
+  windowDisplay.userData.heartMat = heartM;
+  windowDisplay.userData.mqHead = head;
+  /* window ambient lights */
+
+}
+register(windowDisplay, {
+  name:'Sale & Offer Window Display', sub:'Retail Window Styling — Mannequin + Offer Staging',
+  desc:'Sale aur offer season ke liye complete window display — center me fashionable mannequin jo rahgeer ki nazar rok leti hai, saath me offer staging: mini glowing lightbox, golden award trophy, easel par vector art canvas aur rolled banner prints. Mehrab-pattern backdrop aur spotlight staging se poori window ek offer-story kehti hai.',
+  specs:[['Styling','Mannequin + offer props'],['Podiums','MDF + laminate, LED wash'],['Lighting','Focused spotlights + ambient'],['Props','Lightbox, trophy, canvas, prints'],['Refresh','Sale / season-wise change']],
+  tags:['Sale Display','Retail','Visual Merchandising'],
+  camPos:[13.1, 3.4, 8], camTarget:[13.1, 2.8, -3.4]
+});
+
+/* ---------- entrance door (part of building, links to interior) ---------- */
+const doorGroup = new THREE.Group();
+building.add(doorGroup);
+{
+  /* glossy silver door frame + leaves */
+  box(6.4, 6, .4, glossSilver, 0, 3, -4.9, doorGroup);
+  const dGlass = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 5), M.glass);
+  dGlass.position.set(0, 2.8, -4.62); doorGroup.add(dGlass);
+  box(.14, 5, .1, glossSilver, 0, 2.8, -4.6, doorGroup);
+  box(.1, 1.4, .1, M.steel, -.55, 2.6, -4.5, doorGroup);
+  box(.1, 1.4, .1, M.steel, .55, 2.6, -4.5, doorGroup);
+  /* canopy — glossy silver */
+  box(8, .35, 3, glossSilver, 0, 6.4, -3.6, doorGroup);
+}
+
+/* ---------- ROOFTOP MS STEEL ENTRY STRUCTURE (bulb-decorated, clickable => enter) ---------- */
+const roofEntry = new THREE.Group();
+building.add(roofEntry);
+let entryBulbs = [];
+{
+  const msMat = new THREE.MeshStandardMaterial({ color: 0x3d4148, roughness:.38, metalness:.85 });
+  const RY = 16.2;             // roof top
+  const RZ = -8;               // over the door area
+  /* two lattice towers */
+  [-7, 7].forEach(x=>{
+    /* corner posts */
+    [[-.55,-.55],[.55,-.55],[-.55,.55],[.55,.55]].forEach(([dx,dz])=>{
+      box(.16, 7.5, .16, msMat, x+dx, RY+3.75, RZ+dz, roofEntry);
+    });
+    /* X bracing rings */
+    for(let lv=0; lv<5; lv++){
+      const y = RY + .8 + lv*1.45;
+      box(1.26, .1, .1, msMat, x, y, RZ-.55, roofEntry);
+      box(1.26, .1, .1, msMat, x, y, RZ+.55, roofEntry);
+      box(.1, .1, 1.26, msMat, x-.55, y, RZ, roofEntry);
+      box(.1, .1, 1.26, msMat, x+.55, y, RZ, roofEntry);
+      const d1 = box(1.7, .07, .07, msMat, x, y+.7, RZ-.55, roofEntry); d1.rotation.z = .55;
+      const d2 = box(1.7, .07, .07, msMat, x, y+.7, RZ+.55, roofEntry); d2.rotation.z = -.55;
+    }
+    /* tower cap */
+    box(1.5, .18, 1.5, msMat, x, RY+7.6, RZ, roofEntry);
+  });
+  /* top truss beam connecting towers */
+  box(14, .2, .2, msMat, 0, RY+7.2, RZ-.5, roofEntry);
+  box(14, .2, .2, msMat, 0, RY+7.2, RZ+.5, roofEntry);
+  box(14, .2, .2, msMat, 0, RY+6.2, RZ-.5, roofEntry);
+  box(14, .2, .2, msMat, 0, RY+6.2, RZ+.5, roofEntry);
+  for(let i=0;i<9;i++){
+    const x = -6 + i*1.5;
+    const w1 = box(.09, 1.45, .09, msMat, x, RY+6.7, RZ-.5, roofEntry); w1.rotation.z = .8;
+    const w2 = box(.09, 1.45, .09, msMat, x, RY+6.7, RZ+.5, roofEntry); w2.rotation.z = -.8;
+    box(.09, .09, 1.1, msMat, x, RY+6.2, RZ, roofEntry);
+  }
+  /* giant downward chevrons (andar aao ishara) hanging from beam */
+  const chevMat = new THREE.MeshStandardMaterial({ color: RED, roughness:.35, metalness:.2, emissive: 0x550000 });
+  for(let c=0; c<3; c++){
+    const y = RY + 5 - c*1.5;
+    const cm = chevMat.clone();
+    const l = box(2.6, .38, .22, cm, -1.05, y, RZ, roofEntry); l.rotation.z = -.55;
+    const r = box(2.6, .38, .22, cm, 1.05, y, RZ, roofEntry); r.rotation.z = .55;
+    l.userData.chevBase = y; r.userData.chevBase = y;
+    l.userData.chevIdx = c; r.userData.chevIdx = c;
+  }
+  /* marquee bulbs — towers ke kinare + beam ke neeche */
+  const bulbGeo = new THREE.SphereGeometry(.13, 12, 10);
+  function addBulb(x, y, z, i){
+    const m = new THREE.MeshStandardMaterial({ color: 0xfff3d6, emissive: 0xffd98a, emissiveIntensity: 1.8 });
+    const b = new THREE.Mesh(bulbGeo, m);
+    b.position.set(x, y, z);
+    roofEntry.add(b);
+    entryBulbs.push({ mesh: b, idx: i });
+  }
+  let bi = 0;
+  /* beam ke neeche bulb line */
+  for(let i=0;i<=18;i++) addBulb(-6.75 + i*.75, RY+6, RZ+.62, bi++);
+  /* dono towers par vertical bulb strips */
+  [-7, 7].forEach(x=>{
+    for(let i=0;i<10;i++) addBulb(x + (x<0?.72:-.72), RY + .8 + i*.72, RZ+.62, bi++);
+  });
+  /* warm glow light */
+
+  /* clickable flag on every child */
+  roofEntry.traverse(o => { o.userData.entryStructure = true; });
+}
+
+/* ---------- 4. BACKLIGHT FABRIC (SEG lightbox, freestanding on facade left) ---------- */
+const backlit = new THREE.Group();
+building.add(backlit);
+let seg = null;   // animated showroom-interior scene
+{
+  const fr = box(18.8, 6, .45, M.dark, -13.1, 3.1, -4.85, backlit);
+  /* ANIMATED canvas — showroom ke ANDAR ka drishya (live render hota rahega) */
+  const segCv = document.createElement('canvas'); segCv.width = 1280; segCv.height = 400;
+  const segCtx = segCv.getContext('2d');
+  const segTex = new THREE.CanvasTexture(segCv);
+  segTex.colorSpace = THREE.SRGBColorSpace;
+  const fab = new THREE.Mesh(new THREE.PlaneGeometry(18.2, 5.5),
+    new THREE.MeshStandardMaterial({ map: segTex, emissive: 0xffffff, emissiveMap: segTex, emissiveIntensity: 1.05, roughness:.85 }));
+  fab.position.set(-13.1, 3.1, -4.58); backlit.add(fab);
+
+  seg = { ctx: segCtx, tex: segTex, W: 1280, H: 400 };
+}
+/* SEG lightbox par showroom-interior ka animated illustration */
+function drawSegScene(t){
+  if(!seg) return;
+  const g = seg.ctx, W = seg.W, H = seg.H;
+  /* interior walls — warm perspective room */
+  const bg = g.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#f3ede2'); bg.addColorStop(.7,'#e9e2d4'); bg.addColorStop(1,'#d9d1c0');
+  g.fillStyle = bg; g.fillRect(0,0,W,H);
+  /* floor */
+  g.fillStyle = '#cfc7b6'; g.fillRect(0, H*.72, W, H*.28);
+  g.strokeStyle = 'rgba(0,0,0,.07)'; g.lineWidth = 2;
+  for(let i=0;i<8;i++){ const x = W*.5 + (i-4)*W*.16; g.beginPath(); g.moveTo(W*.5 + (i-4)*W*.05, H*.72); g.lineTo(x, H); g.stroke(); }
+  /* back wall red accent + brand circles */
+  g.fillStyle = '#e20000'; g.fillRect(W*.06, H*.14, W*.26, H*.58);
+  g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(W*.19, H*.42, H*.14, 0, 7); g.fill();
+  g.fillStyle = '#171717'; g.beginPath(); g.arc(W*.19, H*.42, H*.09, 0, 7); g.fill();
+  g.fillStyle = '#e20000'; g.beginPath(); g.arc(W*.19, H*.42, H*.045, 0, 7); g.fill();
+  /* gallery frames on wall — jhilmilate picture lights ke saath */
+  for(let i=0;i<3;i++){
+    const fx = W*.4 + i*W*.17, fy = H*.2;
+    g.fillStyle = '#171717'; g.fillRect(fx, fy, W*.12, H*.3);
+    g.fillStyle = i===1 ? '#e20000' : '#f6f5f2';
+    g.fillRect(fx+6, fy+6, W*.12-12, H*.3-12);
+    g.fillStyle = i===1 ? '#f6f5f2' : '#e20000';
+    g.beginPath(); g.arc(fx + W*.06, fy + H*.15, H*.05, 0, 7); g.fill();
+    /* warm picture light glow (pulse) */
+    const gl = .35 + .25*Math.sin(t*2 + i*2);
+    const rg = g.createRadialGradient(fx+W*.06, fy-6, 2, fx+W*.06, fy-6, 55);
+    rg.addColorStop(0, `rgba(255,220,150,${gl})`); rg.addColorStop(1, 'rgba(255,220,150,0)');
+    g.fillStyle = rg; g.beginPath(); g.arc(fx+W*.06, fy-6, 55, 0, 7); g.fill();
+  }
+  /* reception desk */
+  g.fillStyle = '#1c1c1e'; g.fillRect(W*.62, H*.6, W*.24, H*.14);
+  g.fillStyle = '#f0ede6'; g.fillRect(W*.61, H*.58, W*.26, H*.03);
+  /* desk LED strip pulse */
+  g.fillStyle = `rgba(255,0,0,${.5+.3*Math.sin(t*3)})`; g.fillRect(W*.62, H*.71, W*.24, H*.012);
+  /* WALKING VISITOR silhouette — left-right ghoomta hua */
+  const wx = W*.5 + Math.sin(t*.45) * W*.3;
+  const dir = Math.cos(t*.45) >= 0 ? 1 : -1;
+  const step = Math.sin(t*5);
+  g.save(); g.translate(wx, H*.66); g.scale(dir, 1);
+  g.fillStyle = '#2a2a2e';
+  g.beginPath(); g.arc(0, -H*.22, H*.045, 0, 7); g.fill();           // head
+  g.fillRect(-H*.032, -H*.18, H*.064, H*.14);                        // body
+  g.save(); g.rotate(step*.35); g.fillRect(-H*.014, -H*.05, H*.028, H*.11); g.restore();   // leg 1
+  g.save(); g.rotate(-step*.35); g.fillRect(-H*.014, -H*.05, H*.028, H*.11); g.restore();  // leg 2
+  g.save(); g.translate(0,-H*.16); g.rotate(-step*.3); g.fillRect(-H*.011, 0, H*.022, H*.09); g.restore(); // arm
+  g.restore();
+  /* ceiling spotlights sweep */
+  for(let i=0;i<4;i++){
+    const sx = W*(.15 + i*.24);
+    const sway = Math.sin(t*.8 + i)* W*.02;
+    const cone = g.createLinearGradient(sx, 0, sx + sway, H*.72);
+    cone.addColorStop(0, 'rgba(255,235,190,.32)'); cone.addColorStop(1, 'rgba(255,235,190,0)');
+    g.fillStyle = cone;
+    g.beginPath(); g.moveTo(sx-6, 0); g.lineTo(sx+6, 0);
+    g.lineTo(sx + sway + W*.05, H*.72); g.lineTo(sx + sway - W*.05, H*.72);
+    g.closePath(); g.fill();
+    g.fillStyle = '#26282c'; g.fillRect(sx-10, 0, 20, 8);
+  }
+  /* thin red frame border (SEG edge) */
+  g.strokeStyle = '#e20000'; g.lineWidth = 8; g.strokeRect(4,4,W-8,H-8);
+  seg.tex.needsUpdate = true;
+}
+register(backlit, {
+  name:'Backlight Fabric (SEG Lightbox)', sub:'Silicone Edge Graphics — Live Interior Preview',
+  desc:'SEG fabric lightbox — tension fabric par dye-sublimation print, silicone edge se frame me seamless fit. Is display par showroom ke ANDAR ka animated preview chal raha hai: gallery wall, reception, ghoomta visitor aur jhoolti spotlights — motion-graphics lightbox ka demo. Poora graphic andar se evenly glow karta hai, koi hotspot nahi.',
+  specs:[['Fabric','Backlit polyester, dye-sub print'],['Frame','Aluminium SEG profile 80–120mm'],['Lighting','Edge-lit / lattice LED'],['Look','Zero-glare, seamless, fold-free'],['Change','Graphic 5 min me replace']],
+  tags:['Lightbox','Fabric','Night Impact'],
+  camPos:[-13.1, 3.4, 8.5], camTarget:[-13.1, 3.1, -4.6]
+});
+
+/* ---------- 5. ARCH GATE — PREMIUM INDIAN FABRICATION (the only text!) ---------- */
+const archGate = new THREE.Group();
+outside.add(archGate);
+let welcomeSign;
+let printTable;   // Product 13 — alag clickable product
+{
+  const px = 5.6, GZ = 20;
+  const redM2 = new THREE.MeshPhysicalMaterial({ color: 0xd40000, roughness:.35, metalness:.1, clearcoat:.6 });
+  const creamM = new THREE.MeshStandardMaterial({ color: 0xf3ecdc, roughness:.75 });
+  /* golden jaali texture — Indian lattice pattern */
+  const jaaliTex = makeTex(256, 256, (g)=>{
+    g.fillStyle = '#8f0000'; g.fillRect(0,0,256,256);
+    g.strokeStyle = '#e8b923'; g.lineWidth = 3;
+    for(let y=0;y<4;y++) for(let x=0;x<4;x++){
+      const cx = x*64+32, cy = y*64+32;
+      /* 8-point star jaali */
+      g.beginPath();
+      for(let i=0;i<8;i++){
+        const a = i/8*Math.PI*2, r = i%2 ? 12 : 26;
+        g[i?'lineTo':'moveTo'](cx + Math.cos(a)*r, cy + Math.sin(a)*r);
+      }
+      g.closePath(); g.stroke();
+      g.beginPath(); g.arc(cx, cy, 6, 0, 7); g.stroke();
+    }
+    g.strokeRect(2, 2, 252, 252);
+  }, [1, 3]);
+  const jaaliM = new THREE.MeshStandardMaterial({ map: jaaliTex, roughness:.55, metalness:.25 });
+
+  /* ---- ORNATE PILLARS (Indian style: base + jaali shaft + capital + chhatri dome) ---- */
+  [-px, px].forEach(x=>{
+    /* stepped base */
+    box(1.7, .35, 1.7, M.ink, x, .18, GZ, archGate);
+    box(1.45, .3, 1.45, goldTrim, x, .5, GZ, archGate);
+    box(1.25, .35, 1.25, redM2, x, .82, GZ, archGate);
+    /* jaali shaft (square pillar with lattice) */
+    box(1, 5.6, 1, jaaliM, x, 3.8, GZ, archGate);
+    /* golden rings on shaft */
+    [2.2, 4.4].forEach(y=>{
+      box(1.14, .16, 1.14, goldTrim, x, y, GZ, archGate);
+    });
+    /* capital */
+    box(1.3, .3, 1.3, goldTrim, x, 6.75, GZ, archGate);
+    box(1.5, .28, 1.5, redM2, x, 7.03, GZ, archGate);
+    /* chhatri dome (golden) + kalash */
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(.62, 20, 14, 0, Math.PI*2, 0, Math.PI/2), goldTrim);
+    dome.position.set(x, 7.2, GZ); dome.castShadow = true; archGate.add(dome);
+    cyl(.06, .1, .3, goldTrim, x, 7.95, GZ, archGate);
+    const kalash = new THREE.Mesh(new THREE.SphereGeometry(.12, 12, 10), redM2);
+    kalash.position.set(x, 8.15, GZ); archGate.add(kalash);
+  });
+
+  /* ---- MEHRAB ARCH (scalloped Indian arch — multifoil) ---- */
+  /* main arch band */
+  const pts = [];
+  for(let i=0;i<=40;i++){
+    const a = Math.PI - (i/40)*Math.PI;
+    pts.push(new THREE.Vector3(Math.cos(a)*px, 7.6 + Math.sin(a)*3.4, GZ));
+  }
+  const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 60, .38, 14), redM2);
+  tube.castShadow = true; archGate.add(tube);
+  /* golden inner scallop line (multifoil feel) */
+  const pts2 = [];
+  for(let i=0;i<=40;i++){
+    const a = Math.PI - (i/40)*Math.PI;
+    const scallop = .18 * Math.abs(Math.sin(i*.785));
+    pts2.push(new THREE.Vector3(Math.cos(a)*(px-.55), 7.55 + Math.sin(a)*(3.4-.55) - scallop, GZ));
+  }
+  const tube2 = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts2), 60, .12, 10), goldTrim);
+  archGate.add(tube2);
+  /* golden lotus buds along the arch */
+  for(let i=0;i<=10;i++){
+    const a = Math.PI - (i/10)*Math.PI;
+    const bud = new THREE.Mesh(new THREE.ConeGeometry(.12, .3, 8), goldTrim);
+    bud.position.set(Math.cos(a)*px, 8 + Math.sin(a)*3.4 + .28, GZ);
+    archGate.add(bud);
+  }
+  /* center peak kalash on arch */
+  cyl(.16, .2, .22, goldTrim, 0, 11.15, GZ, archGate);
+  const peakDome = new THREE.Mesh(new THREE.SphereGeometry(.3, 14, 10), goldTrim);
+  peakDome.position.set(0, 11.42, GZ); archGate.add(peakDome);
+  const peakTip = new THREE.Mesh(new THREE.ConeGeometry(.1, .3, 10), goldTrim);
+  peakTip.position.set(0, 11.75, GZ); archGate.add(peakTip);
+
+  /* ---- toran (hanging marigold garland) arch ke neeche ---- */
+  for(let i=0;i<=14;i++){
+    const k = i/14;
+    const gx = -px + .7 + k*(px*2 - 1.4);
+    const gy = 6.7 - Math.sin(k*Math.PI)*.001 - Math.abs(Math.sin(k*Math.PI))*0 - (Math.sin(k*Math.PI))* -.001;
+    const sag = 6.85 - Math.sin(k*Math.PI)*.55;
+    const bloom = new THREE.Mesh(new THREE.SphereGeometry(.11, 10, 8),
+      new THREE.MeshStandardMaterial({ color: i%2 ? 0xffa500 : 0xffcc33, roughness:.9 }));
+    bloom.position.set(gx, sag, GZ + .35);
+    archGate.add(bloom);
+  }
+
+  /* welcome board hanging in the arch — golden frame ke saath */
+  welcomeSign = new THREE.Mesh(new THREE.BoxGeometry(6.4, 1.9, .3),
+    [M.ink, M.ink, M.ink, M.ink,
+     new THREE.MeshStandardMaterial({ map: welcomeTex, emissive:0xffffff, emissiveMap: welcomeTex, emissiveIntensity:.42, roughness:.5 }),
+     M.ink]);
+  welcomeSign.position.set(0, 8.6, GZ);
+  welcomeSign.castShadow = true;
+  archGate.add(welcomeSign);
+  box(6.7, 2.2, .12, goldTrim, 0, 8.6, GZ - .12, archGate);
+  /* hanging chains */
+  box(.06, 1.6, .06, goldTrim, -2.6, 10.15, GZ, archGate);
+  box(.06, 1.6, .06, goldTrim, 2.6, 10.15, GZ, archGate);
+
+
+  /* ---- PRINT COLLATERAL TABLE (gate ke side me — alag product) ---- */
+  printTable = new THREE.Group(); outside.add(printTable);
+  /* Sale & Offer Window Display ke saamne */
+  printTable.position.set(10.3, 0, 2.2);
+  printTable.rotation.y = .15;
+  const tWood = new THREE.MeshStandardMaterial({ color: 0x6e4a26, roughness:.7 });
+  const tWoodD = new THREE.MeshStandardMaterial({ color: 0x4a3016, roughness:.8 });
+  /* table */
+  box(3, .12, 1.5, tWood, 0, 1.05, 0, printTable);
+  box(3.1, .06, 1.6, tWoodD, 0, 1.13, 0, printTable);
+  [[-1.35,-.6],[1.35,-.6],[-1.35,.6],[1.35,.6]].forEach(([x,z])=> box(.1, 1, .1, tWoodD, x, .52, z, printTable));
+  box(2.7, .08, 1.2, tWoodD, 0, .35, 0, printTable);   // lower shelf
+  /* red table runner */
+  box(.85, .02, 1.62, new THREE.MeshStandardMaterial({ color: 0xd40000, roughness:.9 }), 0, 1.17, 0, printTable);
+
+  const paperM = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness:.85 });
+  const paperC = new THREE.MeshStandardMaterial({ color: 0xf6f0e2, roughness:.85 });
+  /* 1. VISITING CARDS — chhota stack + spread fan */
+  for(let i=0;i<6;i++) box(.35, .012, .2, i%2 ? paperM : new THREE.MeshStandardMaterial({ color: 0xe20000, roughness:.7 }), -1.2, 1.2 + i*.013, -.45, printTable);
+  [[-.06,.14],[0,0],[.06,-.14]].forEach(([dx,rz],i)=>{
+    const c = box(.35, .01, .2, i===1 ? new THREE.MeshStandardMaterial({ color: 0x171717 }) : paperM, -.78 + dx, 1.21 + i*.012, -.42, printTable);
+    c.rotation.y = rz;
+  });
+  /* 2. LETTERHEADS — A4 stack tray me */
+  box(.62, .04, .84, new THREE.MeshStandardMaterial({ color: 0x26282c, roughness:.5 }), -.15, 1.2, -.35, printTable);
+  for(let i=0;i<4;i++) box(.56, .01, .78, i%2 ? paperM : paperC, -.15, 1.23 + i*.011, -.35, printTable);
+  /* 3. BILL BOOK + CHALLAN pads — bound stacks */
+  [[-1.15, .28, 0xe20000], [-.72, .3, 0x1e6fd9]].forEach(([x, z, c])=>{
+    box(.42, .1, .3, paperC, x, 1.25, z, printTable);
+    box(.42, .025, .3, new THREE.MeshStandardMaterial({ color: c, roughness:.6 }), x, 1.31, z, printTable);
+    box(.44, .015, .06, new THREE.MeshStandardMaterial({ color: 0x171717 }), x, 1.32, z - .13, printTable);
+  });
+  /* 4. PAMPHLETS — tri-fold khade display stand me */
+  const standM = new THREE.MeshPhysicalMaterial({ color: 0xdfe4ea, roughness:.15, transparent:true, opacity:.4 });
+  box(.5, .5, .04, standM, .45, 1.42, -.5, printTable);
+  [[-.001, 0xe20000], [.02, 0xffb400], [.041, 0x1e6fd9]].forEach(([dz, c])=>{
+    box(.42, .4, .012, new THREE.MeshStandardMaterial({ color: c, roughness:.7 }), .45, 1.4, -.47 + dz*4, printTable);
+  });
+  /* 5. MAGAZINES — overlap spread */
+  [[0, 0xe20000], [.22, 0x171717], [.44, 0x2e8b57]].forEach(([dx, c], i)=>{
+    const mag = box(.5, .015, .68, new THREE.MeshStandardMaterial({ color: c, roughness:.65 }), .62 + dx, 1.2 + i*.014, .25, printTable);
+    mag.rotation.y = -.12 + i*.12;
+    /* cover par white band */
+    const band = box(.5, .004, .16, paperM, .62 + dx, 1.212 + i*.014, .09, printTable);
+    band.rotation.y = -.12 + i*.12;
+  });
+  /* 6. WORKING TOOLS */
+  /* scissors (2 crossed blades) */
+  const bladeM = new THREE.MeshStandardMaterial({ color: 0xb9bdc3, metalness:.8, roughness:.3 });
+  const s1 = box(.3, .01, .04, bladeM, -.45, 1.21, .42, printTable); s1.rotation.y = .5;
+  const s2 = box(.3, .01, .04, bladeM, -.45, 1.222, .42, printTable); s2.rotation.y = -.5;
+  const sRing = new THREE.Mesh(new THREE.TorusGeometry(.035, .01, 8, 16), new THREE.MeshStandardMaterial({ color: 0xe20000 }));
+  sRing.rotation.x = Math.PI/2; sRing.position.set(-.32, 1.22, .48); printTable.add(sRing);
+  /* cutter knife */
+  box(.22, .02, .05, new THREE.MeshStandardMaterial({ color: 0xffb400, roughness:.5 }), -.05, 1.21, .5, printTable);
+  box(.1, .012, .03, bladeM, .1, 1.213, .5, printTable);
+  /* scale/ruler */
+  const rul = box(.5, .008, .05, bladeM, -.7, 1.207, .55, printTable); rul.rotation.y = .25;
+  /* pen holder + pens */
+  cyl(.06, .05, .16, new THREE.MeshStandardMaterial({ color: 0x171717 }), .1, 1.28, -.55, printTable);
+  [[-.02, 0xe20000],[0, 0x1e6fd9],[.02, 0x171717]].forEach(([dx, c], i)=>{
+    const pen = cyl(.008, .008, .22, new THREE.MeshStandardMaterial({ color: c }), .1 + dx, 1.42, -.55 + dx, printTable);
+    pen.rotation.z = dx*6; pen.rotation.x = dx*4;
+  });
+  /* glue bottle */
+  cyl(.045, .05, .14, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness:.6 }), .35, 1.27, .52, printTable);
+  cyl(.015, .02, .05, new THREE.MeshStandardMaterial({ color: 0xff7a00 }), .35, 1.37, .52, printTable);
+  /* stapler */
+  box(.16, .04, .05, new THREE.MeshStandardMaterial({ color: 0xe20000, roughness:.5 }), 1.25, 1.23, -.4, printTable);
+  /* lower shelf par paper rolls + box */
+  const roll1 = cyl(.08, .08, .9, paperC, -.7, .47, 0, printTable); roll1.rotation.z = Math.PI/2;
+  const roll2 = cyl(.07, .07, .8, new THREE.MeshStandardMaterial({ color: 0xe20000, roughness:.8 }), -.6, .6, .1, printTable); roll2.rotation.z = Math.PI/2; roll2.rotation.y = .2;
+  box(.5, .3, .4, new THREE.MeshStandardMaterial({ color: 0xb8860b, roughness:.85 }), .8, .52, .05, printTable);
+  /* table light */
+
+  /* table clickable — arch gate product ka hissa */
+}
+
+register(archGate, {
+  name:'Arch Gate — Premium Indian Entry', sub:'Mehrab Arch Fabrication · "Welcome" par click karke andar aaiye',
+  desc:'Premium Indian-style fabricated arch gate — golden jaali pillars, chhatri domes, kalash finials, scalloped mehrab arch aur genda-phool toran. Poore environment me sirf isi par likha hai: "Welcome" — click kijiye aur andar enter ho jaiye. Side me print collateral table hai: visiting cards, letterheads, bill books, challans, pamphlets, magazines aur designer ke working tools — hamari paper-printing range ka live display. Shaadi, events, showroom launch — custom arch gates design-to-install.',
+  specs:[['Structure','MS pipe + FRP, jaali CNC-cut'],['Finish','Red PU + golden leafing'],['Details','Chhatri, kalash, toran, jaali'],['Print display','Cards se magazine tak sab'],['Size','Custom — 10ft se 40ft tak']],
+  tags:['Indian Arch','Print Design','Fabrication'],
+  camPos:[3, 6, 31], camTarget:[1.5, 6, 20]
+});
+
+/* ---------- 6. OFFER STANDEE (rollup, abstract burst graphic) ---------- */
+const standee = new THREE.Group();
+outside.add(standee);
+{
+  standee.position.set(-4.6, 0, 3.6);
+  standee.rotation.y = .35;
+  const base = box(1.9, .22, .5, M.dark, 0, .11, 0, standee);
+  base.geometry.translate(0,0,0);
+  cyl(.06,.06,4.4, M.steel, -.85, 2.4, -.12, standee);
+  cyl(.06,.06,4.4, M.steel, .85, 2.4, -.12, standee);
+  const gfx = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 4.1),
+    new THREE.MeshStandardMaterial({ map: standeeTex, roughness:.8, side: THREE.DoubleSide }));
+  gfx.position.set(0, 2.4, -.05); gfx.castShadow = true; standee.add(gfx);
+  box(1.9, .12, .3, M.dark, 0, 4.55, -.1, standee);
+}
+register(standee, {
+  name:'Offer Standee (Roll-up)', sub:'Promo Standee — Burst Graphic, Flex / Star Media',
+  desc:'Retractable roll-up standee — offer aur promo ke liye sabse tez hathiyaar. Yahan graphic me sirf brand-red starburst aur colour blocks hain; aapke offer ke hisaab se print badal jaata hai. 2 minute me setup, carry bag ke saath, kahin bhi le jaiye.',
+  specs:[['Size','2.5 x 6 ft / 3 x 7 ft'],['Media','Star flex / vinyl, matte'],['Print','1440 dpi eco-solvent'],['Base','Aluminium retractable'],['Setup','2 minute, tool-free']],
+  tags:['Promo','Portable','Roll-up'],
+  camPos:[-4.2, 2.6, 9], camTarget:[-4.6, 2.4, 3.6]
+});
+
+/* ---------- 7. OWL DIRECTION MASCOT ---------- */
+const owl = new THREE.Group();
+outside.add(owl);
+{
+  owl.position.set(6.2, 0, 12.5);
+  owl.rotation.y = -.5;
+  const cream = new THREE.MeshStandardMaterial({ color: 0xf3ead9, roughness:.85 });
+  const redM  = new THREE.MeshStandardMaterial({ color: RED, roughness:.55 });
+  const inkM  = new THREE.MeshStandardMaterial({ color: 0x1d1d1f, roughness:.6 });
+  /* body */
+  const body = new THREE.Mesh(new THREE.SphereGeometry(1.15, 32, 24), redM);
+  body.scale.set(1, 1.25, .95); body.position.y = 1.55; body.castShadow = true; owl.add(body);
+  const belly = new THREE.Mesh(new THREE.SphereGeometry(.88, 32, 24), cream);
+  belly.scale.set(.9, 1.12, .6); belly.position.set(0, 1.4, .55); owl.add(belly);
+  /* belly feather scallops */
+  for(let r=0;r<3;r++) for(let i=-r;i<=r;i++){
+    const f = new THREE.Mesh(new THREE.CircleGeometry(.13, 16), redM);
+    f.position.set(i*.3, 1.9 - r*.34, 1.12 - r*.04);
+    owl.add(f);
+  }
+  /* head */
+  const head = new THREE.Mesh(new THREE.SphereGeometry(.95, 32, 24), redM);
+  head.position.y = 3.15; head.scale.set(1.05, .92, .95); head.castShadow = true; owl.add(head);
+  /* ear tufts */
+  [-.6,.6].forEach(x=>{
+    const t = new THREE.Mesh(new THREE.ConeGeometry(.22, .6, 16), inkM);
+    t.position.set(x, 3.95, 0); t.rotation.z = -x*.35; owl.add(t);
+  });
+  /* eyes */
+  [-.38,.38].forEach(x=>{
+    const w = new THREE.Mesh(new THREE.SphereGeometry(.34, 24, 18), new THREE.MeshStandardMaterial({ color:0xffffff, roughness:.3 }));
+    w.position.set(x, 3.25, .72); owl.add(w);
+    const p = new THREE.Mesh(new THREE.SphereGeometry(.15, 18, 14), inkM);
+    p.position.set(x, 3.25, 1.02); owl.add(p);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(.34, .05, 12, 30), inkM);
+    ring.position.set(x, 3.25, .74); owl.add(ring);
+  });
+  /* beak */
+  const beak = new THREE.Mesh(new THREE.ConeGeometry(.16, .42, 16), new THREE.MeshStandardMaterial({ color:0xffb100, roughness:.5 }));
+  beak.position.set(0, 2.95, .95); beak.rotation.x = Math.PI/2.4; owl.add(beak);
+  /* wings — dono pivots par, taaki namaste + welcome wave kar sake */
+  const wingPivots = {};
+  [-1,1].forEach(s=>{
+    const pivot = new THREE.Group();
+    pivot.position.set(s*1.05, 2.35, 0);
+    owl.add(pivot);
+    const wing = new THREE.Mesh(new THREE.SphereGeometry(.62, 24, 18), inkM);
+    wing.scale.set(.45, 1.15, .8);
+    wing.position.set(s*.1, -.62, 0);
+    wing.castShadow = true;
+    pivot.add(wing);
+    pivot.rotation.z = s*.35;
+    wingPivots[s === 1 ? 'R' : 'L'] = pivot;
+  });
+  owl.userData.wingL = wingPivots.L;
+  owl.userData.wingR = wingPivots.R;
+  /* feet */
+  [-.4,.4].forEach(x=>{
+    const f = new THREE.Mesh(new THREE.SphereGeometry(.2, 16, 12), new THREE.MeshStandardMaterial({ color:0xffb100, roughness:.6 }));
+    f.scale.set(1.2,.55,1.5); f.position.set(x, .12, .3); owl.add(f);
+  });
+  /* direction arrow board (blank, no text) */
+  const pole = cyl(.07,.07,2.6, M.steel, 1.7, 1.3, .4, owl);
+  const arrow = new THREE.Group();
+  const shaft = new THREE.Mesh(new THREE.BoxGeometry(1.5, .55, .14), M.ink); arrow.add(shaft);
+  const tri = new THREE.Mesh(new THREE.CylinderGeometry(.5, .5, .14, 3), new THREE.MeshStandardMaterial({ color: RED, roughness:.45 }));
+  tri.rotation.x = Math.PI/2; tri.rotation.z = -Math.PI/2 - Math.PI/2;
+  tri.position.x = .95; arrow.add(tri);
+  const dot = new THREE.Mesh(new THREE.CircleGeometry(.14, 20), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  dot.position.set(-.35, 0, .08); arrow.add(dot);
+  arrow.position.set(1.7, 2.75, .4);
+  arrow.rotation.y = .55;
+  arrow.castShadow = true;
+  owl.add(arrow);
+  owl.userData.bobBase = 0;
+}
+register(owl, {
+  name:'Owl Direction Mascot', sub:'3D Brand Mascot — Wayfinding Character',
+  desc:'ArtViSiON ka wisdom-owl mascot — FRP se bana 3D character jo customers ko direction dikhata hai. Arrow board blank hai: sirf shape aur brand colours se hi samajh aata hai kidhar jaana hai. Mascot branding se showroom yaadgaar banta hai — bachche selfie lete hain, brand recall badhta hai.',
+  specs:[['Material','FRP / fiberglass, PU paint'],['Height','4–8 ft custom'],['Base','Concrete-anchored / movable'],['Design','Character design in-house'],['Extra','Same mascot 2D vector art me']],
+  tags:['Mascot','FRP','Wayfinding'],
+  camPos:[8.5, 3, 18], camTarget:[6.2, 2.4, 12.5]
+});
+
+/* ---------- 8. BANNER (pole flag banners flanking the path) ---------- */
+const bannerGrp = new THREE.Group();
+outside.add(bannerGrp);
+let bannerMeshes = [];
+{
+  [[-8.5, 9.5],[8.5, 9.5]].forEach(([x, z], i)=>{
+    cyl(.09,.11,7.4, M.steel, x, 3.7, z, bannerGrp);
+    cyl(.3,.36,.3, M.ink, x, .15, z, bannerGrp);
+    const arm = box(1.7,.08,.08, M.steel, x + .82, 7.1, z, bannerGrp);
+    const geo = new THREE.PlaneGeometry(1.55, 4.4, 12, 24);
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: bannerTex, side: THREE.DoubleSide, roughness:.9 }));
+    mesh.position.set(x + .85, 4.85, z);
+    mesh.castShadow = true;
+    bannerGrp.add(mesh);
+    bannerMeshes.push(mesh);
+  });
+}
+register(bannerGrp, {
+  name:'Banner (Pole / Fabric)', sub:'Flag & Fabric Banners — Brand Pattern Print',
+  desc:'Path ke dono taraf lehraate pole banners — fabric par brand pattern print: red gradient, diagonal weave aur signature circle mark. Hawa me movement se showroom zinda lagta hai. Star flex, fabric, satin — har media par eco-solvent / sublimation print.',
+  specs:[['Media','Knitted polyester / flex'],['Print','Dye-sub, dono side visible'],['Hardware','MS pole + swivel arm'],['Sizes','2x5 ft se 4x10 ft'],['Best for','Path, parking, event runway']],
+  tags:['Flag','Fabric Print','Outdoor'],
+  camPos:[-5.4, 5, 15], camTarget:[-7.6, 4.8, 9.5]
+});
+
+/* ---------- 9. CANVAS VECTOR ART (easel near entrance) ---------- */
+const canvasArt = new THREE.Group();
+outside.add(canvasArt);
+{
+  canvasArt.position.set(5.2, 0, 3.2);
+  canvasArt.rotation.y = -.4;
+  /* easel legs */
+  const legMat = new THREE.MeshStandardMaterial({ color: 0x4a3526, roughness:.8 });
+  const l1 = cyl(.05,.06,3.6, legMat, -.7, 1.75, 0, canvasArt); l1.rotation.z = .16;
+  const l2 = cyl(.05,.06,3.6, legMat, .7, 1.75, 0, canvasArt);  l2.rotation.z = -.16;
+  box(1.5,.09,.12, legMat, 0, 1.15, .12, canvasArt);
+  /* canvas frame */
+  const frame = box(2.5, 2.5, .12, new THREE.MeshStandardMaterial({ color: 0x2a2a2c, roughness:.6 }), 0, 2.35, .16, canvasArt);
+  frame.rotation.x = -.08;
+  const art = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 2.3),
+    new THREE.MeshStandardMaterial({ map: artTex, roughness:.95 }));
+  art.position.set(0, 2.35, .24); art.rotation.x = -.08; canvasArt.add(art);
+}
+register(canvasArt, {
+  name:'Canvas Vector Art', sub:'Hand-crafted Vector Illustration — Gallery Canvas',
+  desc:'ArtViSiON ki core kala — pure vector illustration, yahan owl-mandala artwork ke roop me gallery canvas par. Har curve haath se banaya vector hai, isliye kisi bhi size par print crisp rehta hai — visiting card se lekar 40 ft hoarding tak. Portraits, mascots, mandalas — sab custom.',
+  specs:[['Artwork','100% hand-drawn vector'],['Print','Canvas, matte / satin'],['Frame','Wooden gallery wrap'],['Scale','Infinite — vector hai!'],['Delivery','Print + source file']],
+  tags:['Vector Art','Canvas','Illustration'],
+  camPos:[6, 2.7, 7.5], camTarget:[5.2, 2.3, 3.2]
+});
+
+/* ---------- 10. FMCG PRODUCT KIOSK ---------- */
+const kiosk = new THREE.Group();
+outside.add(kiosk);
+{
+  kiosk.position.set(-13.5, 0, 13);
+  kiosk.rotation.y = .45;
+  const kioskRed = new THREE.MeshPhysicalMaterial({ color: RED, roughness:.3, metalness:.1, clearcoat:.7 });
+  const kioskWhite = new THREE.MeshStandardMaterial({ color: 0xf6f5f2, roughness:.6 });
+  /* counter base */
+  box(3.2, 1.15, 1.4, kioskRed, 0, .575, 0, kiosk);
+  box(3.4, .12, 1.6, kioskWhite, 0, 1.2, 0, kiosk);
+  /* clean front fascia — white brand panel + circle mark + black kick plate */
+  box(3.2, .78, .06, kioskWhite, 0, .78, .72, kiosk);
+  const kMark = new THREE.Mesh(new THREE.CircleGeometry(.24, 32), new THREE.MeshStandardMaterial({ color: RED, roughness:.45 }));
+  kMark.position.set(0, .78, .76); kiosk.add(kMark);
+  const kMark2 = new THREE.Mesh(new THREE.CircleGeometry(.13, 24), new THREE.MeshStandardMaterial({ color: 0x171717, roughness:.5 }));
+  kMark2.position.set(0, .78, .765); kiosk.add(kMark2);
+  box(3.2, .3, .07, new THREE.MeshStandardMaterial({ color: 0x1b1d20, roughness:.5 }), 0, .16, .72, kiosk);
+  /* back shelf unit */
+  box(3.2, 2.6, .4, kioskWhite, 0, 2.45, -.62, kiosk);
+  /* shelves + FMCG products (colorful chhote packs) */
+  const packCols = [0xffb400, 0x2e8b57, 0x1e6fd9, RED, 0x8b3fd9, 0xff7a00];
+  for(let sh=0; sh<3; sh++){
+    box(3, .06, .34, new THREE.MeshStandardMaterial({ color: 0xd8d4cc }), 0, 1.7 + sh*.62, -.55, kiosk);
+    for(let p=0; p<6; p++){
+      const pk = box(.28, .42, .18, new THREE.MeshStandardMaterial({ color: packCols[(p+sh)%6], roughness:.5 }),
+        -1.25 + p*.5, 1.97 + sh*.62, -.55, kiosk);
+    }
+  }
+  /* canopy header — glowing brand board */
+  box(3.4, .8, .5, kioskRed, 0, 4.1, -.5, kiosk);
+  const kFace = new THREE.Mesh(new THREE.PlaneGeometry(3, .55),
+    new THREE.MeshStandardMaterial({ color: 0xfff2df, emissive: 0xffe0b8, emissiveIntensity: 1.5 }));
+  kFace.position.set(0, 4.1, -.24); kiosk.add(kFace);
+  const kDot = new THREE.Mesh(new THREE.CircleGeometry(.18, 24), new THREE.MeshStandardMaterial({ color: RED }));
+  kDot.position.set(0, 4.1, -.23); kiosk.add(kDot);
+  /* canopy poles */
+  [-1.5, 1.5].forEach(x=> cyl(.05,.05,2.7, M.steel, x, 2.85, -.35, kiosk));
+  /* sample product tower on counter */
+  for(let i=0;i<3;i++) cyl(.2-.03*i, .22-.03*i, .3, new THREE.MeshStandardMaterial({ color: packCols[i], roughness:.45 }), .9, 1.42+i*.3, .25, kiosk);
+
+}
+register(kiosk, {
+  name:'FMCG Product Kiosk', sub:'Mall / Market Promo Kiosk — Product Sampling Counter',
+  desc:'FMCG brands ke liye modular promo kiosk — curved red counter, backlit header, shelf unit par colourful product packs aur sampling ke liye counter top. Malls, haats aur exhibitions me 2 ghante me setup. Flat-pack design — transport me sasta, dikhne me premium.',
+  specs:[['Structure','MDF + laminate / ACP skin'],['Header','LED backlit lightbox'],['Shelving','3-tier adjustable'],['Setup','2 ghante, tool-minimal'],['Add-ons','Branding, stool, bin, TV mount']],
+  tags:['Kiosk','FMCG','Retail Promo'],
+  camPos:[-11, 2.6, 18], camTarget:[-13.5, 2.2, 13]
+});
+
+/* ---------- 11. CNC MACHINE (live cutting demo) ---------- */
+const cnc = new THREE.Group();
+outside.add(cnc);
+let cncHead = null, cncSpark = null;
+{
+  cnc.position.set(15.5, 0, 12.5);
+  cnc.rotation.y = -.5;
+  const frameM = new THREE.MeshStandardMaterial({ color: 0x2a5db0, roughness:.4, metalness:.5 });
+  const railM = M.steel;
+  /* machine bed */
+  box(3.6, .8, 2.2, new THREE.MeshStandardMaterial({ color: 0x3a3d42, roughness:.5, metalness:.4 }), 0, .4, 0, cnc);
+  /* work sheet (metal, jis par pattern cut ho raha) */
+  const sheet = box(3.1, .06, 1.7, new THREE.MeshStandardMaterial({ color: 0xb9bdc3, roughness:.35, metalness:.75 }), 0, .84, 0, cnc);
+  /* cut pattern grooves on sheet */
+  const grooveM = new THREE.MeshBasicMaterial({ color: 0x111114 });
+  for(let i=0;i<3;i++){
+    const gr = box(1.6 - i*.4, .015, .05, grooveM, -.3, .88, -.5 + i*.5, cnc);
+  }
+  /* gantry bridge */
+  [-1.6, 1.6].forEach(x=> box(.25, 1.3, .3, frameM, x, 1.45, 0, cnc));
+  box(3.5, .3, .35, frameM, 0, 2.05, 0, cnc);
+  const rail = box(3.2, .1, .16, railM, 0, 1.82, 0, cnc);
+  /* cutting head (animate hoga) */
+  const head = new THREE.Group();
+  head.position.set(0, 1.62, 0);
+  cnc.add(head);
+  box(.3, .5, .3, new THREE.MeshStandardMaterial({ color: 0xe8e5df, roughness:.4 }), 0, .1, 0, head);
+  cyl(.05, .07, .4, railM, 0, -.3, 0, head);
+  /* nozzle glow */
+  const nz = new THREE.Mesh(new THREE.SphereGeometry(.05, 10, 8),
+    new THREE.MeshStandardMaterial({ color: 0x8fd0ff, emissive: 0x4faaff, emissiveIntensity: 3 }));
+  nz.position.set(0, -.52, 0); head.add(nz);
+  cncHead = head;
+  /* spark light */
+  cncSpark = new THREE.PointLight(0x66bbff, 0, 4);
+  cncSpark.position.set(0, 1, 0); cnc.add(cncSpark);
+  /* control panel */
+  box(.7, 1.5, .5, frameM, 2.35, .75, .8, cnc);
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(.5, .35),
+    new THREE.MeshStandardMaterial({ color: 0x1a2b1a, emissive: 0x39ff6a, emissiveIntensity: .8 }));
+  scr.position.set(2.35, 1.25, 1.06); cnc.add(scr);
+}
+register(cnc, {
+  name:'CNC & Laser Cutting', sub:'Precision Fabrication — Metal, Acrylic, Wood, MDF',
+  desc:'In-house CNC router aur laser cutting — signage letters, jaali panels, standee shapes, event props sab precision-cut. Demo me machine live pattern cut kar rahi hai: moving gantry head, glowing nozzle aur sparks. 0.1mm accuracy, kisi bhi vector file se seedha production.',
+  specs:[['Bed size','4x8 ft / 5x10 ft'],['Materials','ACP, acrylic, MS, SS, MDF, wood'],['Accuracy','±0.1 mm'],['Files','CDR / AI / DXF direct'],['Finish','Cut + engrave + polish']],
+  tags:['CNC','Laser','Fabrication'],
+  camPos:[17.5, 2.4, 17.5], camTarget:[15.5, 1.4, 12.5]
+});
+
+/* ---------- 12. LARGE FORMAT PRINTER (live printing demo) ---------- */
+const printer = new THREE.Group();
+outside.add(printer);
+let printRoll = null, printHead2 = null;
+{
+  printer.position.set(21.5, 0, 6);
+  printer.rotation.y = -.85;
+  const bodyM2 = new THREE.MeshStandardMaterial({ color: 0xe8e5df, roughness:.5 });
+  const darkM2 = new THREE.MeshStandardMaterial({ color: 0x2b2d31, roughness:.5, metalness:.3 });
+  /* legs + body */
+  [[-1.6],[1.6]].forEach(([x])=>{
+    box(.15, 1.1, .8, darkM2, x, .55, 0, printer);
+  });
+  box(3.6, .9, .9, bodyM2, 0, 1.55, 0, printer);
+  box(3.6, .18, .95, darkM2, 0, 2.05, 0, printer);
+  /* paper roll peeche */
+  const roll = cyl(.18, .18, 3.2, new THREE.MeshStandardMaterial({ color: 0xf6f5f2, roughness:.8 }), 0, 1.1, -.55, printer);
+  roll.rotation.z = Math.PI/2;
+  printRoll = roll;
+  /* printed banner niklta hua — red gradient artwork */
+  const printedTex = makeTex(256, 512, (g)=>{
+    const gr = g.createLinearGradient(0,0,0,512);
+    gr.addColorStop(0,'#ff2a00'); gr.addColorStop(.5,'#e20000'); gr.addColorStop(1,'#8f0000');
+    g.fillStyle = gr; g.fillRect(0,0,256,512);
+    g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(128, 140, 60, 0, 7); g.fill();
+    g.fillStyle = '#171717'; g.beginPath(); g.arc(128, 140, 38, 0, 7); g.fill();
+    g.fillStyle = '#e20000'; g.beginPath(); g.arc(128, 140, 18, 0, 7); g.fill();
+    g.fillStyle = '#171717'; g.fillRect(48, 300, 160, 12);
+    g.fillStyle = '#f6f5f2'; g.fillRect(48, 340, 160, 8); g.fillRect(48, 370, 160, 8);
+  });
+  const banner = new THREE.Mesh(new THREE.PlaneGeometry(3, 2.2),
+    new THREE.MeshStandardMaterial({ map: printedTex, roughness:.85, side: THREE.DoubleSide }));
+  banner.position.set(0, .95, .48); banner.rotation.x = -.28;
+  printer.add(banner);
+  /* print head carriage (animate) */
+  const ph = box(.35, .22, .3, new THREE.MeshStandardMaterial({ color: RED, roughness:.4 }), 0, 1.72, .3, printer);
+  printHead2 = ph;
+  /* control screen */
+  const scr2 = new THREE.Mesh(new THREE.PlaneGeometry(.55, .3),
+    new THREE.MeshStandardMaterial({ color: 0x10141c, emissive: 0x3d8fff, emissiveIntensity: .7 }));
+  scr2.position.set(1.45, 2.2, .12); scr2.rotation.x = -.5; printer.add(scr2);
+  /* ink tanks */
+  const inks = [RED, 0x1e6fd9, 0xffb400, 0x171717];
+  inks.forEach((c,i)=> box(.16, .4, .16, new THREE.MeshStandardMaterial({ color: c, roughness:.4 }), -1.35 + i*.24, 2.28, .28, printer));
+}
+register(printer, {
+  name:'Large Format Printer', sub:'Eco-Solvent / UV Print — 1440 dpi Production',
+  desc:'Large format printing machine live action me — moving print head, colour ink tanks aur niklta hua vivid red brand banner. Flex, vinyl, star media, backlit, canvas, one-way vision — sab in-house print hota hai. 10 ft tak seamless width, 1440 dpi tak sharpness.',
+  specs:[['Width','10 ft seamless tak'],['Res','720–1440 dpi'],['Ink','Eco-solvent / UV'],['Media','Flex, vinyl, fabric, canvas'],['TAT','Same-day printing']],
+  tags:['Printing','Large Format','Production'],
+  camPos:[24, 2.4, 10], camTarget:[21.5, 1.5, 6]
+});
+
+/* ---------- 13. PAPER PRINTING DESIGN TABLE (gate ke side) ---------- */
+register(printTable, {
+  name:'Paper Printing Designs', sub:'Stationery se Magazine tak — Complete Print Range',
+  desc:'Hamari poori paper-printing range ek display table par — visiting cards (stack + fan spread), letterheads A4 tray me, bill books aur challan pads bound covers ke saath, tri-fold pamphlets acrylic stand me, magazines ka spread, aur designer ke working tools: scissors, cutter, steel scale, pens, glue, stapler. Neeche shelf par paper rolls. Design se print-ready file, aur print se delivery tak — sab in-house.',
+  specs:[['Cards','300gsm, matte / gloss / velvet + spot UV'],['Letterhead','100gsm bond, offset print'],['Bill book','2/3-ply carbonless, numbering'],['Pamphlet','Art paper, tri-fold / bi-fold'],['Magazine','Perfect / saddle binding']],
+  tags:['Print Design','Stationery','Offset'],
+  camPos:[11.5, 2.4, 6.5], camTarget:[10.3, 1.2, 2.2]
+});
+
+/* ---------- 14. VIDEO ADVERTISEMENT LED DISPLAY (roof right corner — front + right face) ---------- */
+const ledDisplay = new THREE.Group();
+building.add(ledDisplay);
+let ledScreens = [];
+{
+  const LX = 18.5, LY = 18.3, LZ = -6.2;    // roof right corner
+  /* animated video-ad canvas (dono screens share karte hain) */
+  const ledCv = document.createElement('canvas'); ledCv.width = 512; ledCv.height = 256;
+  const ledCtx = ledCv.getContext('2d');
+  const ledTex = new THREE.CanvasTexture(ledCv);
+  ledTex.colorSpace = THREE.SRGBColorSpace;
+  ledDisplay.userData.ledCtx = ledCtx;
+  ledDisplay.userData.ledTex = ledTex;
+  const screenM = new THREE.MeshStandardMaterial({ map: ledTex, emissive: 0xffffff, emissiveMap: ledTex, emissiveIntensity: 1.1, roughness:.6 });
+  const cabM = new THREE.MeshStandardMaterial({ color: 0x1a1c1f, roughness:.5, metalness:.4 });
+
+  /* MS support structure roof par */
+  [[-4.2, -.6],[4.2, -.6],[-4.2, .6],[4.2, .6]].forEach(([dx, dz])=>{
+    box(.18, 4.4, .18, M.steel, LX + dx, 16.2 + 2.2 - 2.2 + 2.2, LZ + dz, ledDisplay);
+  });
+  box(9.2, .2, 1.5, M.steel, LX, 16.35, LZ, ledDisplay);
+  /* FRONT screen (bada) */
+  box(9.4, 4.4, .5, cabM, LX, LY, LZ, ledDisplay);
+  const scrF = new THREE.Mesh(new THREE.PlaneGeometry(9, 4), screenM);
+  scrF.position.set(LX, LY, LZ + .27); ledDisplay.add(scrF);
+  ledScreens.push(scrF);
+  /* RIGHT-SIDE screen (front ka adha size) */
+  box(.5, 4.4, 4.9, cabM, LX + 4.45, LY, LZ - 2.2, ledDisplay);
+  const scrR = new THREE.Mesh(new THREE.PlaneGeometry(4.5, 4), screenM);
+  scrR.rotation.y = Math.PI/2;
+  scrR.position.set(LX + 4.72, LY, LZ - 2.2); ledDisplay.add(scrR);
+  ledScreens.push(scrR);
+  /* glow light */
+
+}
+/* LED video-ad frames — animated brand promo */
+function drawLedAd(t){
+  const g = ledDisplay.userData.ledCtx;
+  if(!g) return;
+  const W = 512, H = 256;
+  const phase = Math.floor(t / 4) % 3;     // 3 scenes, 4s each
+  const k = (t % 4) / 4;
+  if(phase === 0){
+    /* scene 1: red sweep + circle brand mark */
+    const gr = g.createLinearGradient(0,0,W,0);
+    gr.addColorStop(0,'#8f0000'); gr.addColorStop(.5,'#e20000'); gr.addColorStop(1,'#8f0000');
+    g.fillStyle = gr; g.fillRect(0,0,W,H);
+    const cx = W*(-.2 + k*1.4);
+    g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(cx, H/2, 62, 0, 7); g.fill();
+    g.fillStyle = '#171717'; g.beginPath(); g.arc(cx, H/2, 40, 0, 7); g.fill();
+    g.fillStyle = '#e20000'; g.beginPath(); g.arc(cx, H/2, 19, 0, 7); g.fill();
+  } else if(phase === 1){
+    /* scene 2: black bg + rising red bars (equalizer feel) */
+    g.fillStyle = '#101013'; g.fillRect(0,0,W,H);
+    for(let i=0;i<12;i++){
+      const bh = (Math.sin(t*3 + i*1.1)*.5 + .5) * H * .7 + 18;
+      g.fillStyle = i%3 ? '#e20000' : '#f6f5f2';
+      g.fillRect(14 + i*42, H - bh, 30, bh);
+    }
+  } else {
+    /* scene 3: white flash + expanding rings */
+    g.fillStyle = '#f6f5f2'; g.fillRect(0,0,W,H);
+    for(let r=0;r<4;r++){
+      const rad = ((k + r*.25) % 1) * W * .6;
+      g.strokeStyle = r%2 ? '#e20000' : '#171717';
+      g.lineWidth = 10 - r*2;
+      g.beginPath(); g.arc(W/2, H/2, rad, 0, 7); g.stroke();
+    }
+    g.fillStyle = '#e20000'; g.beginPath(); g.arc(W/2, H/2, 26, 0, 7); g.fill();
+  }
+  /* LED pixel grid feel */
+  g.fillStyle = 'rgba(0,0,0,.18)';
+  for(let y=0;y<H;y+=4) g.fillRect(0, y, W, 1);
+  ledDisplay.userData.ledTex.needsUpdate = true;
+}
+register(ledDisplay, {
+  name:'Video Advertisement LED Display', sub:'Outdoor P6/P8 LED Screen — Roof-Top Video Wall',
+  desc:'Showroom ki chhat par right corner me outdoor LED video wall — front me bada screen aur right side me uska adha companion screen, dono par ek hi brand video-ad sync me chalta hai: sweeping brand mark, equalizer bars aur expanding rings. Raat-din dono me visible, MS structure par mounted. Traffic jahan se bhi aaye, ad har angle se dikhta hai.',
+  specs:[['Pixel','P6 / P8 outdoor SMD'],['Brightness','5500+ nits, auto-dim'],['Cabinet','IP65 weatherproof'],['Content','Video, GIF, live feed'],['Structure','MS truss, roof-mounted']],
+  tags:['LED Screen','Video Ad','Digital OOH'],
+  camPos:[19, 18.5, 6], camTarget:[18.5, 18.3, -6]
+});
+
+/* ---------- 15. ROUND DOUBLE-SIDED TRANSLITE BOX (left corner) ---------- */
+const translite = new THREE.Group();
+building.add(translite);
+{
+  const TX = -20, TY = 20, TZ = -11;   // chhat ke upar pole par (left side roof)
+  /* roof pole — lollipop style */
+  cyl(.16, .2, 4.2, M.steel, TX, 16.2 + 2.1 - 2.1 + 2.1, TZ, translite);
+  cyl(.45, .5, .3, new THREE.MeshStandardMaterial({ color: 0x26282c, roughness:.5 }), TX, 16.35, TZ, translite);
+  /* drum — double sided */
+  const drum = new THREE.Mesh(new THREE.CylinderGeometry(1.9, 1.9, .45, 48),
+    new THREE.MeshStandardMaterial({ color: 0x24262a, roughness:.5, metalness:.4 }));
+  drum.rotation.x = Math.PI/2;
+  drum.position.set(TX, TY, TZ); translite.add(drum);
+  /* red rim ring */
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(1.9, .1, 14, 56), new THREE.MeshStandardMaterial({ color: RED, roughness:.35 }));
+  rim.position.set(TX, TY, TZ); translite.add(rim);
+  /* dono side glowing faces (owl icon translite) */
+  const tFaceTex = new THREE.TextureLoader().load('assets/translit-face.png', tt => { tt.colorSpace = THREE.SRGBColorSpace; });
+  [ .24, -.24].forEach((dz, i)=>{
+    const face = new THREE.Mesh(new THREE.CircleGeometry(1.78, 48),
+      new THREE.MeshStandardMaterial({ map: tFaceTex, transparent:true, emissive: 0xffffff, emissiveMap: tFaceTex, emissiveIntensity: .95, roughness:.5 }));
+    face.position.set(TX, TY, TZ + dz);
+    if(i === 1) face.rotation.y = Math.PI;
+    translite.add(face);
+  });
+
+}
+register(translite, {
+  name:'Round Double-Sided Translite Box', sub:'Roof-Top Lollipop Sign — Dono Taraf Backlit Glow',
+  desc:'Showroom ki chhat par pole-mounted round double-sided translite box — lollipop style, dono faces par backlit brand icon jo andar se glow karta hai. Uchai par hone se door se hi dono directions ke traffic ko dikhta hai. MS pole par roof-mount, LED modules se even glow, flex ya acrylic face options.',
+  specs:[['Faces','2-side backlit translite'],['Dia','2 ft se 5 ft custom'],['Lighting','LED modules, even glow'],['Body','MS drum + powder coat'],['Mount','Roof pole / lollipop']],
+  tags:['Translite','Double Side','Backlit'],
+  camPos:[-17, 20.4, -3], camTarget:[-20, 20, -11]
+});
+
+/* ---------- 16. TOTEM — 360° + A B C D E typography ---------- */
+const totem = new THREE.Group();
+outside.add(totem);
+{
+  totem.position.set(-19, 0, 16);
+  /* totem face texture — top me 360°, neeche A B C D E typography */
+  const totemTex = makeTex(256, 1024, (g)=>{
+    g.fillStyle = '#17181c'; g.fillRect(0,0,256,1024);
+    /* top section: 360° badge */
+    const grd = g.createLinearGradient(0,0,0,300);
+    grd.addColorStop(0,'#e20000'); grd.addColorStop(1,'#8f0000');
+    g.fillStyle = grd; g.fillRect(12,12,232,290);
+    g.strokeStyle = '#f6f5f2'; g.lineWidth = 5;
+    g.beginPath(); g.arc(128, 130, 72, .6, Math.PI*2 + .1); g.stroke();
+    /* arrow head on circle */
+    g.fillStyle = '#f6f5f2';
+    g.beginPath(); g.moveTo(186,86); g.lineTo(210,76); g.lineTo(196,102); g.closePath(); g.fill();
+    g.font = '700 44px Montserrat, Arial';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = '#fff'; g.fillText('360°', 128, 132);
+    g.font = '600 17px Montserrat, Arial';
+    g.fillText('A-2-Z Design Solution', 128, 248);
+    /* divider */
+    g.fillStyle = '#c9a24a'; g.fillRect(24, 316, 208, 5);
+    /* A B C D E typography blocks */
+    const rows = [
+      ['A', 'ADVERTiSiNG', '#e20000'],
+      ['B', 'BRANDiNG',    '#f6f5f2'],
+      ['C', 'CREATiVE',    '#e20000'],
+      ['D', 'DESiGNiNG',   '#f6f5f2'],
+      ['E', 'EXECUTiON',   '#e20000'],
+    ];
+    rows.forEach(([ltr, word, col], i)=>{
+      const y0 = 340 + i*132;
+      g.fillStyle = 'rgba(255,255,255,.06)';
+      g.fillRect(16, y0, 224, 118);
+      /* bada letter */
+      g.font = 'italic 700 84px "Playfair Display", Georgia, serif';
+      g.textAlign = 'left'; g.textBaseline = 'middle';
+      g.fillStyle = col;
+      g.fillText(ltr, 30, y0 + 58);
+      /* word vertical-ish chhota */
+      g.font = '700 21px Montserrat, Arial';
+      g.fillStyle = col === '#e20000' ? '#f6f5f2' : '#e20000';
+      g.fillText(word, 96, y0 + 46);
+      g.fillStyle = 'rgba(255,255,255,.35)';
+      g.fillRect(96, y0 + 66, 128, 3);
+      g.font = '600 12px Montserrat, Arial';
+      g.fillStyle = 'rgba(255,255,255,.55)';
+      g.fillText('DiViSiON 0' + (i+1), 96, y0 + 86);
+    });
+  });
+  const totemM = new THREE.MeshStandardMaterial({ map: totemTex, emissive: 0xffffff, emissiveMap: totemTex, emissiveIntensity: .35, roughness:.6 });
+  /* base */
+  box(1.8, .3, 1, new THREE.MeshStandardMaterial({ color: 0x26282c, roughness:.5 }), 0, .15, 0, totem);
+  /* totem body — dono side same face */
+  const body = box(1.5, 6.2, .45, new THREE.MeshStandardMaterial({ color: 0x101114, roughness:.5, metalness:.3 }), 0, 3.4, 0, totem);
+  [ .24, -.24].forEach((dz, i)=>{
+    const face = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 6), totemM);
+    face.position.set(0, 3.4, dz);
+    if(i === 1) face.rotation.y = Math.PI;
+    totem.add(face);
+  });
+  /* golden top cap */
+  box(1.6, .12, .55, goldTrim, 0, 6.56, 0, totem);
+
+  totem.rotation.y = .5;
+}
+register(totem, {
+  name:'Totem — 360° Division Pylon', sub:'Freestanding Totem · A B C D E Typography',
+  desc:'Freestanding totem pylon — top par 360° all-round branding badge aur neeche paanch divisions ki typography: A Advertising, B Branding, C Creative, D Designing, E Execution — har ek apne division number ke saath. Double-sided backlit faces, golden top cap. Malls, campuses aur showroom entries ke liye premium wayfinding + brand statement ek saath.',
+  specs:[['Height','6–12 ft custom'],['Faces','2-side backlit acrylic / flex'],['Body','MS + ACP, powder coat'],['Print','UV / translite, typography'],['Base','RCC anchor / movable']],
+  tags:['Totem','Pylon','Typography'],
+  camPos:[-16.5, 3.6, 20.5], camTarget:[-19, 3.4, 16]
+});
+
+/* ================= AUTO RICKSHAW (ambient, ghumta hua) ================= */
+const rickshaw = new THREE.Group();
+outside.add(rickshaw);
+let rickWheels = [];
+{
+  const bodyM  = new THREE.MeshPhysicalMaterial({ color: 0xf4f4f6, roughness:.25, metalness:.1, clearcoat:.9, clearcoatRoughness:.2 });
+  const hoodM  = new THREE.MeshStandardMaterial({ color: 0x1b1b1d, roughness:.7 });
+  const tyreM  = new THREE.MeshStandardMaterial({ color: 0x141416, roughness:.9 });
+  const rimM   = new THREE.MeshStandardMaterial({ color: 0xc9cdd3, roughness:.3, metalness:.8 });
+
+  /* main tub body */
+  const tub = box(1.7, .85, 2.5, bodyM, 0, .85, .1, rickshaw);
+  /* sloped front nose */
+  const nose = new THREE.Mesh(new THREE.CylinderGeometry(.85, .85, 1.66, 20, 1, false, 0, Math.PI), bodyM);
+  nose.rotation.z = Math.PI/2; nose.rotation.y = Math.PI/2;
+  nose.position.set(0, .95, 1.35); nose.castShadow = true; rickshaw.add(nose);
+  /* black canopy */
+  box(1.75, .1, 2.1, hoodM, 0, 2.25, -.15, rickshaw);
+  /* canopy pillars */
+  [[-.8, 1.05],[.8, 1.05],[-.8,-1.1],[.8,-1.1]].forEach(([x,z])=>{
+    cyl(.035,.035,1.1, hoodM, x, 1.72, z, rickshaw);
+  });
+  /* windshield */
+  const ws = new THREE.Mesh(new THREE.PlaneGeometry(1.4, .8), M.glass);
+  ws.position.set(0, 1.85, 1.28); ws.rotation.x = -.15; rickshaw.add(ws);
+  /* rear panel + seat */
+  box(1.6, .7, .1, hoodM, 0, 1.55, -1.15, rickshaw);
+  box(1.4, .3, .8, new THREE.MeshStandardMaterial({ color: 0x7a1010, roughness:.9 }), 0, 1.35, -.55, rickshaw);
+  /* handlebar */
+  const hb = cyl(.03,.03,.9, rimM, 0, 1.6, .95, rickshaw); hb.rotation.z = Math.PI/2;
+  /* headlight */
+  const hl = new THREE.Mesh(new THREE.SphereGeometry(.14, 14, 10),
+    new THREE.MeshStandardMaterial({ color: 0xfff6da, emissive: 0xffe9a8, emissiveIntensity: 1.4 }));
+  hl.position.set(0, 1.25, 2.2); rickshaw.add(hl);
+  /* red brand stripe on tub */
+  box(1.74, .16, 2.3, new THREE.MeshStandardMaterial({ color: RED, roughness:.4 }), 0, 1.05, 0, rickshaw);
+  /* meter box */
+  box(.22,.18,.18, hoodM, .55, 1.5, 1.5, rickshaw);
+  /* wheels: front 1 + rear 2 */
+  function wheel(x, z){
+    const g = new THREE.Group(); rickshaw.add(g);
+    g.position.set(x, .42, z);
+    const t = new THREE.Mesh(new THREE.TorusGeometry(.3, .12, 12, 24), tyreM);
+    t.rotation.y = Math.PI/2; t.castShadow = true; g.add(t);
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,.16,16), rimM);
+    hub.rotation.z = Math.PI/2; g.add(hub);
+    rickWheels.push(g); return g;
+  }
+  wheel(0, 1.55); wheel(-.85, -.85); wheel(.85, -.85);
+  /* mudguard on front wheel */
+  const mg = new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,.3,16,1,true,Math.PI+.4,Math.PI-.8), bodyM);
+  mg.rotation.z = Math.PI/2; mg.rotation.y = Math.PI/2;
+  mg.position.set(0,.62,1.55); rickshaw.add(mg);
+  /* exhaust puff light feel */
+  rickshaw.scale.setScalar(1.15);
+}
+/* elliptical route around the whole showroom precinct (building ke peeche se bhi) */
+const RICK = { cx:0, cz:8, rx:44, rz:34, speed:.14 };
+/* start: showroom ke saamne plaza me khada — engine start, phir plaza se nikal ke route par */
+const rickPark = new THREE.Vector3(10, 0, 24);     // camera ke saamne, gate ke paas
+let rickAngle = 1.9;                                // merge target angle on ellipse
+let rickSpeed = 0;                                  // current angular speed
+let rickPhase = 'parked';                           // parked -> revving -> merging -> driving
+let rickPhaseT = 0;                                 // time entering current phase
+const rickPrev = new THREE.Vector3();
+function rickEllipsePoint(a, out){
+  out.set(RICK.cx + RICK.rx * Math.cos(a), 0, RICK.cz + RICK.rz * Math.sin(a));
+  return out;
+}
+{
+  rickshaw.position.copy(rickPark);
+  rickPrev.copy(rickPark);
+  const tgt = rickEllipsePoint(rickAngle, new THREE.Vector3());
+  rickshaw.rotation.y = Math.atan2(tgt.x - rickPark.x, tgt.z - rickPark.z);
+}
+
+/* ---------- auto engine sound (synth putt-putt, WebAudio) ---------- */
+let rickAudio = null, soundOn = true;
+function initRickAudio(){
+  if(rickAudio) return;
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+  /* two-stroke putt-putt: sawtooth engine + square LFO gating */
+  const osc = ctx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.value = 62;
+  const eg = ctx.createGain(); eg.gain.value = .42;
+  const lfo = ctx.createOscillator(); lfo.type = 'square'; lfo.frequency.value = 9;
+  const lg = ctx.createGain(); lg.gain.value = .3;
+  lfo.connect(lg); lg.connect(eg.gain);
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420; lp.Q.value = .8;
+  osc.connect(eg); eg.connect(lp); lp.connect(master);
+  /* exhaust hiss */
+  const nbuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+  const nd = nbuf.getChannelData(0);
+  for(let i=0;i<nd.length;i++) nd[i] = Math.random()*2-1;
+  const noise = ctx.createBufferSource(); noise.buffer = nbuf; noise.loop = true;
+  const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 260; bp.Q.value = 1.4;
+  const ng = ctx.createGain(); ng.gain.value = .1;
+  noise.connect(bp); bp.connect(ng); ng.connect(master);
+  osc.start(); lfo.start(); noise.start();
+  rickAudio = { ctx, master, osc, lfo };
+}
+/* browser policy: pehle user gesture par audio unlock */
+function unlockAudio(){
+  initRickAudio();
+  if(rickAudio.ctx.state === 'suspended') rickAudio.ctx.resume();
+  if(typeof initClimAudio === 'function') initClimAudio();
+}
+addEventListener('pointerdown', unlockAudio, { once:false });
+addEventListener('keydown', unlockAudio, { once:false });
+
+function updateRickAudio(){
+  if(!rickAudio || rickAudio.ctx.state !== 'running') return;
+  const a = rickAudio;
+  if(!soundOn || !outside.visible || rickPhase === 'parked'){
+    a.master.gain.setTargetAtTime(0, a.ctx.currentTime, .15);
+    return;
+  }
+  const k = rickSpeed / RICK.speed;              // 0..1 speed factor
+  const rev = rickPhase === 'revving' ? 1 : 0;
+  /* pitch & putt rate follow speed / revving */
+  a.osc.frequency.setTargetAtTime(62 + k*46 + rev*30, a.ctx.currentTime, .2);
+  a.lfo.frequency.setTargetAtTime(8 + k*9 + rev*7, a.ctx.currentTime, .2);
+  /* volume by distance from camera */
+  const d = camera.position.distanceTo(rickshaw.position);
+  const dist = Math.max(0, 1 - d/75);
+  const base = rev ? .55 : (.18 + .3*k);
+  a.master.gain.setTargetAtTime(base * dist * dist, a.ctx.currentTime, .12);
+}
+
+/* ================= DECOR ================= */
+function planter(x, z){
+  const g = new THREE.Group(); outside.add(g);
+  g.position.set(x, 0, z);
+  box(1.5, 1.1, 1.5, M.ink, 0, .55, 0, g);
+  const foliage = new THREE.Mesh(new THREE.SphereGeometry(.85, 20, 16),
+    new THREE.MeshStandardMaterial({ color: 0x2f6b3a, roughness:.95 }));
+  foliage.position.y = 1.8; foliage.scale.y = 1.25; foliage.castShadow = true; g.add(foliage);
+  cyl(.08,.1,.9, new THREE.MeshStandardMaterial({ color:0x5a4530 }), 0, 1.25, 0, g);
+}
+planter(-16.5, -3.5); planter(16.5, -3.5); planter(-3.9, -2.8); planter(3.9, -2.8);
+planter(-11, 14); planter(11, 14);
+
+/* bollards along the carpet */
+for(let i=0;i<4;i++){
+  [-2.9, 2.9].forEach(x=>{
+    const b = cyl(.12,.14,.85, M.steel, x, .42, 15.5 - i*3.6);
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(.13, 14, 10), M.redGloss);
+    cap.position.set(x, .9, 15.5 - i*3.6); outside.add(cap);
+  });
+}
+
+/* ================= BACK SIDE — LOUNGE BAR CANOPY (club environment) ================= */
+const backyard = new THREE.Group();
+outside.add(backyard);
+let discoBall = null, discoLights = [], barLEDs = [];
+let canopyGrp = null, wallArtGrp = null;   // Products 17 & 18
+{
+  backyard.position.set(0, 0, -22);   // building ke peeche, wall se sata hua
+  const woodM = new THREE.MeshStandardMaterial({ color: 0x8a5a30, roughness:.75 });
+  const woodDark = new THREE.MeshStandardMaterial({ color: 0x4a2f18, roughness:.8 });
+  const darkM3 = new THREE.MeshStandardMaterial({ color: 0x17181c, roughness:.5, metalness:.3 });
+
+  /* ---- BADA GAZEBO CANOPY: 4 corner posts + ACP roof ---- */
+  const CW2 = 16, CD2 = 9;
+  [[-CW2/2,-CD2/2],[CW2/2,-CD2/2],[-CW2/2,CD2/2],[CW2/2,CD2/2]].forEach(([x,z])=>{
+    cyl(.12, .15, 4.6, woodDark, x, 2.3, z, backyard);
+    cyl(.2, .24, .16, darkM3, x, .08, z, backyard);
+
+  });
+  /* beams frame */
+  box(CW2 + .6, .18, .2, woodDark, 0, 4.55, -CD2/2, backyard);
+  box(CW2 + .6, .18, .2, woodDark, 0, 4.55, CD2/2, backyard);
+  box(.2, .18, CD2 + .4, woodDark, -CW2/2, 4.55, 0, backyard);
+  box(.2, .18, CD2 + .4, woodDark, CW2/2, 4.55, 0, backyard);
+  box(.18, .16, CD2 + .2, woodDark, 0, 4.6, 0, backyard);
+  /* ---- ACP CANOPY — designer panel pyramid (modern ACP look) ---- */
+  /* ACP panel texture — charcoal panels with red accent strips + groove lines */
+  const tentTex = makeTex(512, 256, (g)=>{
+    g.fillStyle = '#2a2d32'; g.fillRect(0,0,512,256);
+    /* ACP panels with subtle sheen */
+    for(let x=0;x<4;x++){
+      const gr = g.createLinearGradient(x*128,0,x*128+128,256);
+      gr.addColorStop(0,'#2e3238'); gr.addColorStop(.5,'#383d44'); gr.addColorStop(1,'#282c31');
+      g.fillStyle = gr; g.fillRect(x*128+3, 3, 122, 250);
+    }
+    /* groove lines */
+    g.strokeStyle = '#15171a'; g.lineWidth = 5;
+    for(let x=0;x<=4;x++){ g.beginPath(); g.moveTo(x*128,0); g.lineTo(x*128,256); g.stroke(); }
+    g.beginPath(); g.moveTo(0,128); g.lineTo(512,128); g.stroke();
+    /* red accent strip panels */
+    g.fillStyle = '#e20000';
+    g.fillRect(131, 3, 122, 122);
+    g.fillRect(387, 131, 122, 122);
+  });
+  const roofM = new THREE.MeshStandardMaterial({ map: tentTex, roughness:.45, metalness:.35, side: THREE.DoubleSide });
+  /* custom 4-face hip pyramid — rectangular base, beech me peak */
+  {
+    const hw = CW2/2 + 1.1, hd = CD2/2 + 1.1;   // overhang ke saath
+    const yEdge = 4.55, yPeak = 7.1;
+    const geo = new THREE.BufferGeometry();
+    const verts = new Float32Array([
+      /* front face */  -hw, yEdge, hd,   hw, yEdge, hd,   0, yPeak, 0,
+      /* back face  */   hw, yEdge,-hd,  -hw, yEdge,-hd,   0, yPeak, 0,
+      /* left face  */  -hw, yEdge,-hd,  -hw, yEdge, hd,   0, yPeak, 0,
+      /* right face */   hw, yEdge, hd,   hw, yEdge,-hd,   0, yPeak, 0,
+    ]);
+    const uvs = new Float32Array([
+      0,0, 1,0, .5,1,  0,0, 1,0, .5,1,
+      0,0, 1,0, .5,1,  0,0, 1,0, .5,1,
+    ]);
+    geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+    geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+    geo.computeVertexNormals();
+    canopyGrp = new THREE.Group(); backyard.add(canopyGrp);
+    const tent = new THREE.Mesh(geo, roofM);
+    tent.castShadow = true;
+    canopyGrp.add(tent);
+  }
+  /* peak par golden finial ball */
+  const finial = new THREE.Mesh(new THREE.SphereGeometry(.22, 16, 12), goldTrim);
+  finial.position.set(0, 7.3, 0); backyard.add(finial);
+  cyl(.05, .05, .5, goldTrim, 0, 7, 0, backyard);
+  /* neeche latakti scalloped valance (jhalar) chaaron taraf */
+  const valM = new THREE.MeshStandardMaterial({ color: RED, roughness:.8, side: THREE.DoubleSide });
+  const valWhite = new THREE.MeshStandardMaterial({ color: 0xf6f2e8, roughness:.85, side: THREE.DoubleSide });
+  function valanceRow(len, x, z, rotY){
+    const n = Math.round(len / 1.1);
+    for(let i=0;i<n;i++){
+      const sc = new THREE.Mesh(new THREE.CylinderGeometry(.52,.52,.05,16,1,false,Math.PI,Math.PI), i%2 ? valWhite : valM);
+      sc.rotation.z = Math.PI/2; sc.rotation.y = Math.PI/2 + rotY;
+      const off = -len/2 + .55 + i*1.1;
+      sc.position.set(x + Math.cos(rotY)*off, 4.62, z + Math.sin(rotY)*off);
+      backyard.add(sc);
+    }
+  }
+  valanceRow(CW2 + 1, 0, CD2/2 + .5, 0);          // front
+  valanceRow(CW2 + 1, 0, -CD2/2 - .5, 0);         // back
+  valanceRow(CD2 + 1, -CW2/2 - .5, 0, Math.PI/2); // left
+  valanceRow(CD2 + 1, CW2/2 + .5, 0, Math.PI/2);  // right
+  /* roof ke neeche hanging festoon string lights — 3 rows */
+  for(let row=0; row<3; row++){
+    for(let i=0;i<11;i++){
+      const bl = new THREE.Mesh(new THREE.SphereGeometry(.07, 10, 8),
+        new THREE.MeshStandardMaterial({ color: 0xfff3d6, emissive: 0xffc76a, emissiveIntensity: 1.8 }));
+      bl.position.set(-CW2/2 + .8 + i*1.45, 4.15 - Math.abs(Math.sin(i*.9))* .3, -CD2/2 + 1.5 + row*3);
+      backyard.add(bl);
+    }
+  }
+
+  /* ---- BAR COUNTER (L-shape, LED-lit) ---- */
+  const bar = new THREE.Group(); backyard.add(bar);
+  /* bar ab canopy ke LEFT side me — back wall poori wall art ke liye free */
+  bar.position.set(6.8, 0, .2);
+  bar.rotation.y = -Math.PI/2;
+  /* main counter */
+  box(6, 1.15, 1, M.steel, 0, .575, 0, bar);   // counter bottom silver
+  box(6.3, .12, 1.3, new THREE.MeshPhysicalMaterial({ color: 0x2b1d10, roughness:.15, clearcoat:1 }), 0, 1.2, 0, bar);
+  /* LED strip front (animate hoga) */
+  const ledM = new THREE.MeshStandardMaterial({ color: RED, emissive: 0xff0022, emissiveIntensity: 1.5 });
+  const led1 = box(6, .08, .03, ledM, 0, 1.05, .53, bar); barLEDs.push(led1);
+  const led2 = box(6, .08, .03, ledM.clone(), 0, .25, .53, bar); barLEDs.push(led2);
+  /* ---- BAR AREA WALL PAINT — showroom back wall par artistic paint + canvas art ---- */
+  {
+    /* painted feature wall (deep maroon-red artistic paint with texture strokes) */
+    const wallPaintTex = makeTex(512, 256, (g)=>{
+      const gr = g.createLinearGradient(0,0,0,256);
+      gr.addColorStop(0,'#5a1015'); gr.addColorStop(.5,'#7a1820'); gr.addColorStop(1,'#4a0d12');
+      g.fillStyle = gr; g.fillRect(0,0,512,256);
+      /* texture paint strokes */
+      for(let i=0;i<70;i++){
+        g.strokeStyle = `rgba(${150+Math.random()*60|0},${25+Math.random()*20|0},${30+Math.random()*20|0},.25)`;
+        g.lineWidth = 2 + Math.random()*5;
+        const x = Math.random()*512, y = Math.random()*256;
+        g.beginPath(); g.moveTo(x, y);
+        g.quadraticCurveTo(x+30, y+Math.random()*20-10, x+70, y);
+        g.stroke();
+      }
+
+    });
+    /* wall art ab BAR se alag — canopy ke CENTER me, showroom back wall par (backyard-local) */
+    wallArtGrp = new THREE.Group(); backyard.add(wallArtGrp);
+    wallArtGrp.position.set(0, 0, 4.72);            // wall face ke thik aage, canopy center x=0
+    wallArtGrp.rotation.y = Math.PI;                 // dance floor ki taraf muh
+    const paintWall = new THREE.Mesh(new THREE.PlaneGeometry(17, 5.6),
+      new THREE.MeshStandardMaterial({ map: wallPaintTex, roughness:.85, side: THREE.DoubleSide }));
+    paintWall.position.set(0, 2.8, 0);
+    wallArtGrp.add(paintWall);
+    /* canvas paintings wall par (art frames) — center + dono side */
+    const artFrameM = new THREE.MeshStandardMaterial({ color: 0x151517, roughness:.6 });
+    [[-4.4, 1.55], [0, 2.1], [4.4, 1.55]].forEach(([x, size])=>{
+      const fr = new THREE.Mesh(new THREE.BoxGeometry(size + .2, size + .2, .1), artFrameM);
+      fr.position.set(x, 2.3, .08); fr.castShadow = true; wallArtGrp.add(fr);
+      const cv2 = new THREE.Mesh(new THREE.PlaneGeometry(size, size),
+        new THREE.MeshStandardMaterial({ map: artTex, roughness:.9, side: THREE.DoubleSide }));
+      cv2.position.set(x, 2.3, .14); wallArtGrp.add(cv2);
+    });
+  }
+  /* back bar shelf — glowing bottles */
+  box(6, 2.5, .35, M.steel, 0, 2.1, -1.35, bar);   // shelf silver
+  const bottleCols = [0xff5a3c, 0x3cd0ff, 0xffc73c, 0x7aff5a, 0xd06aff, 0xff3c7e];
+  for(let sh=0; sh<2; sh++){
+    box(5.6, .06, .3, new THREE.MeshStandardMaterial({ color: 0x555a60, metalness:.6, roughness:.3 }), 0, 1.55 + sh*.85, -1.3, bar);
+    for(let b=0; b<8; b++){
+      const bc = bottleCols[(b+sh*3)%6];
+      const bottle = cyl(.06, .07, .42, new THREE.MeshPhysicalMaterial({ color: bc, roughness:.1, transparent:true, opacity:.75, emissive: bc, emissiveIntensity:.3 }),
+        -2.5 + b*.72, 1.82 + sh*.85, -1.3, bar);
+      cyl(.02, .02, .12, darkM3, -2.5 + b*.72, 2.08 + sh*.85, -1.3, bar);
+    }
+  }
+  /* shelf glow */
+
+  /* bar stools — 3 high stools counter ke saamne */
+  for(let i=0;i<3;i++){
+    const bs = new THREE.Group(); bar.add(bs);
+    bs.position.set(-1.8 + i*1.8, 0, 1.1);
+    cyl(.3, .34, .07, new THREE.MeshStandardMaterial({ color: RED, roughness:.6 }), 0, .92, 0, bs);
+    cyl(.05, .05, .88, M.steel, 0, .46, 0, bs);
+    cyl(.22, .26, .05, darkM3, 0, .03, 0, bs);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(.17, .02, 8, 20), M.steel);
+    ring.rotation.x = Math.PI/2; ring.position.y = .35; bs.add(ring);
+  }
+
+  /* ---- DISCO BALL + club lighting ---- */
+  cyl(.02, .02, .8, M.steel, 3.2, 5.15, 0, backyard);
+  const dbTex = makeTex(64, 64, (g)=>{
+    for(let y=0;y<8;y++) for(let x=0;x<8;x++){
+      const v = 150 + ((x+y)%2)*80 + Math.random()*25;
+      g.fillStyle = `rgb(${v},${v},${v+8})`;
+      g.fillRect(x*8, y*8, 7, 7);
+    }
+  });
+  discoBall = new THREE.Mesh(new THREE.SphereGeometry(.45, 20, 16),
+    new THREE.MeshStandardMaterial({ map: dbTex, metalness:.95, roughness:.15 }));
+  discoBall.position.set(3.2, 4.55, 0); backyard.add(discoBall);
+  /* rangin club spotlights — ghoomti hui (animate) */
+  [0xff2a5a, 0x3c8aff, 0xb03cff].forEach((c, i)=>{
+    const sp = new THREE.SpotLight(c, 30, 16, .55, .6, 1.2);
+    sp.position.set(3.2, 5, 0);
+    sp.target.position.set(Math.cos(i*2.1)*4, .2, Math.sin(i*2.1)*3);
+    backyard.add(sp); backyard.add(sp.target);
+    discoLights.push({ light: sp, phase: i*2.1 });
+  });
+
+  /* ---- LOUNGE SEATING (right side) ---- */
+  const lounge = new THREE.Group(); backyard.add(lounge);
+  lounge.position.set(-5.5, 0, 1.8);
+  lounge.rotation.y = Math.PI/2;
+  const sofaM2 = new THREE.MeshStandardMaterial({ color: 0x2a1618, roughness:.85 });
+  box(2.6, .5, 1, sofaM2, 0, .4, 0, lounge);
+  box(2.6, .7, .3, sofaM2, 0, .8, -.5, lounge);
+  [[-1.2],[1.2]].forEach(([x])=> box(.3, .62, 1, sofaM2, x, .6, 0, lounge));
+  box(.8, .5, .25, new THREE.MeshStandardMaterial({ color: RED, roughness:.9 }), -.6, .78, -.32, lounge).rotation.z = .1;
+  /* round table + glasses */
+  cyl(.45, .05, .06, darkM3, 0, .62, 1.15, lounge);
+  cyl(.05, .07, .6, M.steel, 0, .3, 1.15, lounge);
+  cyl(.05, .04, .16, new THREE.MeshPhysicalMaterial({ color: 0xffb43c, roughness:.05, transparent:true, opacity:.7 }), -.15, .72, 1.1, lounge);
+  cyl(.05, .04, .16, new THREE.MeshPhysicalMaterial({ color: 0xff3c5a, roughness:.05, transparent:true, opacity:.7 }), .16, .72, 1.2, lounge);
+
+  /* ---- DRESSING CORNER (chhota, side me — wood table/chair/stool) ---- */
+  const dress = new THREE.Group(); backyard.add(dress);
+  dress.position.set(-6.4, 0, 3.4);
+  dress.rotation.y = .5;
+  box(1.5, .09, .7, woodM, 0, 1, 0, dress);
+  [[-.62,-.26],[.62,-.26],[-.62,.26],[.62,.26]].forEach(([x,z])=> box(.08, .95, .08, woodDark, x, .48, z, dress));
+  box(1.4, .3, .6, woodM, 0, .82, 0, dress);
+  const mirFrame = new THREE.Mesh(new THREE.TorusGeometry(.5, .05, 12, 36), woodDark);
+  mirFrame.scale.set(1, 1.3, 1); mirFrame.position.set(0, 1.9, -.22); dress.add(mirFrame);
+  const mirror = new THREE.Mesh(new THREE.CircleGeometry(.48, 32),
+    new THREE.MeshPhysicalMaterial({ color: 0xcfe0ea, roughness:.05, metalness:.9 }));
+  mirror.scale.set(1, 1.3, 1); mirror.position.set(0, 1.9, -.23); dress.add(mirror);
+  /* chair */
+  const ch = new THREE.Group(); dress.add(ch);
+  ch.position.set(0, 0, .85); ch.rotation.y = Math.PI;
+  box(.55, .06, .5, woodM, 0, .55, 0, ch);
+  [[-.22,-.2],[.22,-.2],[-.22,.2],[.22,.2]].forEach(([x,z])=> box(.05, .55, .05, woodDark, x, .28, z, ch));
+  box(.55, .5, .06, woodM, 0, .85, -.24, ch);
+  box(.48, .05, .44, new THREE.MeshStandardMaterial({ color: RED, roughness:.85 }), 0, .6, 0, ch);
+  /* stool */
+  const st = new THREE.Group(); dress.add(st);
+  st.position.set(1.2, 0, .3);
+  cyl(.28, .25, .08, woodM, 0, .6, 0, st);
+  [[0],[2.09],[4.19]].forEach(([a])=>{
+    const leg = cyl(.04, .05, .6, woodDark, Math.cos(a)*.18, .3, Math.sin(a)*.18, st);
+    leg.rotation.z = Math.cos(a)*.12; leg.rotation.x = -Math.sin(a)*.12;
+  });
+
+  /* ---- DANCING FLOOR — LED checkered tiles (colour-cycling) ---- */
+  const danceTiles = [];
+  {
+    const DF = { w: 5, d: 4, size: 1.05, x: .6, z: .4 };   // canopy ke beech, bar aur lounge ke beech me
+    /* dark border frame */
+    box(DF.w*DF.size + .5, .06, DF.d*DF.size + .5, darkM3, DF.x, .05, DF.z, backyard);
+    const palette = [0xff2a5a, 0x3c8aff, 0xffc73c, 0x39ff6a, 0xb03cff, 0xff6a3c, 0x3cffe0, 0xffffff];
+    for(let r=0; r<DF.d; r++){
+      for(let c=0; c<DF.w; c++){
+        const m = new THREE.MeshStandardMaterial({
+          color: 0x111114,
+          emissive: palette[(r*DF.w + c) % 8],
+          emissiveIntensity: .9, roughness: .3
+        });
+        const tile = box(DF.size - .08, .07, DF.size - .08, m,
+          DF.x - (DF.w-1)*DF.size/2 + c*DF.size, .09,
+          DF.z - (DF.d-1)*DF.size/2 + r*DF.size, backyard);
+        danceTiles.push({ mesh: tile, idx: r*DF.w + c, r, c });
+      }
+    }
+    backyard.userData.danceTiles = danceTiles;
+    backyard.userData.dancePalette = palette;
+    /* dance floor ke upar glow */
+
+  }
+
+  /* ---- deck floor + edge glow ---- */
+  const deck = new THREE.Mesh(new THREE.PlaneGeometry(CW2 + 3, CD2 + 3),
+    new THREE.MeshStandardMaterial({ color: 0x3a2c20, roughness:.85 }));
+  deck.rotation.x = -Math.PI/2; deck.position.y = .02; deck.receiveShadow = true; backyard.add(deck);
+  /* edge LED strips */
+  [[0, -CD2/2 - 1.4, CW2 + 3, .12],[0, CD2/2 + 1.4, CW2 + 3, .12]].forEach(([x, z, w])=>{
+    const strip = box(w, .05, .1, new THREE.MeshStandardMaterial({ color: RED, emissive: 0xff0022, emissiveIntensity: 1.2 }), x, .06, z, backyard);
+    barLEDs.push(strip);
+  });
+}
+
+/* ---------- 17. CANOPY DESIGN (ACP gazebo — backyard) ---------- */
+register(canopyGrp, {
+  name:'Canopy Design', sub:'ACP Panel Canopy — Designer Gazebo Structure',
+  desc:'Backyard lounge ke upar ACP panel canopy — charcoal composite panels groove-lines ke saath, red accent panels ka rhythm, pyramid hip design golden finial ke saath. Neeche scalloped valance aur festoon lights. Cafes, lounges, entrances aur outdoor seating ke liye weather-proof designer canopies — MS structure + ACP skin, design se install tak.',
+  specs:[['Skin','3mm ACP, PVDF coat'],['Structure','MS pipe frame, powder coat'],['Design','Hip / gable / flat custom'],['Accents','Red panels + gold finial'],['Life','10+ saal outdoor']],
+  tags:['Canopy','ACP','Outdoor Structure'],
+  camPos:[0, 7.5, -33], camTarget:[0, 5.5, -22]
+});
+
+/* ---------- 18. WALL ART & CANVAS (bar wall — backyard) ---------- */
+register(wallArtGrp, {
+  name:'Wall Art & Canvas', sub:'Artistic Wall Paint + Framed Canvas Gallery',
+  desc:'Bar area ki poori back wall par artistic treatment — deep maroon-red textured paint strokes full-height me, aur teen framed canvas paintings (hamare vector artworks) center-piece ke saath. Restaurants, lounges, offices aur homes ke liye custom wall murals, texture paint art aur canvas print installations — design se paint-brush tak sab in-house.',
+  specs:[['Paint','Deep red texture strokes'],['Canvas','Vector art, gallery wrap frame'],['Layout','Center hero + side pieces'],['Surface','Interior / exterior walls'],['Custom','Murals, portraits, mandalas']],
+  tags:['Wall Art','Canvas','Murals'],
+  camPos:[0, 1.8, -30.5], camTarget:[0, 2.6, -19]
+});
+
+/* distant context blocks */
+[[-62,-30, 18, 9],[64,-34, 22, 12],[-58, 42, 14, 7],[60, 38, 16, 8]].forEach(([x,z,w,h])=>{
+  const b = box(w, h, 12, new THREE.MeshStandardMaterial({ color: 0xb9b2a6, roughness:.95 }), x, h/2, z);
+  b.castShadow = false;
+});
+
+/* ================= INTERIOR ================= */
+const interior = new THREE.Group();
+interior.visible = false;
+scene.add(interior);
+{
+  const room = { w: 30, d: 20, h: 8 };
+  const floorTex = makeTex(512,512,(g)=>{
+    g.fillStyle = '#dedad2'; g.fillRect(0,0,512,512);
+    g.strokeStyle = 'rgba(0,0,0,.08)'; g.lineWidth = 3;
+    for(let i=0;i<=4;i++){ g.beginPath(); g.moveTo(i*128,0); g.lineTo(i*128,512); g.stroke();
+      g.beginPath(); g.moveTo(0,i*128); g.lineTo(512,i*128); g.stroke(); }
+  },[6,4]);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(room.w, room.d),
+    new THREE.MeshStandardMaterial({ map: floorTex, roughness:.6, metalness:.05 }));
+  floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; interior.add(floor);
+  /* ---- CEILING: animated sky panel + cove decoration ---- */
+  const skyCv = document.createElement('canvas'); skyCv.width = 640; skyCv.height = 420;
+  const skyCtx = skyCv.getContext('2d');
+  const ceilSkyTex = new THREE.CanvasTexture(skyCv);
+  ceilSkyTex.colorSpace = THREE.SRGBColorSpace;
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(room.w - 4, room.d - 4),
+    new THREE.MeshBasicMaterial({ map: ceilSkyTex }));
+  ceil.rotation.x = Math.PI/2; ceil.position.y = room.h - .02; interior.add(ceil);
+  interior.userData.ceilSkyTex = ceilSkyTex;
+  interior.userData.skyCtx = skyCtx;
+  /* cove border around sky (theme colours) */
+  const coveMat = new THREE.MeshStandardMaterial({ color: 0xf1eee8, roughness:.9 });
+  box(room.w, .25, 2, coveMat, 0, room.h - .1, -room.d/2 + 1, interior, false);
+  box(room.w, .25, 2, coveMat, 0, room.h - .1, room.d/2 - 1, interior, false);
+  box(2, .25, room.d, coveMat, -room.w/2 + 1, room.h - .1, 0, interior, false);
+  box(2, .25, room.d, coveMat, room.w/2 - 1, room.h - .1, 0, interior, false);
+  /* red trim strip framing the sky */
+  const trimMat = new THREE.MeshStandardMaterial({ color: RED, emissive: 0x330000, roughness:.6 });
+  box(room.w - 3.8, .1, .14, trimMat, 0, room.h - .18, -(room.d-4)/2, interior, false);
+  box(room.w - 3.8, .1, .14, trimMat, 0, room.h - .18, (room.d-4)/2, interior, false);
+  box(.14, .1, room.d - 3.8, trimMat, -(room.w-4)/2, room.h - .18, 0, interior, false);
+  box(.14, .1, room.d - 3.8, trimMat, (room.w-4)/2, room.h - .18, 0, interior, false);
+  const wallMat = new THREE.MeshStandardMaterial({ color: PAPER, roughness:.95 });
+  const back = box(room.w, room.h, .3, wallMat, 0, room.h/2, -room.d/2, interior);
+  box(.3, room.h, room.d, wallMat, -room.w/2, room.h/2, 0, interior);
+  box(.3, room.h, room.d, wallMat, room.w/2, room.h/2, 0, interior);
+  box(room.w, room.h, .3, wallMat, 0, room.h/2, room.d/2, interior);
+  /* ---- DIVISION CANVAS GALLERY WALL (5 canvases, minimal black frames) ---- */
+  const frameTex = makeTex(256, 256, (g)=>{
+    /* minimal black frame with subtle Indian diamond-dot emboss */
+    g.fillStyle = '#141416'; g.fillRect(0,0,256,256);
+    const gr = g.createLinearGradient(0,0,256,256);
+    gr.addColorStop(0,'#1d1d20'); gr.addColorStop(.5,'#151517'); gr.addColorStop(1,'#0e0e10');
+    g.fillStyle = gr; g.fillRect(0,0,256,256);
+    g.fillStyle = 'rgba(255,255,255,.06)';
+    for(let y=0;y<8;y++) for(let x=0;x<8;x++){
+      const cx = x*32+16, cy = y*32+16;
+      g.beginPath();
+      g.moveTo(cx, cy-5); g.lineTo(cx+5, cy); g.lineTo(cx, cy+5); g.lineTo(cx-5, cy);
+      g.closePath(); g.fill();
+    }
+  },[2,2]);
+  const goldMat = new THREE.MeshStandardMaterial({ map: frameTex, roughness:.45, metalness:.35 });
+
+  const texLd = new THREE.TextureLoader();
+  const divisions = [
+    { key:'advertising', label:'ADVERTiSiNG' },
+    { key:'branding',    label:'BRANDiNG' },
+    { key:'creative',    label:'CREATiVE' },
+    { key:'designing',   label:'DESiGNiNG' },
+    { key:'execution',   label:'EXECUTiON' },
+  ];
+  const CW = 3.2, GAP = .62;
+  const startX = -((CW*5 + GAP*4)/2) + CW/2;
+  divisions.forEach((dv, i)=>{
+    const x = startX + i*(CW+GAP);
+    const z = -room.d/2 + .42;
+    /* golden frame */
+    const fr = box(CW+.34, CW+.34, .16, goldMat, x, 4.15, z, interior);
+    fr.userData.divKey = dv.key;
+    /* inner shadow lip */
+    const lip = box(CW+.1, CW+.1, .17, new THREE.MeshStandardMaterial({ color:0x0a0a0b, roughness:.7 }), x, 4.15, z+.005, interior);
+    lip.userData.divKey = dv.key;
+    /* canvas artwork */
+    const tex = texLd.load(`assets/div-${dv.key}.png`, tt => { tt.colorSpace = THREE.SRGBColorSpace; tt.anisotropy = 8; });
+    const art = new THREE.Mesh(new THREE.PlaneGeometry(CW, CW),
+      new THREE.MeshStandardMaterial({ map: tex, roughness:.85 }));
+    art.position.set(x, 4.15, z+.1);
+    art.userData.divKey = dv.key;
+    interior.add(art);
+    /* small golden picture light above */
+    const bar = box(1.3, .09, .3, goldMat, x, 6.2, z+.25, interior);
+    const gl = new THREE.Mesh(new THREE.PlaneGeometry(1.1, .05),
+      new THREE.MeshStandardMaterial({ color:0xfff2d0, emissive:0xffe9b0, emissiveIntensity:1.8 }));
+    gl.position.set(x, 6.14, z+.28); gl.rotation.x = -.9; interior.add(gl);
+    const pl = new THREE.PointLight(0xffe9c0, 6, 5); pl.position.set(x, 5.9, z+1.2); interior.add(pl);
+  });
+  /* reception desk */
+  const desk = new THREE.Group(); interior.add(desk);
+  box(6, 1.15, 1.6, new THREE.MeshStandardMaterial({ color: 0x1c1c1e, roughness:.5 }), 0, .575, -4, desk);
+  box(6.3, .12, 1.9, new THREE.MeshStandardMaterial({ color: 0xf0ede6, roughness:.35 }), 0, 1.22, -4, desk);
+  box(5.4, .5, .1, new THREE.MeshStandardMaterial({ color: RED, emissive: 0x550000, roughness:.5 }), 0, .7, -3.15, desk);
+  /* ---- SELFIE ZONE (right wall) — decorated photo spot ---- */
+  const selfie = new THREE.Group(); interior.add(selfie);
+  {
+    const SX = room.w/2 - .38, SZ = 0;
+    /* red feature panel */
+    const sp = box(.16, 5.6, 7.6, new THREE.MeshStandardMaterial({ color: 0xe20000, roughness:.75 }), SX, 2.9, SZ, selfie);
+    /* paper circle rings (brand mark) as photo backdrop */
+    [[2.1, PAPER],[1.4, INK],[.7, RED]].forEach(([r, col], i)=>{
+      const c = new THREE.Mesh(new THREE.CircleGeometry(r, 48), new THREE.MeshStandardMaterial({ color: col, roughness:.85 }));
+      c.rotation.y = -Math.PI/2;
+      c.position.set(SX - .1 - i*.015, 3.3, SZ); selfie.add(c);
+    });
+    /* wing shapes — selfie me "brand wings" jaisa */
+    [-1,1].forEach(s=>{
+      for(let f=0; f<4; f++){
+        const feather = new THREE.Mesh(new THREE.CircleGeometry(.55 - f*.08, 24),
+          new THREE.MeshStandardMaterial({ color: f%2 ? 0xf6f5f2 : 0xffd75e, roughness:.85 }));
+        feather.rotation.y = -Math.PI/2;
+        feather.scale.y = 2.2;
+        feather.position.set(SX - .12, 3.1 - f*.16, SZ + s*(2.15 + f*.42));
+        feather.rotation.x = s * (.25 + f*.16);
+        selfie.add(feather);
+      }
+    });
+    /* marigold-style garlands hanging on both sides */
+    [-3.4, 3.4].forEach(z=>{
+      for(let i=0;i<9;i++){
+        const bloom = new THREE.Mesh(new THREE.SphereGeometry(.13, 10, 8),
+          new THREE.MeshStandardMaterial({ color: i%2 ? 0xffa500 : 0xffcc33, roughness:.9 }));
+        bloom.position.set(SX - .18, 5.5 - i*.5, z + Math.sin(i*.8)*.12);
+        selfie.add(bloom);
+      }
+    });
+    /* small stage platform */
+    const stage = new THREE.Mesh(new THREE.CylinderGeometry(1.7, 1.8, .22, 40),
+      new THREE.MeshStandardMaterial({ color: 0x1c1c1e, roughness:.5 }));
+    stage.position.set(SX - 1.9, .11, SZ); stage.receiveShadow = true; selfie.add(stage);
+    const stageRing = new THREE.Mesh(new THREE.TorusGeometry(1.72, .045, 10, 48),
+      new THREE.MeshStandardMaterial({ color: RED, emissive: 0x660000, roughness:.5 }));
+    stageRing.rotation.x = Math.PI/2;
+    stageRing.position.set(SX - 1.9, .23, SZ); selfie.add(stageRing);
+    /* selfie ring light on tripod */
+    const tripodM = new THREE.MeshStandardMaterial({ color: 0x2a2a2c, roughness:.5, metalness:.5 });
+    [[-.3,.32],[.3,.32],[0,-.42]].forEach(([dx,dz])=>{
+      const leg = cyl(.025,.025,1.5, tripodM, SX - 3.4 + dx, .72, SZ - 1.8 + dz, selfie);
+      leg.rotation.z = dx*.4; leg.rotation.x = -dz*.5;
+    });
+    cyl(.03,.03,.9, tripodM, SX - 3.4, 1.85, SZ - 1.8, selfie);
+    const ringLight = new THREE.Mesh(new THREE.TorusGeometry(.55, .07, 14, 40),
+      new THREE.MeshStandardMaterial({ color: 0xfff6e0, emissive: 0xfff0c8, emissiveIntensity: 2.4 }));
+    ringLight.position.set(SX - 3.4, 2.6, SZ - 1.8);
+    ringLight.rotation.y = Math.PI/2 - .5;
+    selfie.add(ringLight);
+    const rl = new THREE.PointLight(0xfff0d0, 14, 8); rl.position.set(SX - 3.2, 2.6, SZ - 1.6); selfie.add(rl);
+    /* spotlights washing the circle backdrop */
+    const ss = new THREE.SpotLight(0xffffff, 30, 12, .5, .5, 1.2);
+    ss.position.set(SX - 5, 6.5, SZ);
+    ss.target.position.set(SX, 3.3, SZ);
+    selfie.add(ss); selfie.add(ss.target);
+  }
+  /* lightbox on left wall */
+  const lb = box(5, 2.8, .25, M.dark, -room.w/2 + .35, 3.6, 2, interior);
+  lb.rotation.y = Math.PI/2;
+  const lf = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 2.4),
+    new THREE.MeshStandardMaterial({ map: backlitTex, emissive:0xffffff, emissiveMap: backlitTex, emissiveIntensity: 1 }));
+  lf.rotation.y = Math.PI/2; lf.position.set(-room.w/2 + .5, 3.6, 2); interior.add(lf);
+  /* sofa */
+  const sofaM = new THREE.MeshStandardMaterial({ color: 0x232326, roughness:.85 });
+  box(4, .55, 1.5, sofaM, 6, .45, 4, interior);
+  box(4, .9, .4, sofaM, 6, .95, 4.6, interior);
+  box(.4, .8, 1.5, sofaM, 4.1, .75, 4, interior);
+  box(.4, .8, 1.5, sofaM, 7.9, .75, 4, interior);
+  const cush = new THREE.Mesh(new THREE.BoxGeometry(.9,.55,.25), new THREE.MeshStandardMaterial({ color: RED, roughness:.9 }));
+  cush.position.set(5.2, 1.05, 4.35); cush.rotation.z = .1; interior.add(cush);
+  /* ---- SOFA BACKDROP (photo-wall behind the sofa) ---- */
+  {
+    const bdTex = makeMehrabTex();
+    /* backdrop ab POORI back wall (sofa ke peeche wali) par — floor se ceiling tak */
+    bdTex.wrapS = THREE.RepeatWrapping;
+    bdTex.repeat.set(3, 1);                      // arches poori width par repeat
+    const bd = new THREE.Mesh(new THREE.PlaneGeometry(room.w - .2, room.h - .2),
+      new THREE.MeshStandardMaterial({ map: bdTex, roughness:.9 }));
+    bd.position.set(0, room.h/2, room.d/2 - .2);
+    bd.rotation.y = Math.PI; interior.add(bd);
+    /* warm downlights poore wall par */
+    [-10, -5, 0, 5, 10].forEach(x=>{
+      const p = new THREE.PointLight(0xffe9c8, 7, 7); p.position.set(x, room.h - 1.2, room.d/2 - 1.6); interior.add(p);
+    });
+  }
+  /* pedestal + acrylic orb display */
+  box(1.2, 1.5, 1.2, M.paper, -4, .75, 2, interior);
+  const orb2 = new THREE.Mesh(new THREE.TorusKnotGeometry(.42, .14, 100, 16), M.redGloss);
+  orb2.position.set(-4, 2.1, 2); orb2.castShadow = true; orb2.name = 'spinKnot'; interior.add(orb2);
+  /* plant */
+  box(1, .9, 1, M.ink, -9, .45, 4, interior);
+  const fol = new THREE.Mesh(new THREE.SphereGeometry(.8, 18, 14), new THREE.MeshStandardMaterial({ color: 0x2f6b3a, roughness:.95 }));
+  fol.position.set(-9, 1.9, 4); fol.scale.y = 1.4; interior.add(fol);
+  /* interior lights */
+  const il1 = new THREE.PointLight(0xfff1e0, 40, 24); il1.position.set(0, 6.8, 0); interior.add(il1);
+  const il2 = new THREE.PointLight(0xffd7c2, 22, 18); il2.position.set(-6, 6, -6); interior.add(il2);
+  const il3 = new THREE.PointLight(0xffffff, 15, 14); il3.position.set(7, 6, 3); interior.add(il3);
+}
+const interiorSky = skyTexture('#efece6','#efece6');
+
+/* ================= INTERACTION ================= */
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let pointerPx = { x:0, y:0 };
+const tooltip = document.getElementById('tooltip');
+const hint = document.getElementById('hint');
+const infoPanel = document.getElementById('infoPanel');
+const counterNav = document.getElementById('counterNav');
+const splash = document.getElementById('splash');
+const interiorUI = document.getElementById('interiorUI');
+
+let mode = 'outside';      // outside | focus | entering | interior
+let focusIndex = -1;
+let hoverIndex = -1;
+let hoverWelcome = false;
+
+const tween = { active:false, t:0, dur:1.6, fromPos:new THREE.Vector3(), toPos:new THREE.Vector3(),
+                fromTgt:new THREE.Vector3(), toTgt:new THREE.Vector3(), onDone:null };
+function flyTo(pos, tgt, dur, onDone){
+  tween.active = true; tween.t = 0; tween.dur = dur || 1.6;
+  tween.fromPos.copy(camera.position); tween.toPos.set(...pos);
+  tween.fromTgt.copy(controls.target); tween.toTgt.set(...tgt);
+  tween.onDone = onDone || null;
+  controls.enabled = false;
+}
+const easeInOut = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+
+function setPointer(e){
+  pointerPx = { x: e.clientX, y: e.clientY };
+  pointer.x = (e.clientX/innerWidth)*2 - 1;
+  pointer.y = -(e.clientY/innerHeight)*2 + 1;
+}
+
+function pickProduct(){
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(outside.children, true);
+  for(const h of hits){
+    if(h.object === welcomeSign) return { welcome:true, hit:h };
+    if(h.object.userData.entryStructure) return { entry:true, hit:h };
+    let o = h.object;
+    while(o){
+      if(o.userData.productIndex !== undefined) return { index:o.userData.productIndex, hit:h };
+      o = o.parent;
+    }
+    if(h.object === ground || h.object === carpet) continue;
+    return null;
+  }
+  return null;
+}
+
+const pad2 = n => String(n+1).padStart(2,'0');
+
+function showInfo(i){
+  const p = products[i];
+  document.getElementById('infoIndex').textContent = `Product ${pad2(i)} / ${pad2(products.length-1)}`;
+  document.getElementById('navTotal').textContent = pad2(products.length-1);
+  document.getElementById('infoTitle').textContent = p.name;
+  document.getElementById('infoSub').textContent = p.sub;
+  document.getElementById('infoDesc').textContent = p.desc;
+  document.getElementById('infoSpecs').innerHTML = p.specs.map(([k,v])=>`<li><b>${k}</b><span>${v}</span></li>`).join('');
+  document.getElementById('infoTags').innerHTML = p.tags.map((t,j)=>`<span class="tag ${j===0?'red':''}">${t}</span>`).join('');
+  document.getElementById('navNum').textContent = pad2(i);
+  infoPanel.classList.add('open');
+  counterNav.classList.add('show');
+  hint.classList.add('hidden');
+}
+function hideInfo(){
+  infoPanel.classList.remove('open');
+  counterNav.classList.remove('show');
+}
+
+/* jab info panel khula ho, render center ko left shift karo taaki
+   product panel ke bagal wale free area me PURA + center me dikhe */
+function panelWidth(){ return Math.min(430, innerWidth*.92); }
+/* viewOffset use NAHI karte — wo render shape distort karta tha.
+   Iski jagah camera+target ko world me side-shift karte hain taaki
+   product panel ke bagal wale khali area me center dikhe. Exit par
+   koi offset clear nahi hota => koi shape-change / jump nahi. */
+function clearFocusOffset(){ camera.clearViewOffset(); }
+
+function focusProduct(i){
+  if(mode === 'entering' || mode === 'interior') return;
+  mode = 'focus'; focusIndex = i;
+  const p = products[i];
+  tooltip.classList.remove('show');
+  /* camera thoda peeche taaki product margin ke saath poora frame me aaye */
+  const tgt = new THREE.Vector3(...p.camTarget);
+  const pos = new THREE.Vector3(...p.camPos);
+  /* panel ke liye side-shift: camera-right direction me pos+tgt dono khisko */
+  if(innerWidth >= 700){
+    const pw = panelWidth();
+    const d = pos.distanceTo(tgt);
+    const worldW = 2 * d * Math.tan(THREE.MathUtils.degToRad(camera.fov/2)) * camera.aspect;
+    const shift = (pw / innerWidth) * worldW * .5;
+    const dir = new THREE.Vector3().subVectors(tgt, pos).normalize();
+    const right = new THREE.Vector3().crossVectors(dir, camera.up).normalize();
+    pos.addScaledVector(right, shift);
+    tgt.addScaledVector(right, shift);
+  }
+  pos.sub(tgt).multiplyScalar(1.18).add(tgt);
+  flyTo([pos.x, pos.y, pos.z], [tgt.x, tgt.y, tgt.z], 1.5, ()=>{
+    controls.enabled = true;
+    controls.minDistance = 1.5;
+  });
+  showInfo(i);
+}
+/* HOME view — starting position, poora showroom dikhta hai */
+const HOME_VIEW = { pos: [16, 10, 42], tgt: [0, 4, 0] };
+
+function goHome(dur){
+  if(mode === 'interior' || mode === 'entering') return;
+  if(mode === 'focus'){ mode = 'outside'; focusIndex = -1; hideInfo(); hint.classList.remove('hidden'); }
+  controls.minDistance = 3.5;
+  flyTo(HOME_VIEW.pos, HOME_VIEW.tgt, dur || 1.6, ()=>{ controls.enabled = true; });
+}
+
+function exitFocus(){
+  if(mode !== 'focus') return;
+  mode = 'outside'; focusIndex = -1;
+  hideInfo();
+  hint.classList.remove('hidden');
+  controls.minDistance = 3.5;
+  /* starting overview par wapas — poora showroom dikhta hai */
+  flyTo(HOME_VIEW.pos, HOME_VIEW.tgt, 1.5, ()=>{ controls.enabled = true; });
+}
+
+/* enter showroom via Welcome */
+function enterShowroom(){
+  if(mode === 'entering' || mode === 'interior') return;
+  mode = 'entering';
+  clearFocusOffset();
+  hideInfo(); tooltip.classList.remove('show'); hint.classList.add('hidden');
+  /* fly through the arch towards the door */
+  flyTo([0, 3.2, 24], [0, 3.2, -5], 1.5, ()=>{
+    flyTo([0, 3, 2], [0, 3, -5], 1.4, ()=>{
+      splash.classList.add('show');
+      setTimeout(()=>{
+        outside.visible = false;
+        interior.visible = true;
+        scene.background = interiorSky;
+        scene.fog = null;
+        camera.position.set(0, 3.4, 8.4);
+        controls.target.set(0, 2.6, -4);
+        controls.minDistance = 2; controls.maxDistance = 13;
+        controls.maxPolarAngle = 1.55;
+        controls.enabled = true;
+        mode = 'interior';
+        climateChip.textContent = CLIMATES[climIndex].label;
+        setTimeout(()=>{
+          splash.classList.remove('show');
+          interiorUI.classList.add('show');
+        }, 1400);
+      }, 1200);
+    });
+  });
+}
+function exitShowroom(){
+  if(mode !== 'interior') return;
+  closeGallery();
+  lightview.classList.remove('show');
+  splash.classList.add('show');
+  setTimeout(()=>{
+    interior.visible = false;
+    outside.visible = true;
+    applyOutsideClimate(true);
+    scene.background = outsideSky;
+    interiorUI.classList.remove('show');
+    camera.position.set(0, 4.5, 34);
+    controls.target.set(0, 5, 10);
+    controls.minDistance = 3.5; controls.maxDistance = 78;
+    controls.enabled = true;
+    mode = 'outside';
+    hint.classList.remove('hidden');
+    setTimeout(()=>{ splash.classList.remove('show'); }, 500);
+    flyTo([18, 11, 46], [0, 4, 0], 2, ()=>{ controls.enabled = true; });
+  }, 1000);
+}
+
+/* ================= CEILING SKY CLIMATE (interior) ================= */
+const CLIMATES = [
+  { key:'rain',   label:'🌧️ बारिश · Soft Music',   dur: 24 },
+  { key:'sunset', label:'🌅 सूर्यास्त · Birds',          dur: 24 },
+  { key:'night',  label:'🌙 रात · मेंढक + Mystery', dur: 24 },
+];
+let climIndex = 0, climT = 0, climFade = 1;
+const climateChip = document.getElementById('climateChip');
+const rainDrops = Array.from({length:110}, () => ({ x: Math.random(), y: Math.random(), s: .5 + Math.random()*.9 }));
+const nightStars = Array.from({length:90}, () => ({ x: Math.random(), y: Math.random(), tw: Math.random()*6 }));
+const sunsetBirds = Array.from({length:7}, (_,i) => ({ p: Math.random(), y: .18 + Math.random()*.3, sp: .018 + Math.random()*.014 }));
+
+function drawSky(dt, t){
+  const ctx2 = interior.userData.skyCtx;
+  if(!ctx2) return;
+  const W = 640, H = 420;
+  const c = CLIMATES[climIndex];
+  if(c.key === 'rain'){
+    const g = ctx2.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#5c6a78'); g.addColorStop(.6,'#77848f'); g.addColorStop(1,'#93a0aa');
+    ctx2.fillStyle = g; ctx2.fillRect(0,0,W,H);
+    /* clouds */
+    for(let i=0;i<5;i++){
+      const cx = ((t*.012 + i*.23) % 1.3 - .15) * W, cy = 60 + i*58;
+      ctx2.fillStyle = 'rgba(220,226,232,.16)';
+      ctx2.beginPath(); ctx2.ellipse(cx, cy, 130, 34, 0, 0, 7); ctx2.fill();
+    }
+    /* rain streaks */
+    ctx2.strokeStyle = 'rgba(225,235,245,.5)'; ctx2.lineWidth = 1.4;
+    rainDrops.forEach(d=>{
+      d.y += dt * d.s * 1.6; if(d.y > 1) { d.y -= 1; d.x = Math.random(); }
+      const x = d.x*W, y = d.y*H;
+      ctx2.beginPath(); ctx2.moveTo(x, y); ctx2.lineTo(x-3, y+13*d.s); ctx2.stroke();
+    });
+  } else if(c.key === 'sunset'){
+    const g = ctx2.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#3d2f52'); g.addColorStop(.42,'#c4553a'); g.addColorStop(.72,'#f2903f'); g.addColorStop(1,'#ffd489');
+    ctx2.fillStyle = g; ctx2.fillRect(0,0,W,H);
+    /* sun */
+    const sg = ctx2.createRadialGradient(W*.5, H*.66, 8, W*.5, H*.66, 90);
+    sg.addColorStop(0,'#fff3c8'); sg.addColorStop(.35,'#ffcf6a'); sg.addColorStop(1,'rgba(255,190,90,0)');
+    ctx2.fillStyle = sg; ctx2.beginPath(); ctx2.arc(W*.5, H*.66, 90, 0, 7); ctx2.fill();
+    ctx2.fillStyle = '#ffe9ad'; ctx2.beginPath(); ctx2.arc(W*.5, H*.66, 34, 0, 7); ctx2.fill();
+    /* thin clouds */
+    for(let i=0;i<4;i++){
+      ctx2.fillStyle = 'rgba(90,45,60,.28)';
+      const cx = ((t*.008 + i*.31)%1.2 - .1)*W;
+      ctx2.beginPath(); ctx2.ellipse(cx, 90+i*46, 110, 12, 0, 0, 7); ctx2.fill();
+    }
+    /* birds (V shapes) flying across */
+    ctx2.strokeStyle = 'rgba(40,20,30,.85)'; ctx2.lineWidth = 2;
+    sunsetBirds.forEach(b=>{
+      b.p += dt * b.sp; if(b.p > 1.1) b.p = -.1;
+      const x = b.p*W, y = b.y*H + Math.sin(t*2 + x*.02)*6;
+      const w = 9, f = Math.sin(t*7 + x)*3;
+      ctx2.beginPath(); ctx2.moveTo(x-w, y-f); ctx2.quadraticCurveTo(x, y+3, x+0, y);
+      ctx2.quadraticCurveTo(x, y+3, x+w, y-f); ctx2.stroke();
+    });
+  } else { /* night */
+    const g = ctx2.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#070b1c'); g.addColorStop(.6,'#101a34'); g.addColorStop(1,'#1a2745');
+    ctx2.fillStyle = g; ctx2.fillRect(0,0,W,H);
+    /* stars twinkling */
+    nightStars.forEach(s=>{
+      const a = .35 + .55*Math.abs(Math.sin(t*1.4 + s.tw));
+      ctx2.fillStyle = `rgba(255,255,235,${a})`;
+      ctx2.fillRect(s.x*W, s.y*H, 2, 2);
+    });
+    /* moon */
+    ctx2.fillStyle = '#f2ecd8'; ctx2.beginPath(); ctx2.arc(W*.72, H*.3, 34, 0, 7); ctx2.fill();
+    ctx2.fillStyle = '#101a34';
+    ctx2.beginPath(); ctx2.arc(W*.72 + 13, H*.3 - 6, 30, 0, 7); ctx2.fill();
+    /* drifting wisp cloud */
+    ctx2.fillStyle = 'rgba(200,210,235,.08)';
+    const cx = ((t*.01)%1.3 - .15)*W;
+    ctx2.beginPath(); ctx2.ellipse(cx, H*.5, 150, 22, 0, 0, 7); ctx2.fill();
+  }
+  /* crossfade tint */
+  if(climFade < 1){
+    ctx2.fillStyle = `rgba(12,12,14,${1-climFade})`;
+    ctx2.fillRect(0,0,W,H);
+  }
+  interior.userData.ceilSkyTex.needsUpdate = true;
+}
+
+/* ---------- climate ambient audio (WebAudio synth) ---------- */
+let climAudio = null;
+function initClimAudio(){
+  if(climAudio) return;
+  const ctx = rickAudio ? rickAudio.ctx : new (window.AudioContext || window.webkitAudioContext)();
+  const master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+
+  /* RAIN: filtered noise + soft music pad */
+  const nbuf = ctx.createBuffer(1, ctx.sampleRate*2, ctx.sampleRate);
+  const nd = nbuf.getChannelData(0);
+  for(let i=0;i<nd.length;i++) nd[i] = Math.random()*2-1;
+  const rainSrc = ctx.createBufferSource(); rainSrc.buffer = nbuf; rainSrc.loop = true;
+  const rainLp = ctx.createBiquadFilter(); rainLp.type='lowpass'; rainLp.frequency.value = 2600;
+  const rainHp = ctx.createBiquadFilter(); rainHp.type='highpass'; rainHp.frequency.value = 500;
+  const rainG = ctx.createGain(); rainG.gain.value = 0;
+  rainSrc.connect(rainHp); rainHp.connect(rainLp); rainLp.connect(rainG); rainG.connect(master);
+  rainSrc.start();
+  /* soft pad chord (sine detuned) for rain music */
+  const padG = ctx.createGain(); padG.gain.value = 0; padG.connect(master);
+  [220, 277.18, 329.63].forEach(f=>{     // A minor-ish warm chord
+    const o = ctx.createOscillator(); o.type='sine'; o.frequency.value = f;
+    const og = ctx.createGain(); og.gain.value = .05;
+    const v = ctx.createOscillator(); v.type='sine'; v.frequency.value = .13 + f*.0001;
+    const vg = ctx.createGain(); vg.gain.value = .02;
+    v.connect(vg); vg.connect(og.gain);
+    o.connect(og); og.connect(padG); o.start(); v.start();
+  });
+
+  /* SUNSET BIRDS: chirp scheduler gain */
+  const birdG = ctx.createGain(); birdG.gain.value = 0; birdG.connect(master);
+
+  /* NIGHT: frog croak gain + mysterious drone */
+  const frogG = ctx.createGain(); frogG.gain.value = 0; frogG.connect(master);
+  const mysG = ctx.createGain(); mysG.gain.value = 0; mysG.connect(master);
+  const dr1 = ctx.createOscillator(); dr1.type='sine'; dr1.frequency.value = 55;
+  const dr2 = ctx.createOscillator(); dr2.type='sine'; dr2.frequency.value = 58.3;
+  const drG = ctx.createGain(); drG.gain.value = .12;
+  dr1.connect(drG); dr2.connect(drG); drG.connect(mysG);
+  const shimmer = ctx.createOscillator(); shimmer.type='triangle'; shimmer.frequency.value = 440;
+  const shG = ctx.createGain(); shG.gain.value = .012;
+  const shLfo = ctx.createOscillator(); shLfo.frequency.value = .07;
+  const shLg = ctx.createGain(); shLg.gain.value = 60;
+  shLfo.connect(shLg); shLg.connect(shimmer.frequency);
+  shimmer.connect(shG); shG.connect(mysG);
+  dr1.start(); dr2.start(); shimmer.start(); shLfo.start();
+
+  climAudio = { ctx, master, rainG, padG, birdG, frogG, mysG, nextBird: 0, nextFrog: 0 };
+}
+
+function chirp(){
+  const a = climAudio, ctx = a.ctx, t0 = ctx.currentTime;
+  const o = ctx.createOscillator(); o.type = 'sine';
+  const g = ctx.createGain();
+  o.connect(g); g.connect(a.birdG);
+  const base = 2100 + Math.random()*1400;
+  const n = 2 + (Math.random()*3|0);
+  for(let i=0;i<n;i++){
+    const ts = t0 + i*.14;
+    o.frequency.setValueAtTime(base, ts);
+    o.frequency.exponentialRampToValueAtTime(base*1.45, ts+.05);
+    o.frequency.exponentialRampToValueAtTime(base*.9, ts+.11);
+    g.gain.setValueAtTime(0, ts);
+    g.gain.linearRampToValueAtTime(.16, ts+.02);
+    g.gain.linearRampToValueAtTime(0, ts+.12);
+  }
+  o.start(t0); o.stop(t0 + n*.14 + .1);
+}
+function croak(){
+  const a = climAudio, ctx = a.ctx, t0 = ctx.currentTime;
+  const o = ctx.createOscillator(); o.type = 'sawtooth';
+  const lp = ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value = 420;
+  const g = ctx.createGain();
+  o.connect(lp); lp.connect(g); g.connect(a.frogG);
+  const f = 82 + Math.random()*40;
+  const reps = 2 + (Math.random()*3|0);
+  for(let i=0;i<reps;i++){
+    const ts = t0 + i*.24;
+    o.frequency.setValueAtTime(f, ts);
+    o.frequency.linearRampToValueAtTime(f*1.25, ts+.09);
+    g.gain.setValueAtTime(0, ts);
+    g.gain.linearRampToValueAtTime(.22, ts+.03);
+    g.gain.linearRampToValueAtTime(0, ts+.17);
+  }
+  o.start(t0); o.stop(t0 + reps*.24 + .1);
+}
+
+function updateClimate(dt, t){
+  if(!interior.visible){
+    if(climAudio) climAudio.master.gain.setTargetAtTime(0, climAudio.ctx.currentTime, .3);
+    climateChip.classList.remove('show');
+    return;
+  }
+  climateChip.classList.add('show');
+  climT += dt;
+  const c = CLIMATES[climIndex];
+  /* fade in/out at climate boundaries */
+  const fadeLen = 2.5;
+  climFade = Math.min(climT/fadeLen, 1, Math.max((c.dur - climT)/fadeLen, 0));
+  if(climT >= c.dur){
+    climIndex = (climIndex + 1) % CLIMATES.length;
+    climT = 0;
+    climateChip.textContent = CLIMATES[climIndex].label;
+  }
+  drawSky(dt, t);
+
+  /* audio mix */
+  if(!climAudio) return;
+  const a = climAudio;
+  if(a.ctx.state !== 'running') return;
+  a.master.gain.setTargetAtTime(soundOn ? .9 : 0, a.ctx.currentTime, .4);
+  const mix = { rain:0, pad:0, bird:0, frog:0, mys:0 };
+  if(c.key === 'rain'){ mix.rain = .32*climFade; mix.pad = .85*climFade; }
+  if(c.key === 'sunset'){ mix.bird = 1*climFade; }
+  if(c.key === 'night'){ mix.frog = 1*climFade; mix.mys = .8*climFade; }
+  a.rainG.gain.setTargetAtTime(mix.rain, a.ctx.currentTime, .8);
+  a.padG.gain.setTargetAtTime(mix.pad, a.ctx.currentTime, 1.2);
+  a.birdG.gain.setTargetAtTime(mix.bird, a.ctx.currentTime, .8);
+  a.frogG.gain.setTargetAtTime(mix.frog, a.ctx.currentTime, .8);
+  a.mysG.gain.setTargetAtTime(mix.mys, a.ctx.currentTime, 1.5);
+  /* schedule chirps / croaks */
+  if(c.key === 'sunset' && t > a.nextBird){ chirp(); a.nextBird = t + .6 + Math.random()*2.2; }
+  if(c.key === 'night' && t > a.nextFrog){ croak(); a.nextFrog = t + 1 + Math.random()*2.8; }
+}
+
+/* ================= DIVISION GALLERY ================= */
+const galleryOverlay = document.getElementById('galleryOverlay');
+const galGrid = document.getElementById('galGrid');
+const galName = document.getElementById('galName');
+const galIcon = document.getElementById('galIcon');
+const galTabs = document.getElementById('galTabs');
+const lightview = document.getElementById('lightview');
+const lightviewImg = document.getElementById('lightviewImg');
+
+const DIVISIONS = [
+  { key:'advertising', label:'ADVERTiSiNG', letter:'A', photos:9,
+    tag:'Campaigns and communication that put the brand in front of an audience.',
+    services:[
+      ['01','Advertising & Marketing Design — Campaign, Print, Outdoor, Product Promotion, Event Campaign, Marketing Communication, Trade Marketing'],
+      ['02','Corporate Communication — Stationery, Company Profiles, Presentations, Investor Decks, Annual Reports, Marketing Literature, ID Card & Lanyard'],
+      ['03','Digital Design — Social Media Graphics, Web Assets, UI Graphics, Banner Design, Digital Campaign Creatives'],
+    ]},
+  { key:'branding', label:'BRANDiNG', letter:'B', photos:16,
+    tag:'Identity systems carried onto stores, buildings, gates and vehicles.',
+    services:[
+      ['04','Brand Strategy & Identity — Research, Positioning, Logo, Visual Identity, Corporate Branding, Guidelines, Rebranding, Startup Branding'],
+      ['05','Retail Branding Systems — Store, Showroom, Franchise, Dealer, Retail Communication, Rollout, Petrol Pump, ATM, Bank Branch'],
+      ['06','Signage & Wayfinding — Facade, LED, Glow, Wayfinding, Directional, Safety, Pylon, Monument, Totem, Traffic & Parking, Translite, Light Box'],
+      ['07','Architectural Branding — ACP Elevations & Artwork, Building Branding, Cladding, Glass Graphics, Office / Campus / Hospital, Mall, Airport, Landmark'],
+      ['08','Arch Gates & Entrance Systems — Entry / Arch / Welcome Gates, Township, Industrial, Temple Entrance, Event Arch, Campus Gateway, Real Estate'],
+      ['09','Institutional & Wayfinding — Hospital Wayfinding & Signage, OPD/IPD, Healthcare, School Campus, College, Government Office'],
+      ['10','Menu & F&B Branding — Restaurant Menu, Cafe, QSR, Food Packaging, Table Tent, Food Truck, Backlit Menu Board'],
+      ['11','Fleet & Specialized — Fleet Branding, Vehicle Graphics, Construction Site, Safety Communication, Hoarding Layouts, Industrial Stencils'],
+    ]},
+  { key:'creative', label:'CREATiVE', letter:'C', photos:15,
+    tag:'Art, culture and concept work — the hand-crafted and idea-led layer.',
+    services:[
+      ['12','Religious & Cultural Design — Temple & Spiritual Space Branding, Spiritual Artwork, Religious Event Graphics, Festival Branding, Cultural Exhibition, Decorative Vector, Sacred Geometry, Custom Religious Signage'],
+      ['13','Bengali Traditional Art & Festive Culture — Durga Puja Pandal, Puja Theme, Alpana, Rangoli, Kolka Motif, Bengali Wedding Card, Bangla Typography & Calligraphy, Terracotta-Inspired, Toran & Buntings, Shola & Daker Saaj, Community Puja Signage'],
+      ['14','Award & Recognition Design — Trophy, Certificate, Recognition Plaque, Award Ceremony Branding, Medal & Badge'],
+      ['15','Vector Art & Illustration — Vector & Technical Illustration, Icon Systems, Infographics, Custom Artwork, Canvas Illustration, Framed Art Prints'],
+      ['16','AI-Assisted Creative Workflow — AI Image Development, Creative Automation, Concept Visualization, Design Research, Prompt Engineering'],
+    ]},
+  { key:'designing', label:'DESiGNiNG', letter:'D', photos:17,
+    tag:'Spatial and experience design — how a space, stall or gift is planned.',
+    services:[
+      ['17','Visual Merchandising — VM Concepts, Product & Window Displays, Retail Activations, Display Systems, Shopper Experience'],
+      ['18','POSM & Display Solutions — POP Displays, POSM Assets, Standees, Display Units, Promo Kiosks, Retail Fixtures, SEG Fabric Light Box, X-Banner & Rollup, Table-Top Standee'],
+      ['19','Exhibition & Event Design — Stall Design, Event/Stage Branding, Fascia, Backdrops, Trade Show Graphics, Activation Booths, Product Launch, Event Signage, Exhibition Panels, Backlit Fabric Backdrop'],
+      ['20','Interior & Experience Design — Office/Reception Branding, Experience & Feature Walls, Motivational Graphics, Glass Frosting, Murals, Wall/Floor/Ceiling Graphics, Wall Wrap, Backlit Ceiling Panels'],
+      ['21','Corporate Gifting & Merchandise — Gift Design, Promo Merchandise, Festive Hampers, Branded Apparel, Custom Packaging, Diwali Kits, Framed Canvas Gifting'],
+      ['22','Production Design — Artwork Adaptation, Production Documentation, Manufacturing Layouts, Execution Drawings'],
+      ['23','Visualization & Mockups — 2D Layout Planning, 3D Mockups, Signage/Store Visualization, Client Presentations, BOQ, Scale Layouts'],
+    ]},
+  { key:'execution', label:'EXECUTiON', letter:'E', photos:30, beforeAfter:[6,7,26,27,28,29,30],
+    tag:'Fabrication, print and on-site delivery — where the design gets built.',
+    services:[
+      ['24','CNC, Laser & Fabrication — ACP Cutting/Routing Layouts, CNC/Laser/Router Files, DXF, Vector Paths, Stencils (Painting, Wall, Industrial, Floor, Logo), Acrylic Fabrication, Metal/SS/Brass Letters, LED Sign & Letter Layouts, Neon, Channel Letters, Engraving/Etching, Perforation, Die-Cut/Kiss-Cut, Plotter & Vinyl, Glass Film, Foam/Sunboard, MDF & Wood, Backlit Acrylic Panels'],
+      ['25','Print Production — Print Ready Files, Offset, Digital, Large Format, Color Management, Prepress, Translite, Canvas Print'],
+      ['26','Packaging Solutions — Packaging & Label Design, Carton Artwork, FMCG Packaging, Product Sleeves'],
+      ['27','Photography & Videography — Product, Site Progress, Aerial & Drone, Corporate Video, Installation Time-Lapse, Brand Films'],
+      ['28','Site Survey, Recce & Execution — Recce & Survey, Inspection, Measurement Docs & Drawings, Scale Layouts, BOQ, Brand Audits, Material Planning & Optimization, Cost Optimization, Fabrication/Installation Supervision, Vendor & Fabricator Coordination, Mounting/Assembly Drawings, QC, Multi-City Rollout, Handover Docs'],
+    ]},
+];
+let galleryOpen = false;
+
+/* tabs bana do ek baar */
+DIVISIONS.forEach(dv=>{
+  const b = document.createElement('button');
+  b.className = 'gallery-tab'; b.dataset.key = dv.key; b.textContent = dv.label;
+  b.addEventListener('click', ()=> openGallery(dv.key));
+  galTabs.appendChild(b);
+});
+
+function openGallery(key){
+  const dv = DIVISIONS.find(d => d.key === key);
+  if(!dv) return;
+  galleryOpen = true;
+  galName.textContent = dv.label;
+  galIcon.src = `assets/div-${dv.key}.png`;
+  document.getElementById('gsLetter').textContent = dv.letter;
+  document.getElementById('gsTag').textContent = dv.tag;
+  document.getElementById('gsList').innerHTML =
+    dv.services.map(([n, s]) => `<li><b>${n}</b><span>${s}</span></li>`).join('');
+  galTabs.querySelectorAll('.gallery-tab').forEach(b => b.classList.toggle('active', b.dataset.key === key));
+  galGrid.innerHTML = '';
+  /* collage tile pattern (repeat hota rahta hai) */
+  const tilePattern = ['t-big','t-sm','t-sm','t-med','t-tall','t-sm','t-med','t-sm'];
+  let ti = 0;
+  function addTile(src, cls, isBA){
+    const item = document.createElement('div');
+    item.className = 'gallery-item ' + cls;
+    if(isBA){
+      const badge = document.createElement('span');
+      badge.className = 'ba-badge';
+      badge.textContent = 'Before → After';
+      item.appendChild(badge);
+    }
+    const img = document.createElement('img');
+    img.src = src; img.alt = dv.label;
+    item.appendChild(img);
+    item.addEventListener('click', ()=>{
+      lightviewImg.src = src;
+      lightview.classList.add('show');
+    });
+    galGrid.appendChild(item);
+  }
+  /* division canvas cover — collage ka pehla bada tile */
+  addTile(`assets/div-${dv.key}.png`, 't-tall', false);
+  for(let i=1; i<=dv.photos; i++){
+    const isBA = dv.beforeAfter && dv.beforeAfter.includes(i);
+    if(isBA){ addTile(`assets/gallery/${dv.key}-${i}.jpg`, 'wide', true); continue; }
+    addTile(`assets/gallery/${dv.key}-${i}.jpg`, tilePattern[ti++ % tilePattern.length], false);
+  }
+  galleryOverlay.classList.add('show');
+  tooltip.classList.remove('show');
+}
+function closeGallery(){
+  galleryOpen = false;
+  galleryOverlay.classList.remove('show');
+}
+document.getElementById('galClose').addEventListener('click', closeGallery);
+lightview.addEventListener('click', ()=> lightview.classList.remove('show'));
+
+/* interior canvas picking */
+function pickDivision(){
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(interior.children, true);
+  for(const h of hits){
+    let o = h.object;
+    while(o){
+      if(o.userData.divKey) return o.userData.divKey;
+      o = o.parent;
+    }
+    return null;   // pehla hit hi decide karega (wall pe click par null)
+  }
+  return null;
+}
+
+/* pointer events */
+let downAt = null;
+canvas.addEventListener('pointerdown', e => { downAt = { x:e.clientX, y:e.clientY }; canvas.classList.add('dragging'); });
+canvas.addEventListener('pointerup', e => {
+  canvas.classList.remove('dragging');
+  if(!downAt) return;
+  const moved = Math.hypot(e.clientX-downAt.x, e.clientY-downAt.y);
+  downAt = null;
+  if(moved > 6) return;                 // it was a drag
+  setPointer(e);
+  if(mode === 'interior'){
+    if(galleryOpen) return;
+    const key = pickDivision();
+    if(key) openGallery(key);
+    return;
+  }
+  if(mode === 'entering') return;
+  const pick = pickProduct();
+  if(!pick) return;
+  if(pick.welcome || pick.entry){ enterShowroom(); return; }
+  if(pick.index !== undefined){
+    if(mode === 'focus' && pick.index === focusIndex) return;
+    focusProduct(pick.index);
+  }
+});
+canvas.addEventListener('pointermove', e => {
+  setPointer(e);
+  if(mode === 'interior' && !galleryOpen && !tween.active){
+    const key = pickDivision();
+    if(key){
+      const dv = DIVISIONS.find(d => d.key === key);
+      tooltip.textContent = dv.label + ' — गैलरी खोलें · Click';
+      tooltip.style.left = pointerPx.x+'px'; tooltip.style.top = pointerPx.y+'px';
+      tooltip.classList.add('show');
+      canvas.classList.add('hovering');
+    } else {
+      tooltip.classList.remove('show');
+      canvas.classList.remove('hovering');
+    }
+    return;
+  }
+  if(mode === 'entering' || mode === 'interior' || tween.active){ tooltip.classList.remove('show'); return; }
+  const pick = pickProduct();
+  hoverIndex = -1; hoverWelcome = false;
+  if(pick && (pick.welcome || pick.entry)){
+    hoverWelcome = true;
+    tooltip.textContent = pick.entry ? 'अंदर आइए — Showroom Entry · Click' : 'Welcome — अंदर आइए · Click';
+    tooltip.style.left = pointerPx.x+'px'; tooltip.style.top = pointerPx.y+'px';
+    tooltip.classList.add('show');
+    canvas.classList.add('hovering');
+  } else if(pick && pick.index !== undefined && pick.index !== focusIndex){
+    hoverIndex = pick.index;
+    tooltip.textContent = products[pick.index].name;
+    tooltip.style.left = pointerPx.x+'px'; tooltip.style.top = pointerPx.y+'px';
+    tooltip.classList.add('show');
+    canvas.classList.add('hovering');
+  } else {
+    tooltip.classList.remove('show');
+    canvas.classList.remove('hovering');
+  }
+});
+
+/* zoom-in on a product => focus; zoom-out while focused => exit */
+canvas.addEventListener('wheel', e => {
+  if(mode === 'entering' || mode === 'interior' || tween.active) return;
+  if(e.deltaY < 0 && mode === 'outside'){
+    const pick = pickProduct();
+    if(pick && pick.index !== undefined){
+      const d = camera.position.distanceTo(pick.hit.point);
+      if(d < 17) focusProduct(pick.index);
+    } else if(pick && (pick.welcome || pick.entry)){
+      const d = camera.position.distanceTo(pick.hit.point);
+      if(d < 15) enterShowroom();
+    }
+  } else if(e.deltaY > 0 && mode === 'focus'){
+    const p = products[focusIndex];
+    const tgt = new THREE.Vector3(...p.camTarget);
+    if(camera.position.distanceTo(tgt) > new THREE.Vector3(...p.camPos).distanceTo(tgt) * 1.9) exitFocus();
+  }
+}, { passive:true });
+
+/* ---------- pro UI controls: sound / fullscreen / help / close ---------- */
+const btnSound = document.getElementById('btnSound');
+btnSound.addEventListener('click', ()=>{
+  soundOn = !soundOn;
+  btnSound.classList.toggle('muted', !soundOn);
+  btnSound.querySelector('svg').innerHTML = soundOn
+    ? '<path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18 6a8.5 8.5 0 0 1 0 12"/>'
+    : '<path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M22 9l-6 6"/><path d="M16 9l6 6"/>';
+});
+document.getElementById('btnHome').addEventListener('click', ()=> goHome(1.6));
+document.getElementById('btnFull').addEventListener('click', ()=>{
+  if(document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen();
+});
+const helpModal = document.getElementById('helpModal');
+document.getElementById('btnHelp').addEventListener('click', ()=> helpModal.classList.add('show'));
+document.getElementById('helpClose').addEventListener('click', ()=> helpModal.classList.remove('show'));
+helpModal.addEventListener('click', e => { if(e.target === helpModal) helpModal.classList.remove('show'); });
+document.getElementById('infoClose').addEventListener('click', exitFocus);
+
+document.getElementById('btnBack').addEventListener('click', exitFocus);
+document.getElementById('btnNext').addEventListener('click', ()=> focusProduct((focusIndex+1) % products.length));
+document.getElementById('navNext').addEventListener('click', ()=> focusProduct((focusIndex+1) % products.length));
+document.getElementById('navPrev').addEventListener('click', ()=> focusProduct((focusIndex-1+products.length) % products.length));
+document.getElementById('btnExit').addEventListener('click', exitShowroom);
+addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+    if(helpModal.classList.contains('show')) helpModal.classList.remove('show');
+    else if(lightview.classList.contains('show')) lightview.classList.remove('show');
+    else if(galleryOpen) closeGallery();
+    else if(mode === 'focus') exitFocus();
+    else if(mode === 'interior') exitShowroom();
+  }
+  if(mode === 'focus'){
+    if(e.key === 'ArrowRight') focusProduct((focusIndex+1) % products.length);
+    if(e.key === 'ArrowLeft') focusProduct((focusIndex-1+products.length) % products.length);
+  }
+});
+
+/* ================= ANIMATION LOOP ================= */
+const clock = new THREE.Clock();
+const bannerBase = bannerMeshes.map(m => m.geometry.attributes.position.array.slice());
+
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  const dt = Math.min(t - (animate.lastT || t), .05) || 1/60;
+  animate.lastT = t;
+
+  /* banner wave — FIX C: har 2nd frame + door hone par pause (FIX D) */
+  animate.frameNo = (animate.frameNo || 0) + 1;
+  const camDistTo = (x, y2, z) => camera.position.distanceTo(new THREE.Vector3(x, y2, z));
+  if(outside.visible && animate.frameNo % 2 === 0 && camDistTo(-7.6, 4.8, 9.5) < 55){
+  bannerMeshes.forEach((m, bi)=>{
+    const pos = m.geometry.attributes.position;
+    const base = bannerBase[bi];
+    for(let i=0;i<pos.count;i++){
+      const x = base[i*3], y = base[i*3+1];
+      const sway = (x + .78) / 1.55;         // 0 at pole, 1 at free edge
+      pos.array[i*3+2] = Math.sin(t*2.2 + y*1.6 + bi*2) * .18 * sway
+                       + Math.sin(t*3.6 + x*4) * .05 * sway;
+    }
+    pos.needsUpdate = true;
+    m.geometry.computeVertexNormals();
+  });
+  }
+
+  /* auto rickshaw: parked -> engine rev -> plaza se merge -> route par drive */
+  if(outside.visible){
+    /* WATCHDOG: agar kisi wajah se intro callback miss ho gaya aur rickshaw khada reh gaya,
+       6 sec baad khud start ho jayega. Merging me atka to bhi force-drive. */
+    if(rickPhase === 'parked' && t > 6){ rickPhase = 'revving'; rickPhaseT = t; }
+    if(rickPhase === 'merging' && t - rickPhaseT > 8){ rickPhase = 'driving'; rickPhaseT = t; rickSpeed = RICK.speed; }
+    if(rickPhase === 'revving' && t - rickPhaseT > 1.8){
+      rickPhase = 'merging'; rickPhaseT = t;
+    }
+    let px = rickshaw.position.x, pz = rickshaw.position.z;
+    let bounceShake = .006, spin = 0;
+
+    if(rickPhase === 'merging'){
+      /* park spot se ellipse ke merge point tak smooth drive */
+      const k = Math.min((t - rickPhaseT) / 4.5, 1);
+      const e = k*k*(3-2*k); // smoothstep
+      const tgt = rickEllipsePoint(rickAngle, new THREE.Vector3());
+      /* curved path: park -> control point -> merge point */
+      const ctrl = new THREE.Vector3(26, 0, 32);
+      const a1 = new THREE.Vector3().lerpVectors(rickPark, ctrl, e);
+      const a2 = new THREE.Vector3().lerpVectors(ctrl, tgt, e);
+      const pos = new THREE.Vector3().lerpVectors(a1, a2, e);
+      px = pos.x; pz = pos.z;
+      spin = Math.min(e*2, 1);
+      rickSpeed = RICK.speed * spin;   // audio ke liye speed factor
+      bounceShake = .02;
+      if(k >= 1){ rickPhase = 'driving'; rickPhaseT = t; rickSpeed = RICK.speed; }
+    } else if(rickPhase === 'driving'){
+      rickSpeed += (RICK.speed - rickSpeed) * .02;
+      rickAngle += rickSpeed / 60;
+      px = RICK.cx + RICK.rx * Math.cos(rickAngle);
+      pz = RICK.cz + RICK.rz * Math.sin(rickAngle);
+      spin = rickSpeed / RICK.speed;
+      bounceShake = .02;
+    } else if(rickPhase === 'revving'){
+      bounceShake = .045;
+    }
+
+    rickshaw.position.set(px, Math.abs(Math.sin(t*11))*bounceShake, pz);
+    /* heading from actual movement */
+    const mdx = px - rickPrev.x, mdz = pz - rickPrev.z;
+    if(Math.hypot(mdx, mdz) > .002) rickshaw.rotation.y = Math.atan2(mdx, mdz);
+    rickPrev.set(px, 0, pz);
+    rickshaw.rotation.z = Math.sin(t*11) * (rickPhase === 'revving' ? .02 : .008);
+    rickWheels.forEach(wg => { wg.rotation.x += 0.16 * spin; });
+    updateRickAudio();
+  } else updateRickAudio();
+
+  /* owl gentle bob + head sway feel */
+  owl.position.y = Math.sin(t*1.4) * .06;
+  owl.rotation.y = -.5 + Math.sin(t*.5) * .07;
+
+  /* owl WELCOME sequence (6s cycle):
+     0.0-1.0s  : dono haath jodkar NAMASTE me aana
+     1.0-4.0s  : namaste hold + halka sir jhukana
+     4.0-4.8s  : haath khulna
+     4.8-6.0s  : rest */
+  const wL = owl.userData.wingL, wR = owl.userData.wingR;
+  if(wL && wR){
+    const cyc = t % 6;
+    const ease = v => v<0?0 : v>1?1 : v*v*(3-2*v);
+    let bowX = 0;
+    if(cyc < 4.8){
+      /* --- NAMASTE --- */
+      const kIn  = ease(cyc / 1.0);                 // 0->1 joining
+      const kOut = ease((cyc - 4.0) / .8);          // 0->1 releasing
+      const k = kIn * (1 - kOut);
+      const pulse = Math.sin(t*3) * .04 * k;        // halka sa dhadkan feel
+      /* wings aage-andar mudke chest ke saamne milte hain */
+      wR.rotation.z = .35 + k * (-1.25 + pulse);
+      wL.rotation.z = -.35 + k * (1.25 - pulse);
+      wR.rotation.x = k * -.85;
+      wL.rotation.x = k * -.85;
+      bowX = k * .16;                               // namaste ke saath sir jhukna
+    } else {
+      /* --- REST --- */
+      wR.rotation.z += (.35 - wR.rotation.z) * .12;
+      wL.rotation.z += (-.35 - wL.rotation.z) * .12;
+      wR.rotation.x *= .88; wL.rotation.x *= .88;
+    }
+    owl.rotation.x += (bowX - owl.rotation.x) * .12;
+  }
+
+  /* welcome sign gentle swing */
+  if(welcomeSign) welcomeSign.rotation.z = Math.sin(t*.9) * .025;
+
+  /* SEG lightbox + LED ad — FIX B: 12fps throttle + FIX D: door se pause */
+  if(outside.visible && t - (animate.lastSeg || 0) > .085){
+    animate.lastSeg = t;
+    if(camDistTo(-12.5, 3.1, -4.6) < 45) drawSegScene(t);
+    if(camDistTo(18.5, 18.3, -6.2) < 70) drawLedAd(t);
+  }
+
+  /* backyard club — disco ball spin + rangin lights sweep + LED pulse (FIX D: door se pause) */
+  if(outside.visible && camDistTo(0, 3, -22) < 45){
+    if(discoBall) discoBall.rotation.y = t * 1.2;
+    discoLights.forEach(d=>{
+      d.light.target.position.set(
+        3.2 + Math.cos(t*.9 + d.phase) * 5,
+        .2,
+        Math.sin(t*.7 + d.phase) * 3.5
+      );
+    });
+    barLEDs.forEach((l, i)=>{
+      l.material.emissiveIntensity = 1 + Math.sin(t*3 + i*1.4) * .6;
+    });
+    /* dancing floor — tiles colour badalti + chase pulse */
+    const dTiles = backyard.userData.danceTiles;
+    const dPal = backyard.userData.dancePalette;
+    if(dTiles){
+      const step = Math.floor(t * 2.2);           // har ~0.45s me shift
+      dTiles.forEach(tl=>{
+        const ci = (tl.idx + step) % dPal.length;
+        tl.mesh.material.emissive.setHex(dPal[ci]);
+        /* diagonal wave pulse */
+        const pulse = .55 + .65 * Math.abs(Math.sin(t*2.6 - (tl.r + tl.c)*.55));
+        tl.mesh.material.emissiveIntensity = pulse;
+      });
+    }
+  }
+
+  /* CNC cutting head — pattern trace + sparks (FIX D) */
+  if(cncHead && outside.visible && camDistTo(15.5, 1.4, 12.5) < 40){
+    cncHead.position.x = Math.sin(t*.9) * 1.3;
+    cncHead.position.z = Math.cos(t*.45) * .55;
+    const cutting = Math.sin(t*3) > -0.3;
+    if(cncSpark){
+      cncSpark.intensity = cutting ? (8 + Math.random()*14) : 0;
+      cncSpark.position.set(cncHead.position.x, 1, cncHead.position.z);
+    }
+  }
+  /* printer head sweep + roll spin (FIX D) */
+  if(printHead2 && outside.visible && camDistTo(21.5, 1.5, 6) < 40){
+    printHead2.position.x = Math.sin(t*2.6) * 1.35;
+    if(printRoll) printRoll.rotation.x += .01;
+  }
+
+  /* window mannequin — halka sway + FLYING KISS (7s cycle) */
+  const mq = windowDisplay.userData.mannequin;
+  if(mq && outside.visible){
+    mq.rotation.y = -.2 + Math.sin(t*.3) * .25;
+    const kArm = windowDisplay.userData.kissArm;
+    const fArm = windowDisplay.userData.foreArm;
+    const kHeart = windowDisplay.userData.kissHeart;
+    const hMat = windowDisplay.userData.heartMat;
+    const mHead = windowDisplay.userData.mqHead;
+    const easeK = v => v<0?0 : v>1?1 : v*v*(3-2*v);
+    const kc = t % 7;
+    if(kc < 1.2){
+      /* haath honto tak aana */
+      const k = easeK(kc/1.2);
+      kArm.rotation.z = -.15 + k * 1.65;         // upar uthna
+      kArm.rotation.x = k * -.55;
+      fArm.rotation.z = k * 1.5;                  // kohni mudna — haath lips ke paas
+      if(mHead) mHead.rotation.x = k * .08;
+      kHeart.visible = false; hMat.opacity = 0;
+    } else if(kc < 1.8){
+      /* honto par pause (kiss) */
+      kArm.rotation.z = 1.5; kArm.rotation.x = -.55; fArm.rotation.z = 1.5;
+    } else if(kc < 2.6){
+      /* haath aage phenkna — kiss release */
+      const k = easeK((kc-1.8)/.8);
+      kArm.rotation.z = 1.5 - k*1.3;
+      kArm.rotation.x = -.55 + k*.35;
+      fArm.rotation.z = 1.5 - k*1.35;
+      /* heart udta hai */
+      kHeart.visible = true;
+      hMat.opacity = Math.min(1, k*2);
+      kHeart.position.set(.3 + k*.9, 3.9 + k*.7, .4 + k*1.1);
+      kHeart.rotation.z = Math.sin(t*6)*.2;
+      const hs = .8 + k*.7; kHeart.scale.set(hs,hs,hs);
+    } else if(kc < 4.2){
+      /* heart aage udta hua fade */
+      const k = (kc-2.6)/1.6;
+      kHeart.visible = true;
+      hMat.opacity = 1 - k;
+      kHeart.position.set(1.2 + k*1.6, 4.6 + k*1.2 + Math.sin(k*9)*.15, 1.5 + k*2);
+      kHeart.rotation.z = Math.sin(t*6)*.25;
+      /* arm wapas rest */
+      kArm.rotation.z += (-.15 - kArm.rotation.z) * .08;
+      kArm.rotation.x *= .92;
+      fArm.rotation.z *= .92;
+      if(mHead) mHead.rotation.x *= .9;
+    } else {
+      kHeart.visible = false; hMat.opacity = 0;
+      kArm.rotation.z += (-.15 - kArm.rotation.z) * .1;
+      kArm.rotation.x *= .92;
+      fArm.rotation.z *= .92;
+      if(mHead) mHead.rotation.x *= .9;
+    }
+  }
+
+  /* rooftop entry structure: marquee bulb chase + chevron pulse (FIX C: har 3rd frame) */
+  if(outside.visible && animate.frameNo % 3 === 0){
+    entryBulbs.forEach(b=>{
+      const on = Math.sin(t*5 - b.idx*.7) > 0;
+      b.mesh.material.emissiveIntensity = on ? 2.2 : .25;
+    });
+    roofEntry.traverse(o=>{
+      if(o.userData.chevIdx !== undefined){
+        const phase = ((t*1.2) % 1.5) / 1.5 * 3;      // 0..3 sweep
+        const active = Math.floor(phase) === o.userData.chevIdx;
+        o.material.emissiveIntensity = active ? 1 : .12;
+        o.position.y = o.userData.chevBase + Math.sin(t*2.4) * .1;
+      }
+    });
+  }
+
+  /* interior knot spin */
+  const knot = interior.getObjectByName('spinKnot');
+  if(knot && interior.visible){ knot.rotation.y = t*.7; knot.rotation.x = t*.3; }
+
+  /* ceiling sky climate + ambient sounds */
+  updateClimate(dt, t);
+
+  /* camera tween */
+  if(tween.active){
+    tween.t += (1/60) / tween.dur;
+    const k = easeInOut(Math.min(tween.t, 1));
+    camera.position.lerpVectors(tween.fromPos, tween.toPos, k);
+    controls.target.lerpVectors(tween.fromTgt, tween.toTgt, k);
+    if(tween.t >= 1){
+      tween.active = false;
+      const cb = tween.onDone; tween.onDone = null;
+      if(cb) cb();
+      /* safety: tween ke baad controls hamesha wapas chalu (3D controller kabhi na atke) */
+      if(!tween.active && mode !== 'entering') controls.enabled = true;
+    }
+  }
+
+  controls.update();
+
+  /* interior me camera ko deewaron ke ANDAR clamp karo */
+  if(interior.visible && mode === 'interior'){
+    const M2 = 1.1;                       // wall margin
+    const lim = { x: 15 - M2, zN: -10 + M2, zF: 10 - M2, yLo: .6, yHi: 8 - .5 };
+    camera.position.x = Math.max(-lim.x, Math.min(lim.x, camera.position.x));
+    camera.position.z = Math.max(lim.zN, Math.min(lim.zF, camera.position.z));
+    camera.position.y = Math.max(lim.yLo, Math.min(lim.yHi, camera.position.y));
+    controls.target.x = Math.max(-lim.x, Math.min(lim.x, controls.target.x));
+    controls.target.z = Math.max(lim.zN, Math.min(lim.zF, controls.target.z));
+    controls.target.y = Math.max(lim.yLo, Math.min(lim.yHi, controls.target.y));
+  }
+
+  /* BAHAR: camera building ke andar na ghuse, floor ke neeche na jaye */
+  if(outside.visible && !tween.active){
+    /* 1) floor ke neeche kabhi nahi */
+    if(camera.position.y < .6) camera.position.y = .6;
+    if(controls.target.y < .2) controls.target.y = .2;
+    /* 2) building box collision (main mass + wings): x[-30,30], y[0,16.6], z[-17.2,-4.4] */
+    const B = { x1:-30.2, x2:30.2, y1:0, y2:16.6, z1:-17.3, z2:-4.35, pad:.5 };
+    const p = camera.position;
+    if(p.x > B.x1 - B.pad && p.x < B.x2 + B.pad &&
+       p.y > B.y1 && p.y < B.y2 + B.pad &&
+       p.z > B.z1 - B.pad && p.z < B.z2 + B.pad){
+      /* sabse paas wali face se bahar dhakelo */
+      const dxL = Math.abs(p.x - (B.x1 - B.pad)), dxR = Math.abs((B.x2 + B.pad) - p.x);
+      const dzF = Math.abs((B.z2 + B.pad) - p.z), dzB = Math.abs(p.z - (B.z1 - B.pad));
+      const dyT = Math.abs((B.y2 + B.pad) - p.y);
+      const m = Math.min(dxL, dxR, dzF, dzB, dyT);
+      if(m === dzF) p.z = B.z2 + B.pad;
+      else if(m === dzB) p.z = B.z1 - B.pad;
+      else if(m === dxL) p.x = B.x1 - B.pad;
+      else if(m === dxR) p.x = B.x2 + B.pad;
+      else p.y = B.y2 + B.pad;
+    }
+  }
+  renderer.render(scene, camera);
+}
+animate();
+
+/* real-time mausam apply on load */
+applyOutsideClimate(true);
+
+/* intro fly-in — land hote hi saamne khada rickshaw engine start karta hai, phir chal padta hai */
+setTimeout(()=>{
+  document.getElementById('loader').classList.add('done');
+  flyTo([16, 10, 42], [0, 4, 0], 2.6, ()=>{
+    controls.enabled = true;
+    rickPhase = 'revving'; rickPhaseT = clock.getElapsedTime();
+  });
+}, 600);
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  clearFocusOffset();
+});
+</script>
+</body>
+</html>
