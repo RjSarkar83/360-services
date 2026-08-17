@@ -211,6 +211,98 @@
   .loader-inner h2 span{color:var(--red)}
   .loader-inner p{margin:8px 0 0;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);font-weight:600}
 </style>
+<!-- ===== ArtViSiON Visitor Tracker - START ===== -->
+<script>
+(function(){'use strict';
+var ENDPOINT = 'https://script.google.com/macros/s/AKfycbzgoh1z7n9s1CSvHq72_8kGoyIQdQ62R0Nvog4ethWlin7YU2nWuLfaWYi9-FyZ3cQF_Q/exec';
+
+var DEBUG = location.search.indexOf('avdebug') >= 0;
+var _q=[];
+function log(m,c){ if(!DEBUG)return;
+  if(!document.body){ _q.push([m,c]);
+    document.addEventListener('DOMContentLoaded',function(){var x=_q;_q=[];x.forEach(function(a){log(a[0],a[1]);});},{once:true});
+    return; }
+  var d=document.getElementById('avdbg');
+  if(!d){ d=document.createElement('div'); d.id='avdbg';
+    d.style.cssText='position:fixed;left:8px;bottom:8px;z-index:999999;background:#111;color:#0f0;font:12px monospace;padding:10px 12px;border-radius:8px;max-width:90vw;white-space:pre-wrap;box-shadow:0 4px 20px rgba(0,0,0,.5)';
+    document.body.appendChild(d); }
+  d.innerHTML += (c==='#f55') ? '<span style="color:#f55">'+m+'</span><br>' : m+'<br>'; }
+
+var SITE=(function(){var p=location.pathname.toLowerCase();
+  if(p.indexOf('brand')>=0)return 'Brand_Designer';
+  if(p.indexOf('360')>=0)return '360-services';
+  return location.hostname+p;})();
+
+if(!ENDPOINT||ENDPOINT.indexOf('PASTE_')===0){ log('ENDPOINT set nahi','#f55'); return; }
+
+function rnd(){return Math.random().toString(36).slice(2)+Date.now().toString(36);}
+function vid(){try{var k='av_vid',v=localStorage.getItem(k);if(!v){v=rnd();localStorage.setItem(k,v);}return v;}catch(e){return 'na';}}
+function sid(){try{var n=Date.now(),s=JSON.parse(sessionStorage.getItem('av_sid')||'null');
+  if(!s||n-s.t>18e5)s={id:rnd(),t:n};s.t=n;sessionStorage.setItem('av_sid',JSON.stringify(s));return s.id;}catch(e){return 'na';}}
+function isNew(){try{if(localStorage.getItem('av_seen'))return 0;localStorage.setItem('av_seen','1');return 1;}catch(e){return 0;}}
+
+function post(p){
+  p.site=SITE;p.page=location.pathname;p.ref=document.referrer||'direct';
+  p.scr=screen.width+'x'+screen.height;p.lang=navigator.language||'';
+  p.vid=vid();p.sid=sid();
+  var body=JSON.stringify(p);
+  log('-> '+p.type+(p.label?' : '+String(p.label).slice(0,24):''));
+  try{ if(navigator.sendBeacon &&
+      navigator.sendBeacon(ENDPOINT,new Blob([body],{type:'text/plain;charset=UTF-8'}))) return; }catch(e){}
+  try{ fetch(ENDPOINT,{method:'POST',mode:'no-cors',keepalive:true,body:body}); }catch(e){ log('send fail','#f55'); }
+}
+
+var t0=Date.now();
+post({type:'pageview',isNew:isNew()});
+
+var sent=false;
+function sendTime(){ if(sent)return; sent=true;
+  post({type:'time',secs:Math.round((Date.now()-t0)/1000)}); }
+addEventListener('visibilitychange',function(){ if(document.visibilityState==='hidden')sendTime(); });
+addEventListener('pagehide',sendTime);
+addEventListener('beforeunload',sendTime);
+var beats=0,hb=setInterval(function(){
+  if(sent||document.visibilityState==='hidden')return;
+  if(++beats>40){clearInterval(hb);return;}
+  post({type:'time',secs:Math.round((Date.now()-t0)/1000),beat:1});
+},15000);
+
+addEventListener('click',function(e){
+  var el=e.target&&e.target.closest?e.target.closest('a,button,[data-track]'):null;
+  if(!el)return;
+  var href=(el.getAttribute('href')||'').toLowerCase();
+  var label=el.getAttribute('data-track')||href.slice(0,80)||
+            (el.textContent||'').trim().slice(0,60)||el.id||el.className||el.tagName;
+  var kind='click';
+  if(href.indexOf('wa.me')>=0||href.indexOf('whatsapp')>=0)kind='whatsapp';
+  else if(href.indexOf('tel:')===0)kind='call';
+  else if(href.indexOf('mailto:')===0)kind='email';
+  else if(/instagram|facebook|linkedin|youtube/.test(href))kind='social';
+  post({type:kind,label:String(label)});
+},true);
+
+function ready(f){ if(document.readyState==='loading')addEventListener('DOMContentLoaded',f,{once:true}); else f(); }
+ready(function(){
+  log('Tracker chaalu - '+SITE);
+  try{ var g=document.getElementById('galleryOverlay'),n=document.getElementById('galName');
+    if(g)new MutationObserver(function(){ if(g.classList.contains('show'))
+      post({type:'gallery',label:(n&&n.textContent)||'?'}); }).observe(g,{attributes:true,attributeFilter:['class']});
+  }catch(e){}
+  try{ var i=document.getElementById('interiorUI');
+    if(i)new MutationObserver(function(){ if(i.classList.contains('show'))
+      post({type:'enter_showroom',label:'interior'}); }).observe(i,{attributes:true,attributeFilter:['class']});
+  }catch(e){}
+  try{ var p=document.getElementById('infoPanel'),t=document.getElementById('infoTitle'),last='';
+    if(p)new MutationObserver(function(){ if(p.classList.contains('open')){
+      var nm=(t&&t.textContent)||'?'; if(nm!==last){last=nm;post({type:'product',label:nm});} }
+    }).observe(p,{attributes:true,attributeFilter:['class']});
+  }catch(e){}
+});
+window.AV_TRACK=function(t,l){post({type:t,label:l});};
+})();
+</script>
+<!-- ===== ArtViSiON Visitor Tracker - END ===== -->
+
 </head>
 <body>
 
@@ -3614,5 +3706,26 @@ addEventListener('resize', ()=>{
   clearFocusOffset();
 });
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2c215e80bce9905',t:'MTc4NjkwMDU3Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<!-- ===== ArtViSiON Contact Buttons - START ===== -->
+<style>
+  .av-contact{position:fixed;right:16px;bottom:78px;z-index:150;display:flex;flex-direction:column;gap:10px}
+  .av-contact a{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;
+    text-decoration:none;box-shadow:0 6px 22px rgba(0,0,0,.3);transition:transform .18s;
+    font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;font-size:24px;
+    border:2px solid rgba(255,255,255,.85)}
+  .av-contact a:hover{transform:scale(1.1)}
+  .av-wa{background:#25D366}
+  .av-call{background:#ff0000}
+  @media(max-width:640px){.av-contact{right:12px;bottom:92px}
+    .av-contact a{width:46px;height:46px;font-size:21px}}
+</style>
+<div class="av-contact">
+  <a class="av-wa" href="https://wa.me/919009001551" target="_blank" rel="noopener"
+     title="WhatsApp - ArtViSiON" data-track="WhatsApp Button">&#128172;</a>
+  <a class="av-call" href="tel:+919009001551" title="Call - ArtViSiON"
+     data-track="Call Button">&#128222;</a>
+</div>
+<!-- ===== ArtViSiON Contact Buttons - END ===== -->
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2c82d4f4cde7ecd',t:'MTc4Njk2NDQ0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
