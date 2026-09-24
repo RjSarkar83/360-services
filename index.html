@@ -2012,6 +2012,290 @@ register(totem, {
   camPos:[-16.5, 3.6, 20.5], camTarget:[-19, 3.4, 16]
 });
 
+/* ---------- 17. EVENT/EXHIBITION STALL — showroom ke left corner ke paas (ACP + Acrylic counter, devices par LED video-ad, backwall par Wall Art & Canvas) ---------- */
+const eventStall = new THREE.Group();
+outside.add(eventStall);
+let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portrait (mobile) ad canvases
+{
+  eventStall.position.set(-24.6, 0, -1.2);   // showroom ke LEFT corner ke paas
+  eventStall.rotation.y = .25;
+  eventStall.scale.setScalar(1.3);             // bada stall
+
+  /* ---- materials ---- */
+  const acpSilver = new THREE.MeshPhysicalMaterial({ color: 0xd9dde2, roughness:.22, metalness:.75, clearcoat:.8, clearcoatRoughness:.15 });
+  const acpRed    = new THREE.MeshPhysicalMaterial({ color: RED, roughness:.25, metalness:.35, clearcoat:.9, clearcoatRoughness:.12 });
+  const acpBlack  = new THREE.MeshPhysicalMaterial({ color: 0x141518, roughness:.3, metalness:.5, clearcoat:.7 });
+  const acrylicClear = new THREE.MeshPhysicalMaterial({ color: 0xeaf4ff, roughness:.04, metalness:0, transparent:true, opacity:.35, clearcoat:1, clearcoatRoughness:.02 });
+  const acrylicWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff4ec, emissiveIntensity: .55, roughness:.2 });
+  const ledRedStrip  = new THREE.MeshStandardMaterial({ color: 0xff2020, emissive: 0xff1010, emissiveIntensity: 1.6 });
+  const wallWhite = new THREE.MeshStandardMaterial({ color: 0xf4f2ee, roughness:.8 });
+  const devBody   = new THREE.MeshStandardMaterial({ color: 0x1b1c20, roughness:.35, metalness:.6 });
+  const devSilver = new THREE.MeshStandardMaterial({ color: 0xb9bec6, roughness:.3, metalness:.85 });
+
+  /* ---- stall floor platform (event shell-scheme look) ---- */
+  box(4.8, .12, 3.2, acpBlack, 0, .06, 0, eventStall);
+  const carpetS = box(4.6, .02, 3.0, new THREE.MeshStandardMaterial({ color: 0x2a2c31, roughness:.98 }), 0, .13, 0, eventStall);
+  box(4.8, .03, .05, ledRedStrip, 0, .1, 1.62, eventStall);              // front edge LED line
+
+  /* ---- BACKWALL (8ft x 10ft feel) ---- */
+  const BW = 4.6, BH = 3.1, BZ = -1.4;
+  box(BW, BH, .16, wallWhite, 0, .14 + BH/2, BZ, eventStall);
+  /* side walls hata diye — open stall; backwall ke dono edge par slim red ACP trim */
+  [-1, 1].forEach(s=> box(.08, BH, .2, acpRed, s*(BW/2 + .04), .14 + BH/2, BZ, eventStall));
+  /* top fascia header — red ACP + backlit 360° brand badge */
+  box(BW + .1, .5, .3, acpRed, 0, .14 + BH + .25, BZ + .05, eventStall);
+  box(BW + .12, .05, .32, goldTrim, 0, .14 + BH + .52, BZ + .05, eventStall);
+  const fasciaTex = makeTex(1280, 126, (g, w, h)=>{
+    g.fillStyle = '#c40000'; g.fillRect(0,0,w,h);
+    g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(70, h/2, 38, 0, 7); g.fill();
+    g.fillStyle = '#171717'; g.beginPath(); g.arc(70, h/2, 25, 0, 7); g.fill();
+    g.fillStyle = '#e20000'; g.beginPath(); g.arc(70, h/2, 12, 0, 7); g.fill();
+    const title = 'EVENT/EXHIBITION STALL & DIGITAL ASSETS';
+    let fs = 50; g.textAlign = 'left'; g.textBaseline = 'middle';
+    do { g.font = `800 ${fs}px Montserrat, Arial`; fs -= 2; } while(g.measureText(title).width > w - 170 && fs > 20);
+    g.fillStyle = '#ffffff'; g.fillText(title, 135, h/2 + 3);
+  });
+  const fascia = new THREE.Mesh(new THREE.PlaneGeometry(BW, .46),
+    new THREE.MeshStandardMaterial({ map: fasciaTex, emissive: 0xffffff, emissiveMap: fasciaTex, emissiveIntensity: .45, roughness:.4 }));
+  fascia.position.set(0, .14 + BH + .25, BZ + .205); eventStall.add(fascia);
+
+  /* ---- WALL ART & CANVAS on backwall ---- */
+  const abstractTex = makeTex(512, 640, (g, w, h)=>{
+    g.fillStyle = '#f3ede2'; g.fillRect(0,0,w,h);
+    const cols = ['#e20000','#171717','#c9a24a','#8f0000','#f6f5f2'];
+    for(let i=0;i<9;i++){
+      g.fillStyle = cols[i%5]; g.globalAlpha = .85;
+      g.beginPath(); g.arc(80 + (i*97)%360, 90 + (i*151)%480, 40 + (i*23)%90, 0, 7); g.fill();
+    }
+    g.globalAlpha = 1; g.strokeStyle = '#171717'; g.lineWidth = 6;
+    g.beginPath(); g.moveTo(0, h*.72); g.bezierCurveTo(w*.3, h*.5, w*.6, h*.95, w, h*.62); g.stroke();
+  });
+  const stripesTex = makeTex(512, 640, (g, w, h)=>{
+    const gr = g.createLinearGradient(0,0,0,h); gr.addColorStop(0,'#171717'); gr.addColorStop(1,'#3a0000');
+    g.fillStyle = gr; g.fillRect(0,0,w,h);
+    for(let i=0;i<14;i++){
+      g.fillStyle = i%3===0 ? '#e20000' : (i%3===1 ? '#c9a24a' : '#f6f5f2');
+      g.save(); g.translate(w/2, h/2); g.rotate(i*Math.PI/7);
+      g.fillRect(-6, 20, 12, 150 + (i%4)*30); g.restore();
+    }
+    g.fillStyle = '#e20000'; g.beginPath(); g.arc(w/2, h/2, 36, 0, 7); g.fill();
+    g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(w/2, h/2, 16, 0, 7); g.fill();
+  });
+  const miniTex = (c1, c2)=> makeTex(256, 256, (g, w, h)=>{
+    g.fillStyle = c1; g.fillRect(0,0,w,h);
+    g.fillStyle = c2; g.beginPath(); g.moveTo(0,h); g.lineTo(w*.5, h*.25); g.lineTo(w, h); g.fill();
+    g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(w*.72, h*.28, 22, 0, 7); g.fill();
+  });
+  /* gallery-wrapped canvas (edge depth ke saath) */
+  function canvasArt(tex, w, h, x, y, framed){
+    const artM = new THREE.MeshStandardMaterial({ map: tex, roughness:.9 });
+    if(framed) box(w + .12, h + .12, .05, framed, x, y, BZ + .1, eventStall);
+    box(w, h, .06, new THREE.MeshStandardMaterial({ color: 0xece6da, roughness:.9 }), x, y, BZ + .13, eventStall);
+    const face = new THREE.Mesh(new THREE.PlaneGeometry(w, h), artM);
+    face.position.set(x, y, BZ + .165); eventStall.add(face);
+    return face;
+  }
+  const blackFrame = new THREE.MeshStandardMaterial({ color: 0x151515, roughness:.4, metalness:.3 });
+  canvasArt(artTex, 1.45, 1.45, 0, 2.15, goldTrim);                 // center hero canvas (owl-mandala)
+  canvasArt(abstractTex, .85, 1.08, -1.5, 2.2, blackFrame);          // left framed
+  canvasArt(stripesTex, .85, 1.08, 1.5, 2.2, blackFrame);            // right framed
+  [['#171717','#e20000'],['#f3ede2','#c9a24a'],['#8f0000','#171717']].forEach(([a,b], i)=>{
+    canvasArt(miniTex(a, b), .4, .4, -1.9 + i*.5, 1.25, null);       // left mini trio
+    canvasArt(miniTex(b, a), .4, .4,  .9 + i*.5, 1.25, null);        // right mini trio
+  });
+  /* track spotlights on backwall top — art par wash */
+  const spotM = new THREE.MeshStandardMaterial({ color: 0x1b1c20, roughness:.4, metalness:.6 });
+  const glowM = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff1d6, emissiveIntensity: 1.4 });
+  [-1.5, 0, 1.5].forEach(x=>{
+    box(.04, .04, .55, spotM, x, .14 + BH + .02, BZ + .35, eventStall);
+    const sp = cyl(.07, .05, .18, spotM, x, .14 + BH - .05, BZ + .6, eventStall); sp.rotation.x = .9;
+    const gl = cyl(.045, .045, .01, glowM, x, .14 + BH - .12, BZ + .66, eventStall); gl.rotation.x = .9;
+  });
+  if(!IS_MOBILE){
+    const wash = new THREE.PointLight(0xfff1d6, 6, 5, 2);
+    wash.position.set(0, 2.9, BZ + 1); eventStall.add(wash);
+  }
+
+  /* ---- COUNTER TABLE — ACP body + Acrylic top & front ---- */
+  const CW = 3.0, CH = 1.05, CD = .75, CZ = .55;
+  box(CW, .08, CD, acpBlack, 0, .18, CZ, eventStall);                               // plinth
+  box(CW, CH - .1, CD - .06, acpSilver, 0, .14 + (CH-.1)/2 + .04, CZ - .02, eventStall);   // ACP body
+  /* front: red ACP band + backlit white acrylic panel + clear acrylic overlay */
+  box(CW + .02, .16, .04, acpRed, 0, .32, CZ + CD/2 - .02, eventStall);
+  box(CW - .3, .55, .03, acrylicWhite, 0, .72, CZ + CD/2, eventStall);
+  box(CW - .2, .65, .04, acrylicClear, 0, .72, CZ + CD/2 + .04, eventStall);
+  /* front acrylic par brand mark (laser-cut feel) */
+  [[.18, 0xf6f5f2],[.12, 0x171717],[.055, 0xe20000]].forEach(([r, c], i)=>{
+    const d = new THREE.Mesh(new THREE.CircleGeometry(r, 36), new THREE.MeshStandardMaterial({ color: c, roughness:.3 }));
+    d.position.set(0, .72, CZ + CD/2 + .065 + i*.002); eventStall.add(d);
+  });
+  /* side ACP red panels */
+  [-1, 1].forEach(s=> box(.04, CH - .1, CD - .02, acpRed, s*(CW/2 + .01), .14 + (CH-.1)/2 + .04, CZ - .02, eventStall));
+  /* thick clear acrylic top with glowing edge */
+  box(CW + .12, .05, CD + .1, acrylicClear, 0, .14 + CH + .02, CZ, eventStall);
+  box(CW + .12, .012, .012, ledRedStrip, 0, .14 + CH + .005, CZ + CD/2 + .05, eventStall);
+  box(CW + .02, .02, CD, new THREE.MeshStandardMaterial({ color: 0xf6f5f2, roughness:.35 }), 0, .14 + CH - .01, CZ, eventStall);
+  const TOP = .14 + CH + .045;   // device placing height
+
+  /* ---- animated ad canvases (same Video-Ad LED animation) ---- */
+  function adCanvas(w, h){
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    const tx = new THREE.CanvasTexture(cv); tx.colorSpace = THREE.SRGBColorSpace;
+    return { ctx: cv.getContext('2d'), tex: tx, w, h };
+  }
+  stallAdL = adCanvas(512, 320);
+  stallAdP = adCanvas(192, 384);
+  const scrML = new THREE.MeshStandardMaterial({ map: stallAdL.tex, emissive: 0xffffff, emissiveMap: stallAdL.tex, emissiveIntensity: 1.0, roughness:.3 });
+  const scrMP = new THREE.MeshStandardMaterial({ map: stallAdP.tex, emissive: 0xffffff, emissiveMap: stallAdP.tex, emissiveIntensity: 1.0, roughness:.3 });
+  function screen(w, h, mat, parent, x, y, z){
+    const s = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+    s.position.set(x, y, z); parent.add(s); return s;
+  }
+
+  /* 1. COMPUTER SYSTEM — monitor + stand + keyboard + mouse + CPU */
+  const pc = new THREE.Group(); eventStall.add(pc);
+  pc.position.set(-.95, TOP, CZ - .12); pc.rotation.y = .18;
+  box(.26, .015, .18, devSilver, 0, .008, 0, pc);
+  box(.05, .32, .03, devSilver, 0, .17, -.04, pc);
+  box(.78, .48, .035, devBody, 0, .5, 0, pc);
+  screen(.74, .44, scrML, pc, 0, .5, .019);
+  box(.5, .015, .16, devBody, .02, .008, .3, pc);                                  // keyboard
+  box(.46, .005, .12, new THREE.MeshStandardMaterial({ color: 0x3a3c42, roughness:.6 }), .02, .018, .3, pc);
+  box(.06, .02, .09, devBody, .36, .01, .3, pc);                                   // mouse
+  box(.2, .42, .42, devBody, -.55, .21, -.05, pc);                                 // CPU tower
+  box(.005, .3, .02, ledRedStrip, -.444, .24, .16, pc);
+
+  /* 2. LAPTOP — open, screen tilted back */
+  const lap = new THREE.Group(); eventStall.add(lap);
+  lap.position.set(.05, TOP, CZ + .05); lap.rotation.y = -.05;
+  box(.52, .02, .36, devSilver, 0, .01, 0, lap);
+  box(.46, .004, .18, new THREE.MeshStandardMaterial({ color: 0x2a2c31 }), 0, .022, -.05, lap);
+  const lid = new THREE.Group(); lid.position.set(0, .02, -.18); lid.rotation.x = -.28; lap.add(lid);
+  box(.52, .34, .012, devSilver, 0, .17, 0, lid);
+  screen(.48, .3, scrML, lid, 0, .17, .007);
+
+  /* 3. TABLET — acrylic easel stand par landscape */
+  const tab = new THREE.Group(); eventStall.add(tab);
+  tab.position.set(.72, TOP, CZ + .02); tab.rotation.y = -.2;
+  box(.24, .01, .14, acrylicClear, 0, .005, 0, tab);
+  const tBody = new THREE.Group(); tBody.position.set(0, .14, 0); tBody.rotation.x = -.22; tab.add(tBody);
+  box(.36, .24, .012, devBody, 0, 0, 0, tBody);
+  screen(.33, .21, scrML, tBody, 0, 0, .007);
+
+  /* 4. MOBILE — portrait, acrylic holder */
+  const mob = new THREE.Group(); eventStall.add(mob);
+  mob.position.set(1.18, TOP, CZ + .08); mob.rotation.y = -.3;
+  box(.12, .01, .1, acrylicClear, 0, .005, 0, mob);
+  const mBody = new THREE.Group(); mBody.position.set(0, .12, 0); mBody.rotation.x = -.15; mob.add(mBody);
+  box(.11, .22, .01, devBody, 0, 0, 0, mBody);
+  screen(.1, .2, scrMP, mBody, 0, 0, .006);
+
+  /* ---- standee-style bar stools + brochure stand (event feel) ---- */
+  const stoolM = new THREE.MeshStandardMaterial({ color: 0xf6f5f2, roughness:.4 });
+  [-.7, .7].forEach(x=>{
+    cyl(.2, .2, .05, stoolM, x, .85, 1.45, eventStall);
+    cyl(.025, .025, .7, M.steel, x, .49, 1.45, eventStall);
+    cyl(.18, .2, .03, M.steel, x, .15, 1.45, eventStall);
+  });
+  /* ---- SOCIAL MEDIA DESIGN standee — right side (post grid, profile assets, video thumbnail) ---- */
+  const socialTex = makeTex(300, 900, (g, w, h)=>{
+    g.fillStyle = '#101114'; g.fillRect(0,0,w,h);
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = '800 26px Montserrat, Arial'; g.fillStyle = '#fff'; g.fillText('DIGITAL ASSETS', w/2, 34);
+    g.font = '700 13px Montserrat, Arial'; g.fillStyle = '#e20000'; g.fillText('SOCIAL · PROFILE · THUMBNAIL', w/2, 60);
+    /* profile assets — cover + DP */
+    const cg = g.createLinearGradient(0,90,w,190); cg.addColorStop(0,'#8f0000'); cg.addColorStop(1,'#e20000');
+    g.fillStyle = cg; g.fillRect(18, 86, w-36, 110);
+    g.fillStyle = 'rgba(255,255,255,.18)'; for(let i=0;i<6;i++){ g.beginPath(); g.arc(40+i*48, 120+(i%2)*30, 18, 0, 7); g.fill(); }
+    g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(70, 200, 38, 0, 7); g.fill();
+    g.fillStyle = '#171717'; g.beginPath(); g.arc(70, 200, 26, 0, 7); g.fill();
+    g.fillStyle = '#e20000'; g.beginPath(); g.arc(70, 200, 12, 0, 7); g.fill();
+    g.fillStyle = '#fff'; g.font = '700 16px Montserrat, Arial'; g.textAlign = 'left'; g.fillText('@360services', 118, 214);
+    g.fillStyle = 'rgba(255,255,255,.55)'; g.font = '500 12px Montserrat, Arial'; g.fillText('Profile · Cover · Highlights', 118, 234);
+    /* highlight covers */
+    ['#e20000','#c9a24a','#f6f5f2','#e20000','#c9a24a'].forEach((c,i)=>{
+      g.strokeStyle = c; g.lineWidth = 3; g.beginPath(); g.arc(46+i*52, 282, 19, 0, 7); g.stroke();
+      g.fillStyle = '#222'; g.beginPath(); g.arc(46+i*52, 282, 15, 0, 7); g.fill();
+    });
+    /* post grid 3x3 */
+    const pc = ['#e20000','#171717','#c9a24a','#f6f5f2','#8f0000','#e20000','#2a2c31','#c9a24a','#e20000'];
+    for(let r=0;r<3;r++) for(let c=0;c<3;c++){
+      const x = 18 + c*89, y = 324 + r*89, i = r*3+c;
+      g.fillStyle = pc[i]; g.fillRect(x, y, 84, 84);
+      g.fillStyle = i%2 ? 'rgba(255,255,255,.75)' : 'rgba(0,0,0,.55)';
+      if(i%3===0){ g.beginPath(); g.arc(x+42, y+42, 22, 0, 7); g.fill(); }
+      else if(i%3===1){ g.fillRect(x+14, y+30, 56, 8); g.fillRect(x+14, y+46, 38, 8); }
+      else { g.beginPath(); g.moveTo(x+10,y+74); g.lineTo(x+42,y+22); g.lineTo(x+74,y+74); g.fill(); }
+    }
+    /* video thumbnail with play button */
+    const vg = g.createLinearGradient(0,600,w,760); vg.addColorStop(0,'#171717'); vg.addColorStop(1,'#8f0000');
+    g.fillStyle = vg; g.fillRect(18, 610, w-36, 150);
+    g.fillStyle = '#fff'; g.font = '800 24px Montserrat, Arial'; g.textAlign = 'left'; g.fillText('TOP 5', 32, 646);
+    g.fillStyle = '#ffcc00'; g.fillText('DESIGN TIPS', 32, 676);
+    g.fillStyle = '#e20000'; g.beginPath(); g.roundRect ? g.roundRect(196, 690, 72, 50, 12) : g.rect(196, 690, 72, 50); g.fill();
+    g.fillStyle = '#fff'; g.beginPath(); g.moveTo(222, 702); g.lineTo(246, 715); g.lineTo(222, 728); g.fill();
+    g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(32, 728, 52, 20); g.fillStyle = '#fff'; g.font = '600 12px Montserrat, Arial'; g.fillText('10:24', 40, 739);
+    /* platform chips */
+    g.textAlign = 'center'; g.font = '700 13px Montserrat, Arial';
+    ['Instagram','Facebook','YouTube','LinkedIn'].forEach((t,i)=>{
+      const x = 18 + (i%2)*134, y = 782 + Math.floor(i/2)*38;
+      g.fillStyle = i===2 ? '#e20000' : '#2a2c31'; g.fillRect(x, y, 128, 30);
+      g.fillStyle = '#fff'; g.fillText(t, x+64, y+16);
+    });
+  });
+  box(.44, 1.36, .05, acpBlack, 1.9, .82, .7, eventStall);
+  const socialFace = new THREE.Mesh(new THREE.PlaneGeometry(.4, 1.2),
+    new THREE.MeshStandardMaterial({ map: socialTex, emissive: 0xffffff, emissiveMap: socialTex, emissiveIntensity: .4, roughness:.35 }));
+  socialFace.position.set(1.9, .82, .73); eventStall.add(socialFace);
+  box(.44, 1.36, .03, acrylicClear, 1.9, .82, .76, eventStall);
+  box(.5, .05, .3, M.steel, 1.9, .16, .7, eventStall);
+  /* acrylic brochure stand — side me */
+  box(.35, 1.2, .06, acrylicClear, -1.85, .75, .7, eventStall);
+  [0, 1, 2].forEach(i=> box(.28, .34, .01, new THREE.MeshStandardMaterial({ color: [0xe20000, 0x171717, 0xc9a24a][i], roughness:.7 }), -1.85, .45 + i*.38, .74, eventStall));
+}
+/* device screens par wahi Video-Advertisement LED animation (3 scenes, same timing) */
+function drawAdScenes(g, W, H, t){
+  const phase = Math.floor(t / 4) % 3;
+  const k = (t % 4) / 4;
+  const S = Math.min(W, H) / 256;
+  if(phase === 0){
+    const gr = g.createLinearGradient(0,0,W,0);
+    gr.addColorStop(0,'#8f0000'); gr.addColorStop(.5,'#e20000'); gr.addColorStop(1,'#8f0000');
+    g.fillStyle = gr; g.fillRect(0,0,W,H);
+    const cx = W*(-.2 + k*1.4);
+    g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(cx, H/2, 62*S, 0, 7); g.fill();
+    g.fillStyle = '#171717'; g.beginPath(); g.arc(cx, H/2, 40*S, 0, 7); g.fill();
+    g.fillStyle = '#e20000'; g.beginPath(); g.arc(cx, H/2, 19*S, 0, 7); g.fill();
+  } else if(phase === 1){
+    g.fillStyle = '#101013'; g.fillRect(0,0,W,H);
+    const bw = Math.max(10, 42*S*.6), nb = Math.floor(W/bw);
+    for(let i=0;i<nb;i++){
+      const bh = (Math.sin(t*3 + i*1.1)*.5 + .5) * H * .7 + 18*S;
+      g.fillStyle = i%3 ? '#e20000' : '#f6f5f2';
+      g.fillRect(4 + i*bw, H - bh, bw*.72, bh);
+    }
+  } else {
+    g.fillStyle = '#f6f5f2'; g.fillRect(0,0,W,H);
+    const cx2 = W/2, cy2 = H/2, maxR = Math.max(W, H) * .6;
+    for(let r=0;r<4;r++){
+      const rad = ((k + r*.25) % 1) * maxR;
+      g.strokeStyle = r%2 ? '#e20000' : '#171717';
+      g.lineWidth = (10 - r*2) * S;
+      g.beginPath(); g.arc(cx2, cy2, rad, 0, 7); g.stroke();
+    }
+    g.fillStyle = '#e20000'; g.beginPath(); g.arc(cx2, cy2, 26*S, 0, 7); g.fill();
+  }
+  g.fillStyle = 'rgba(0,0,0,.14)';
+  for(let y=0;y<H;y+=4) g.fillRect(0, y, W, 1);
+}
+function drawStallAd(t){
+  [stallAdL, stallAdP].forEach(a=>{
+    if(!a) return;
+    drawAdScenes(a.ctx, a.w, a.h, t);
+    a.tex.needsUpdate = true;
+  });
+}
+
 /* ================= AUTO RICKSHAW (ambient, ghumta hua) ================= */
 const rickshaw = new THREE.Group();
 outside.add(rickshaw);
@@ -2510,6 +2794,15 @@ register(wallArtGrp, {
   specs:[['Paint','Deep red texture strokes'],['Canvas','Vector art, gallery wrap frame'],['Layout','Center hero + side pieces'],['Surface','Interior / exterior walls'],['Custom','Murals, portraits, mandalas']],
   tags:['Wall Art','Canvas','Murals'],
   camPos:[0, 1.8, -30.5], camTarget:[0, 2.6, -19]
+});
+
+/* ---------- PRODUCT 19 — EVENT/EXHIBITION STALL & DIGITAL ASSETS (showroom ke left corner, list me last) ---------- */
+register(eventStall, {
+  name:'Event/Exhibition Stall & Digital Assets', sub:'Open ACP + Acrylic Exhibition Counter · Social Media Posts · Profile Assets · Video Thumbnails',
+  desc:'EVENT / EXHIBITION STALL — Showroom ke left corner ke paas bada, open-front ready-to-install exhibition stall (side walls ke bina, teen taraf se visitor entry): ACP cladding body, 10mm clear acrylic top, backlit acrylic front panel aur red LED edge-glow. Counter par computer, laptop, tablet aur mobile — chaaron screens par Video Advertisement LED ka brand animation live sync me. Backwall par Wall Art & Canvas collection, track spotlights aur red ACP fascia header jis par likha hai \"Event/Exhibition Stall & Digital Assets\". DIGITAL ASSETS — right side ka acrylic standee hamari digital design range dikhata hai: (1) Social Media Posts — daily, festival, offer, carousel, stories aur reels cover, brand guideline ke saath consistent grid feed. (2) Profile Assets — DP / logo avatar, Facebook cover, YouTube channel art, LinkedIn banner, Instagram highlight covers, bio-link page, WhatsApp Business catalogue. (3) Video Thumbnails — YouTube 1280×720 thumbnails, shorts / reels covers, bold typography + play badge, high-CTR design. (4) Aur bhi — motion posts, GIF / animated ads, Meta & Google ad creatives, website banners, email / WhatsApp creatives, e-invites, QR standee aur content calendar. Expos, mall activations, product launches aur brand ki online presence — dono ek hi jagah.',
+  specs:[['Stall Size','13×10 ft open stall, 1-day modular install'],['Counter','ACP body + 10mm acrylic top, LED glow'],['Live Screens','PC, laptop, tablet, mobile — video ad'],['Backwall','Wall Art & Canvas + ACP fascia, open sides'],['Social Posts','Feed, carousel, stories, reels cover'],['Profile Assets','DP, cover / channel art, highlights, bio-link'],['Video Thumbnail','YouTube 1280×720, shorts / reels cover'],['Ad Creatives','Meta, Google, motion post / GIF, web banner'],['Sizes','1080×1080, 1080×1350, 1080×1920, 1920×1080'],['Delivery','PNG / JPG / MP4 + editable source']],
+  tags:['Event / Exhibition Stall','Digital Assets','Social Media','Profile Assets','Video Thumbnail'],
+  camPos:[-22.6, 3.4, 6.6], camTarget:[-24.6, 2.1, -1.2]
 });
 
 /* distant context blocks */
@@ -3479,6 +3772,7 @@ function animate(){
     animate.lastSeg = t;
     if(IS_MOBILE || camDistTo(-12.5, 3.1, -4.6) < 45) drawSegScene(t);
     if(IS_MOBILE || camDistTo(18.5, 18.3, -6.2) < 70) drawLedAd(t);
+    if(IS_MOBILE || camDistTo(-24.6, 2, -1.2) < 55) drawStallAd(t);
   }
 
   /* backyard club — disco ball spin + rangin lights sweep + LED pulse (FIX D: door se pause) */
@@ -3689,5 +3983,5 @@ addEventListener('resize', ()=>{
   clearFocusOffset();
 });
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2c8cee6b8b2d7e5',t:'MTc4Njk3MTA2NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2c8cee6b8b2d7e5',t:'MTc4Njk3MTA2NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a40072c62c324722',t:'MTc5MDIzODg0OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
