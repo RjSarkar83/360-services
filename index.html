@@ -15,7 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#f6f5f2; --ink:#171717; --red:#ff0000; --red-deep:#ff0000; --muted:#6b6965;
+    --paper:#f6f5f2; --ink:#171717; --red:#ff0000; --red-deep:#c40000; --muted:#6b6965;
     --serif:'Playfair Display',Georgia,serif; --sans:Montserrat,'Noto Sans Devanagari',Arial,sans-serif;
     --glass-light:rgba(246,245,242,.92); --glass-dark:rgba(20,20,22,.78);
     --shadow-lg:0 24px 70px rgba(0,0,0,.35); --shadow-sm:0 8px 30px rgba(0,0,0,.22);
@@ -247,7 +247,7 @@
       <span>👆 Drag = घुमाएँ</span><span>🤏 Pinch = ज़ूम</span><span>👇 Tap = प्रोडक्ट</span>
     </div>
     <button class="btn red" id="mobEnter">शुरू करें →</button>
-    <p class="note" style="margin-top:12px">20 Products · 5 Galleries · 87 Photos</p>
+    <p class="note" style="margin-top:12px">21 Products · 5 Galleries · 87 Photos</p>
   </div>
 </div>
 
@@ -320,7 +320,7 @@
 <aside class="info-panel" id="infoPanel">
   <div class="info-head">
     <button class="info-close" id="infoClose" title="बंद करें">✕</button>
-    <div class="info-eyebrow" id="infoIndex">Product 01 / 20</div>
+    <div class="info-eyebrow" id="infoIndex">Product 01 / 21</div>
     <h2 id="infoTitle">—</h2>
     <h3 id="infoSub">—</h3>
   </div>
@@ -598,12 +598,12 @@ const cgiBlur = new THREE.ShaderMaterial({
 const cgiComp = new THREE.ShaderMaterial({
   uniforms:{
     tBase:{value:null}, tB0:{value:null}, tB1:{value:null}, tB2:{value:null},
-    uStrength:{value:CGI.strength}, uExposure:{value:1.05}
+    uStrength:{value:CGI.strength}, uExposure:{value:1.05}, uIn:{value:0}
   },
   vertexShader: FS_VERT,
   fragmentShader:`
     uniform sampler2D tBase, tB0, tB1, tB2;
-    uniform float uStrength, uExposure;
+    uniform float uStrength, uExposure, uIn;
     varying vec2 vUv;
     vec3 cgiRRT(vec3 v){
       vec3 a = v*(v + 0.0245786) - 0.000090537;
@@ -626,9 +626,11 @@ const cgiComp = new THREE.ShaderMaterial({
                  + texture2D(tB2, vUv).rgb * 0.22;
       vec3 col = base + bloom * uStrength;
       vec3 outc = cgiACES(col);
-      outc = clamp((outc - 0.5) * 1.10 + 0.5, 0.0, 1.0);    /* HIGH CONTRAST — products crisp, dhundla-pan hatta */
+      float ct = mix(1.10, 1.0, uIn);
+      outc = clamp((outc - 0.5) * ct + 0.5, 0.0, 1.0);      /* bahar high-contrast, ANDAR pahele jaisa */
       float luma = dot(outc, vec3(0.2126, 0.7152, 0.0722));
-      outc = clamp(mix(vec3(luma), outc, 1.03), 0.0, 1.0);  /* sirf halka sat — oversaturated glow nahi */
+      float sat = mix(1.03, 1.0, uIn);
+      outc = clamp(mix(vec3(luma), outc, sat), 0.0, 1.0);    /* andar neutral original grade */
       gl_FragColor = vec4(outc, 1.0);
       #include <colorspace_fragment>
     }`,
@@ -698,6 +700,7 @@ function renderFrame(){
   u.tB2.value = cgiLv[2] ? cgiLv[2].a.texture : null;
   u.uStrength.value = CGI.strength;
   u.uExposure.value = renderer.toneMappingExposure;
+  u.uIn.value += ((mode === 'interior' ? 1 : 0) - u.uIn.value) * .12;
   fsQuad.material = cgiComp;
   renderer.setRenderTarget(null);
   renderer.render(fsScene, fsCam);
@@ -1384,7 +1387,7 @@ function register(group, data){
   group.userData.productIndex = products.length;
   products.push({ group, ...data });
   /* CGI grounding: zameen-par khade products ke neeche soft contact shadow */
-  if(!IS_MOBILE){
+  if(!IS_MOBILE && !data.noShadow){
     try{
       const bb = new THREE.Box3().setFromObject(group);
       const h = bb.max.y - bb.min.y, w = bb.max.x - bb.min.x, d = bb.max.z - bb.min.z;
@@ -2563,7 +2566,7 @@ function drawLedSky(ctx2, W, H, t, local){
     });
   } else if(key === 'sunset'){
     const g = ctx2.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#3d2f52'); g.addColorStop(.42,'#ff0000'); g.addColorStop(.72,'#f2903f'); g.addColorStop(1,'#ffd489');
+    g.addColorStop(0,'#3d2f52'); g.addColorStop(.42,'#c4553a'); g.addColorStop(.72,'#f2903f'); g.addColorStop(1,'#ffd489');
     ctx2.fillStyle = g; ctx2.fillRect(0,0,W,H);
     const sx = W*.33, sy = H*.72 + (lt/SEG)*18;     // front screen ke beech me dheere dhalta sooraj
     const sg = ctx2.createRadialGradient(sx, sy, 6, sx, sy, 80);
@@ -3159,6 +3162,12 @@ let rickWheels = [];
   ws.position.set(0, 1.85, 1.28); ws.rotation.x = -.15; rickshaw.add(ws);
   /* rear panel + seat */
   box(1.6, .7, .1, hoodM, 0, 1.55, -1.15, rickshaw);
+  /* back-side BLACK PATTI par brand LOGO sticker */
+  const vLogoTex = new THREE.TextureLoader().load('assets/vehicle_logo.png', t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; });
+  const vLogo = new THREE.Mesh(new THREE.PlaneGeometry(.68, .55),
+    new THREE.MeshStandardMaterial({ map: vLogoTex, transparent:true, roughness:.5, alphaTest:.02 }));
+  vLogo.position.set(0, 1.55, -1.208); vLogo.rotation.y = Math.PI;
+  rickshaw.add(vLogo);
   box(1.4, .3, .8, new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.9 }), 0, 1.35, -.55, rickshaw);
   /* handlebar */
   const hb = cyl(.03,.03,.9, rimM, 0, 1.6, .95, rickshaw); hb.rotation.z = Math.PI/2;
@@ -3245,7 +3254,7 @@ addEventListener('keydown', unlockAudio, { once:false });
 function updateRickAudio(){
   if(!rickAudio || rickAudio.ctx.state !== 'running') return;
   const a = rickAudio;
-  if(!soundOn || !outside.visible || rickPhase === 'parked'){
+  if(!soundOn || !outside.visible || rickPhase === 'parked' || rickPhase === 'showcase'){
     a.master.gain.setTargetAtTime(0, a.ctx.currentTime, .15);
     return;
   }
@@ -4075,6 +4084,15 @@ function updateNature(t, dt){
 }
 
 /* ================= INTERIOR ================= */
+/* ---------- PRODUCT 21: VEHICLE BRANDING / ADVERTISING CAMPAIGN ---------- */
+register(rickshaw, {
+  name:'Vehicle Branding / Advertising Campaign', sub:'Auto-Rickshaw Wrap · Rear Logo Panel · Route Campaign',
+  desc:'Showroom ke saamne chalti auto-rickshaw par complete vehicle branding — rear black patti par brand logo cut-vinyl sticker, body par campaign wrap, aur roz route par ghoomte hue aapke brand ka moving billboard. City traffic mein din-bhar organic reach — design se wrap tak sab in-house.',
+  specs:[['Vehicle','Auto rickshaw (3-wheel)'],['Wrap','Cast vinyl, full body'],['Logo','Rear black panel, cut-vinyl sticker'],['Campaign','Route-based daily reach'],['Finish','UV + laminate, all-weather']],
+  tags:['Vehicle','Branding','Advertising'],
+  camPos:[10, 2.7, 18.4], camTarget:[10, 1.5, 24], noShadow:true
+});
+
 const interior = new THREE.Group();
 interior.visible = false;
 scene.add(interior);
@@ -4172,7 +4190,7 @@ scene.add(interior);
       g.closePath(); g.fill();
     }
   },[2,2]);
-  const frameMat = new THREE.MeshStandardMaterial({ map: frameTex, roughness:.45, metalness:.35 });
+  const goldMat = new THREE.MeshStandardMaterial({ map: frameTex, roughness:.45, metalness:.35 });
 
   const texLd = new THREE.TextureLoader();
   const divisions = [
@@ -4187,8 +4205,8 @@ scene.add(interior);
   divisions.forEach((dv, i)=>{
     const x = startX + i*(CW+GAP);
     const z = -room.d/2 + .42;
-    /* black gallery frame */
-    const fr = box(CW+.34, CW+.34, .16, frameMat, x, 4.15, z, interior);
+    /* golden frame */
+    const fr = box(CW+.34, CW+.34, .16, goldMat, x, 4.15, z, interior);
     fr.userData.divKey = dv.key;
     /* inner shadow lip */
     const lip = box(CW+.1, CW+.1, .17, new THREE.MeshStandardMaterial({ color:0x0a0a0b, roughness:.7 }), x, 4.15, z+.005, interior);
@@ -4200,8 +4218,8 @@ scene.add(interior);
     art.position.set(x, 4.15, z+.1);
     art.userData.divKey = dv.key;
     interior.add(art);
-    /* small picture light above */
-    const bar = box(1.3, .09, .3, frameMat, x, 6.2, z+.25, interior);
+    /* small golden picture light above */
+    const bar = box(1.3, .09, .3, goldMat, x, 6.2, z+.25, interior);
     const gl = new THREE.Mesh(new THREE.PlaneGeometry(1.1, .05),
       new THREE.MeshStandardMaterial({ color:0xfff2d0, emissive:0xffe9b0, emissiveIntensity:1.8 }));
     gl.position.set(x, 6.14, z+.28); gl.rotation.x = -.9; interior.add(gl);
@@ -4217,7 +4235,7 @@ scene.add(interior);
   {
     const SX = room.w/2 - .38, SZ = 0;
     /* red feature panel */
-    const sp = box(.16, 5.6, 7.6, new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.75 }), SX, 2.9, SZ, selfie);
+    const sp = box(.16, 5.6, 7.6, new THREE.MeshStandardMaterial({ color: 0xe20000, roughness:.75 }), SX, 2.9, SZ, selfie);
     /* paper circle rings (brand mark) as photo backdrop */
     [[2.1, PAPER],[1.4, INK],[.7, RED]].forEach(([r, col], i)=>{
       const c = new THREE.Mesh(new THREE.CircleGeometry(r, 48), new THREE.MeshStandardMaterial({ color: col, roughness:.85 }));
@@ -4228,7 +4246,7 @@ scene.add(interior);
     [-1,1].forEach(s=>{
       for(let f=0; f<4; f++){
         const feather = new THREE.Mesh(new THREE.CircleGeometry(.55 - f*.08, 24),
-          new THREE.MeshStandardMaterial({ color: f%2 ? 0xf6f5f2 : 0xd6dade, roughness:.85 }));
+          new THREE.MeshStandardMaterial({ color: f%2 ? 0xf6f5f2 : 0xffd75e, roughness:.85 }));
         feather.rotation.y = -Math.PI/2;
         feather.scale.y = 2.2;
         feather.position.set(SX - .12, 3.1 - f*.16, SZ + s*(2.15 + f*.42));
@@ -4250,7 +4268,7 @@ scene.add(interior);
       new THREE.MeshStandardMaterial({ color: 0x1c1c1e, roughness:.5 }));
     stage.position.set(SX - 1.9, .11, SZ); stage.receiveShadow = true; selfie.add(stage);
     const stageRing = new THREE.Mesh(new THREE.TorusGeometry(1.72, .045, 10, 48),
-      new THREE.MeshStandardMaterial({ color: RED, emissive: 0xff0000, roughness:.5 }));
+      new THREE.MeshStandardMaterial({ color: RED, emissive: 0x660000, roughness:.5 }));
     stageRing.rotation.x = Math.PI/2;
     stageRing.position.set(SX - 1.9, .23, SZ); selfie.add(stageRing);
     /* selfie ring light on tripod */
@@ -4400,6 +4418,9 @@ function focusProduct(i){
   if(mode === 'entering' || mode === 'interior') return;
   mode = 'focus'; focusIndex = i;
   const p = products[i];
+  /* rickshaw showcase — focus par park (peeche ka logo dikhe); doosre product par switch → wapas chalu */
+  if(rickPhase === 'showcase' && p.group !== rickshaw){ rickPhase = 'revving'; rickPhaseT = clock.getElapsedTime(); }
+  if(p.group === rickshaw){ rickPhase = 'showcase'; rickshaw.position.copy(rickPark); rickshaw.rotation.y = 0; }
   tooltip.classList.remove('show');
   /* camera thoda peeche taaki product margin ke saath poora frame me aaye */
   const tgt = new THREE.Vector3(...p.camTarget);
@@ -4427,6 +4448,7 @@ const HOME_VIEW = { pos: [16, 10, 42], tgt: [0, 4, 0] };
 
 function goHome(dur){
   if(mode === 'interior' || mode === 'entering') return;
+  if(rickPhase === 'showcase'){ rickPhase = 'revving'; rickPhaseT = clock.getElapsedTime(); }
   if(mode === 'focus'){ mode = 'outside'; focusIndex = -1; hideInfo(); hint.classList.remove('hidden'); }
   controls.minDistance = 3.5;
   flyTo(HOME_VIEW.pos, HOME_VIEW.tgt, dur || 1.6, ()=>{ controls.enabled = true; });
@@ -4435,6 +4457,7 @@ function goHome(dur){
 function exitFocus(){
   if(mode !== 'focus') return;
   mode = 'outside'; focusIndex = -1;
+  if(rickPhase === 'showcase'){ rickPhase = 'revving'; rickPhaseT = clock.getElapsedTime(); }
   hideInfo();
   hint.classList.remove('hidden');
   controls.minDistance = 3.5;
@@ -4532,7 +4555,7 @@ function drawSky(dt, t){
     });
   } else if(c.key === 'sunset'){
     const g = ctx2.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#3d2f52'); g.addColorStop(.42,'#ff0000'); g.addColorStop(.72,'#f2903f'); g.addColorStop(1,'#ffd489');
+    g.addColorStop(0,'#3d2f52'); g.addColorStop(.42,'#c4553a'); g.addColorStop(.72,'#f2903f'); g.addColorStop(1,'#ffd489');
     ctx2.fillStyle = g; ctx2.fillRect(0,0,W,H);
     /* sun */
     const sg = ctx2.createRadialGradient(W*.5, H*.66, 8, W*.5, H*.66, 90);
@@ -5289,6 +5312,8 @@ animate();
 
 /* debug/automation hook — screenshots & QA ke liye (harmless) */
 window.__ART = {
+  get mode(){ return mode; },
+  gradeUniforms: cgiComp.uniforms,
   enterShowroom, exitShowroom, focusProduct, exitFocus, goHome,
   get products(){ return products; },
   get interior(){ return interior; },
@@ -5390,5 +5415,5 @@ addEventListener('resize', ()=>{
   clearFocusOffset();
 });
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a410dab069c980aa',t:'MTc5MDQxMDg3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
