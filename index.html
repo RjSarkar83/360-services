@@ -1247,12 +1247,12 @@ const acpTex = makeTex(512, 512, (g)=>{
   for(let x=0;x<=3;x++){ g.beginPath(); g.moveTo(x*171,0); g.lineTo(x*171,512); g.stroke(); }
 }, [3,1]);
 
-/* BLACK ACP band — signage facade cladding (revised: red → matt black) */
+/* PURE RED ACP band — signage facade cladding (red-carpet scheme: pure red panels + jet-black grooves) */
 const blackAcpTex = makeTex(512, 256, (g)=>{
-  g.fillStyle = '#0c0d0f'; g.fillRect(0,0,512,256);
+  g.fillStyle = '#ff0000'; g.fillRect(0,0,512,256);
   for(let x=0;x<4;x++){
     const gr = g.createLinearGradient(x*128,0,x*128+128,256);
-    gr.addColorStop(0,'#25272c'); gr.addColorStop(1,'#0e0f12');
+    gr.addColorStop(0,'#ff1717'); gr.addColorStop(1,'#d60000');
     g.fillStyle = gr; g.fillRect(x*128+3, 3, 122, 250);
   }
   g.strokeStyle = '#000000'; g.lineWidth = 5;
@@ -1681,13 +1681,20 @@ building.add(acpSign);
   band.position.set(0, 13.3, -4.7); band.castShadow = true; acpSign.add(band);
   /* silver sign tray for the white lightbox face */
   const tray = new THREE.Mesh(new THREE.BoxGeometry(16.4, 3.15, .3),
-    new THREE.MeshStandardMaterial({ color: 0xb9bdc3, roughness:.35, metalness:.6 }));
+    new THREE.MeshStandardMaterial({ color: 0xf4f4f7, roughness:.35, metalness:.6 }));
   tray.position.set(0, 13.3, -4.42); acpSign.add(tray);
 
-  /* acrylic lit-letter LOGO lightbox (icon + ArtViSiON) — opaque pre-composed face */
-  const texLoader = new THREE.TextureLoader();
-  const signFace = texLoader.load('assets/sign-face.png', t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; });
-  const LW = 16, LH = LW/4;   // sign-face is 4:1
+  /* TWO-LINE lightbox face (icon hata diya): neeche BIG 'PRODUCTion DESiGN' — upar 3D letters line */
+  const LW = 16, LH = LW/4;   // face is 4:1
+  const signFace = makeTex(2048, 512, (g, w, h)=>{
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#cdd0d4'; g.lineWidth = 30; g.strokeRect(15, 15, w - 30, h - 30);
+    const tag = 'PRODUCTion DESiGN';
+    let fs = 170; g.textAlign = 'center'; g.textBaseline = 'middle';
+    do { g.font = `800 ${fs}px Montserrat, Arial, sans-serif`; fs -= 8; } while(g.measureText(tag).width > w * .88 && fs > 40);
+    g.fillStyle = '#171717';
+    g.fillText(tag, w / 2, h * .76);
+  });
   const logo = new THREE.Mesh(new THREE.PlaneGeometry(LW, LH),
     new THREE.MeshStandardMaterial({ map: signFace,
       emissive: 0xffffff, emissiveMap: signFace, emissiveIntensity: .22, roughness:.6 }));
@@ -1714,11 +1721,11 @@ building.add(acpSign);
   });
 }
 register(acpSign, {
-  name:'ACP Cladding Signage', sub:'Matte Black ACP Facade + White Lightbox Sign Band',
-  desc:'Showroom के facade पर premium matte black ACP cladding — groove-line panels, weather-proof finish, और sign band पर clean white lightbox जिस पर ArtViSiON के 3D acrylic letters माउंटेड हैं। ऊपर gooseneck focus lights का professional setup दिन-रात even lighting देता है।',
-  specs:[['Cladding','Matte black ACP, PVDF coat'],['Sign band','Lightbox + ArtViSiON acrylic 3D letters'],['Lighting','Gooseneck focus downlighters'],['Structure','MS frame + aluminium tray'],['Life','8–10 साल outdoor warranty']],
+  name:'ACP Cladding Signage', sub:'Solid Red ACP Facade + White Lightbox Sign Band',
+  desc:'Showroom के facade पर premium pure-red (#ff0000) ACP cladding — groove-line panels, weather-proof finish, और sign band पर clean white lightbox जिस पर ArtViSiON के 3D acrylic letters माउंटेड हैं। ऊपर gooseneck focus lights का professional setup दिन-रात even lighting देता है।',
+  specs:[['Cladding','Solid red ACP, PVDF coat'],['Sign band','Lightbox + ArtViSiON acrylic 3D letters'],['Lighting','Gooseneck focus downlighters'],['Structure','MS frame + aluminium tray'],['Life','8–10 साल outdoor warranty']],
   tags:['Facade','Lightbox','Professional Lit'],
-  camPos:[0, 13.7, 7.5], camTarget:[0, 13.3, -4.6]
+  camPos:[0, 15, 40], camTarget:[0, 11.5, -4.6]
 });
 
 /* ---------- 2. ACRYLIC LETTERS (abstract red acrylic forms — no letters/text) ---------- */
@@ -1730,7 +1737,7 @@ building.add(acrylic);
   ('requestIdleCallback' in window ? requestIdleCallback : (fn)=>setTimeout(fn,1500))(()=>{
   const font = new FontLoader().parse(JSON.parse(atob(GENTILIS_B64)));
     const mk = (str, mat)=>{
-      const geo = new TextGeometry(str, { font, size: 1.42, height: .22, curveSegments: 10,
+      const geo = new TextGeometry(str, { font, size: 1.72, height: .26, curveSegments: 10,
         bevelEnabled: true, bevelThickness: .028, bevelSize: .02, bevelSegments: 3 });
       geo.computeBoundingBox();
       const bb = geo.boundingBox;
@@ -1741,8 +1748,13 @@ building.add(acrylic);
       return { m, w, h };
     };
     const artMat = new THREE.MeshPhysicalMaterial({
-      color: 0x17181b, roughness:.16, metalness:.05,
+      color: 0xff0000, roughness:.16, metalness:.05,
       clearcoat:1, clearcoatRoughness:.06, transparent:true, opacity:.96
+    });
+    /* logo ke beech ka ink-disc = brand ART — jet black rakho (high-contrast anchor) */
+    const inkAcr = new THREE.MeshPhysicalMaterial({
+      color: 0x17181b, roughness:.16, metalness:.05,
+      clearcoat:1, clearcoatRoughness:.06
     });
     const redMat = new THREE.MeshPhysicalMaterial({
       color: 0xff0000, roughness:.1, metalness:0,
@@ -1753,31 +1765,23 @@ building.add(acrylic);
       color: 0xf4f5f7, roughness:.14, metalness:.03,
       clearcoat:1, clearcoatRoughness:.06, transparent:true, opacity:.95
     });
-    /* brand LOGO — white ring > ink disc > red core (3-layer acrylic disc) */
-    const logoG = new THREE.Group();
-    [[.56, whiteAcr, .10], [.36, artMat, .13], [.17, redMat, .15]].forEach(([r, mt, dz])=>{
-      const c = new THREE.Mesh(new THREE.CylinderGeometry(r, r, .12, 48), mt);
-      c.rotation.x = Math.PI/2; c.position.z = dz - .12; c.castShadow = true;
-      logoG.add(c);
-    });
-    const B = mk('ArtViSi', artMat);     /* baki sab black */
-    const O = mk('ON', redMat);          /* sirf ON red */
-    const gLogo = .52, gWord = .1;
-    const total = 1.12 + gLogo + B.w + gWord + O.w;
+    const B = mk('ArtViSi', artMat);     /* line 1 — ArtViSiON, BIG + centered */
+    const O = mk('ON', redMat);
+    const gWord = .16;
+    const total = B.w + gWord + O.w;
     const maxH = Math.max(B.h, O.h);
     const grp = new THREE.Group();
-    logoG.position.set(.56, maxH/2, 0);
-    B.m.position.x = 1.12 + gLogo;
-    O.m.position.x = 1.12 + gLogo + B.w + gWord;
-    grp.add(logoG, B.m, O.m);
-    grp.position.set(.8 - total/2, 13.3 - maxH/2, -4.30);
+    B.m.position.x = 0;
+    O.m.position.x = B.w + gWord;
+    grp.add(B.m, O.m);
+    grp.position.set(-total/2, 13.95 - maxH/2, -4.30);   /* center + upper zone (neeche line-2 face text) */
     acrylic.add(grp);
   }, {timeout:5000});
 }
 register(acrylic, {
-  name:'Acrylic Letters (3D)', sub:'ArtViSiON 3D Letters — Logo · Jet Black + Solid Red',
-  desc:'Signage band पर माउंटेड ArtViSiON के असली 3D acrylic letters — आगे brand logo, फिर "ArtViSi" जेट-ब्लैक और अंत में "ON" सॉलिड रेड cast acrylic, जिसमें अंदर की LED रोशनी आर-पार झलकती है। CNC laser clean edges, polished bevel और halo-lit glow। दिन में bold, रात में premium।',
-  specs:[['Material','8–18mm cast acrylic'],['Cutting','CNC laser, polished edge'],['Lighting','Front-lit / Halo back-lit LED'],['Mounting','Stud + spacer, wall-safe'],['Colours','Jet black + solid red']],
+  name:'Acrylic Letters (3D)', sub:'ArtViSiON 3D Letters — All Solid Red + PRODUCTion DESiGN Board',
+  desc:'Signage band पर माउंटेड ArtViSiON के असली 3D acrylic letters — "ArtViSi · ON" सब सॉलिड रेड cast acrylic — नीचे lightbox board पर बड़ा "PRODUCTion DESiGN", जिसमें अंदर की LED रोशनी आर-पार झलकती है। CNC laser clean edges, polished bevel और halo-lit glow। दिन में bold, रात में premium।',
+  specs:[['Material','8–18mm cast acrylic'],['Cutting','CNC laser, polished edge'],['Lighting','Front-lit / Halo back-lit LED'],['Mounting','Stud + spacer, wall-safe'],['Colours','Solid red on white lightbox']],
   tags:['3D Letters','Laser Cut','Halo Lit'],
   camPos:[0, 13.5, 5.5], camTarget:[0, 13.3, -4.4]
 });
@@ -2202,14 +2206,14 @@ let printTable;   // Product 13 — alag clickable product
 {
   const px = 5.6, GZ = 20;
   /* ===== MATT ACP materials — low-sheen composite panels (no gloss) — REVISED: black + steel silver ===== */
-  const acpBodyM  = detail(new THREE.MeshStandardMaterial({ color: 0x121316, roughness:.9, metalness:.12 }), 'brushed', 3, 3, .35, .3);   // jet-black body panels (pehle red)
-  const acpBlackM = detail(new THREE.MeshStandardMaterial({ color: 0x1d1e21, roughness:.9,  metalness:.1 }), 'brushed', 3, 3, .35, .3);
-  const acpSteelM = detail(new THREE.MeshStandardMaterial({ color: 0xb7bcc2, roughness:.55, metalness:.45 }), 'brushed', 3, 3, .35, .3);  // matt silver-steel ACP
+  const acpBodyM  = detail(new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.9, metalness:.12 }), 'brushed', 3, 3, .35, .3);   // PURE RED ACP body panels (red carpet)
+  const acpBlackM = detail(new THREE.MeshStandardMaterial({ color: 0x1d1e21, roughness:.9,  metalness:.1 }), 'brushed', 3, 3, .35, .3);    // jet-black anchors (contrast)
+  const acpSteelM = detail(new THREE.MeshStandardMaterial({ color: 0x141518, roughness:.55, metalness:.45 }), 'brushed', 3, 3, .35, .3);   // jet-black ACP trim/reveals (red pe contrast lines)
   const acpWhiteM = detail(new THREE.MeshStandardMaterial({ color: 0xeeebe4, roughness:.92, metalness:.05 }), 'brushed', 3, 3, .35, .3);
   /* CNC-cut जाली on matt black ACP (cut-outs me steel-silver backing) */
   const jaaliTex = makeTex(256, 256, (g)=>{
-    g.fillStyle = '#141518'; g.fillRect(0,0,256,256);
-    g.fillStyle = '#aeb3ba';
+    g.fillStyle = '#ff0000'; g.fillRect(0,0,256,256);
+    g.fillStyle = '#f2f2f2';
     for(let y=0;y<4;y++) for(let x=0;x<4;x++){
       const cx = x*64+32, cy = y*64+32;
       g.beginPath();
@@ -2375,8 +2379,8 @@ let printTable;   // Product 13 — alag clickable product
 
 register(archGate, {
   name:'Arch Gate — Matt ACP Indian Entry', sub:'Matt ACP मेहराब Arch Fabrication · "Welcome" पर click करके अंदर आइए',
-  desc:'Premium Indian-style arch gate अब पूरी तरह Matt ACP से fabricate किया गया है — बिना gloss के clean, modern finish। Pillars square ACP-clad boxes हैं: matt black plinth, matt silver-steel ACP की slim reveal bands, CNC-cut जाली वाला matt black ACP shaft और ऊपर folded-ACP pyramid cap (छतरी का minimal रूप)। ऊपर flat ACP band से बना pointed मेहराब arch, अंदर scalloped edge और दोनों तरफ़ matt silver-steel ACP trim, बीच में ACP finial। Welcome board matt black ACP tray और matt silver-steel ACP frame में, नीचे गेंदा-फूल तोरण। पूरे environment में सिर्फ़ इसी पर लिखा है: "Welcome" — click कीजिए और अंदर enter हो जाइए। Side में paper-printing range की display table है। शादी, events, showroom launch — custom ACP arch gates design-to-install।',
-  specs:[['Cladding','4mm Matt ACP — black + steel silver'],['Structure','MS pipe frame + ACP routed & folded'],['जाली','CNC-cut matt black ACP, steel-silver motif'],['Finish','Matt / low-sheen PVDF, no gloss'],['Details','Pointed मेहराब, pyramid caps, तोरण'],['Size','Custom — 10ft से 40ft तक']],
+  desc:'Premium Indian-style arch gate अब पूरी तरह Matt ACP से fabricate किया गया है — बिना gloss के clean, modern finish। Pillars square ACP-clad boxes हैं: jet-black plinth, jet-black ACP की slim reveal bands, CNC-cut जाली वाला pure-red ACP shaft और ऊपर folded-ACP pyramid cap (छतरी का minimal रूप)। ऊपर flat ACP band से बना pointed मेहराब arch, अंदर scalloped edge और दोनों तरफ़ jet-black ACP trim, बीच में black ACP finial। Welcome board matt black ACP tray और jet-black ACP frame में, नीचे गेंदा-फूल तोरण। पूरे environment में सिर्फ़ इसी पर लिखा है: "Welcome" — click कीजिए और अंदर enter हो जाइए। Side में paper-printing range की display table है। शादी, events, showroom launch — custom ACP arch gates design-to-install।',
+  specs:[['Cladding','4mm Matt ACP — pure red + jet black'],['Structure','MS pipe frame + ACP routed & folded'],['जाली','Pure red ACP + white CNC motif'],['Finish','Matt / low-sheen PVDF, no gloss'],['Details','Pointed मेहराब, pyramid caps, तोरण'],['Size','Custom — 10ft से 40ft तक']],
   tags:['Matt ACP','Indian Arch','Fabrication'],
   camPos:[3, 6, 31], camTarget:[1.5, 6, 20]
 });
@@ -2506,8 +2510,8 @@ outside.add(owl);
 }
 register(owl, {
   name:'Owl Direction Mascot', sub:'ACP + Acrylic Layered Mascot — Left Direction Wayfinding',
-  desc:'ArtViSiON का wisdom-owl mascot अब ACP और Acrylic के combination से fabricate किया गया है — red ACP cut-panels से body और head, black ACP से ear tufts, eye rings और wings, frosted white acrylic का backlit belly और face plate, red acrylic के feather scallops और wing inlays, yellow acrylic की चोंच और पंजे। पीछे clear acrylic backer glow-edge देता है, और सारे layers steel standoffs पर mounted हैं जिससे 3D layered depth मिलती है। Owl के left side में black ACP board पर red acrylic का LEFT arrow — customers को बाईं तरफ़ direction दिखाता है। Silver ACP plinth पर red ACP band और clear acrylic top। Mascot branding से showroom यादगार बनता है — बच्चे selfie लेते हैं, brand recall बढ़ता है।',
-  specs:[['Body','3–4mm ACP cut-panels (red / black)'],['Acrylic','Frosted backlit, red, yellow, clear layers'],['Arrow','LEFT arrow — black ACP + red acrylic'],['Mounting','SS standoffs, layered 3D depth'],['Base','Silver ACP plinth + acrylic top'],['Height','4–8 ft custom']],
+  desc:'ArtViSiON का wisdom-owl mascot अब ACP और Acrylic के combination से fabricate किया गया है — red ACP cut-panels से body और head, black ACP से ear tufts, eye rings और wings, frosted white acrylic का backlit belly और face plate, red acrylic के feather scallops और wing inlays, red acrylic की चोंच और पंजे। पीछे clear acrylic backer glow-edge देता है, और सारे layers steel standoffs पर mounted हैं जिससे 3D layered depth मिलती है। Owl के left side में black ACP board पर red acrylic का LEFT arrow — customers को बाईं तरफ़ direction दिखाता है। Pure red ACP plinth पर red ACP band और clear acrylic top। Mascot branding से showroom यादगार बनता है — बच्चे selfie लेते हैं, brand recall बढ़ता है।',
+  specs:[['Body','3–4mm ACP cut-panels (red / black)'],['Acrylic','Frosted backlit, pure red + clear layers'],['Arrow','LEFT arrow — black ACP + red acrylic'],['Mounting','SS standoffs, layered 3D depth'],['Base','Pure red ACP plinth + acrylic top'],['Height','4–8 ft custom']],
   tags:['Mascot','ACP + Acrylic','Wayfinding'],
   camPos:[8.5, 3, 18], camTarget:[6.2, 2.4, 12.5]
 });
@@ -3160,9 +3164,6 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
   box(BW + .12, .05, .32, steelTrim, 0, .14 + BH + .52, BZ + .05, eventStall);
   const fasciaTex = makeTex(1280, 126, (g, w, h)=>{
     g.fillStyle = '#ff0000'; g.fillRect(0,0,w,h);
-    g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(70, h/2, 38, 0, 7); g.fill();
-    g.fillStyle = '#171717'; g.beginPath(); g.arc(70, h/2, 25, 0, 7); g.fill();
-    g.fillStyle = '#ff0000'; g.beginPath(); g.arc(70, h/2, 12, 0, 7); g.fill();
     const title = 'EVENT/EXHIBITION STALL & DIGITAL ASSETS';
     let fs = 50; g.textAlign = 'left'; g.textBaseline = 'middle';
     do { g.font = `800 ${fs}px Montserrat, Arial`; fs -= 2; } while(g.measureText(title).width > w - 170 && fs > 20);
@@ -3172,29 +3173,19 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
     new THREE.MeshStandardMaterial({ map: fasciaTex, emissive: 0xffffff, emissiveMap: fasciaTex, emissiveIntensity: .45, roughness:.4 }));
   fascia.position.set(0, .14 + BH + .25, BZ + .205); eventStall.add(fascia);
 
-  /* ---- header sheen: white light band left → right chalta rehta hai ---- */
-  const sweepTex = makeTex(256, 64, (g, w, h)=>{
-    g.clearRect(0, 0, w, h);
-    const gh = g.createLinearGradient(0, 0, w, 0);
-    gh.addColorStop(0, 'rgba(255,255,255,0)');
-    gh.addColorStop(.5, 'rgba(255,255,255,.95)');
-    gh.addColorStop(1, 'rgba(255,255,255,0)');
-    g.fillStyle = gh; g.fillRect(0, 0, w, h);
-    const gv = g.createLinearGradient(0, 0, 0, h);          // upar-neeche soft falloff
-    gv.addColorStop(0, 'rgba(0,0,0,1)');
-    gv.addColorStop(.28, 'rgba(0,0,0,0)');
-    gv.addColorStop(.72, 'rgba(0,0,0,0)');
-    gv.addColorStop(1, 'rgba(0,0,0,1)');
-    g.globalCompositeOperation = 'destination-out';
-    g.fillStyle = gv; g.fillRect(0, 0, w, h);
-    g.globalCompositeOperation = 'source-over';
-  });
-  const fasciaSweep = new THREE.Mesh(new THREE.PlaneGeometry(BW * .34, .46),
-    new THREE.MeshBasicMaterial({ map: sweepTex, transparent: true, depthWrite: false,
-                                  blending: THREE.AdditiveBlending, opacity: .9 }));
-  fasciaSweep.position.set(-BW * .7, .14 + BH + .25, BZ + .212);
-  eventStall.add(fasciaSweep);
-  eventStall.userData.sweep = { mesh: fasciaSweep, w: BW };
+  /* ---- header ICON = 360° badge (mesh) — sirf yahi animate hota hai ---- */
+  const hdBadge = new THREE.Group();
+  const bR = 38 / 1280 * BW;
+  const bWht = new THREE.Mesh(new THREE.CircleGeometry(bR, 32),
+    new THREE.MeshStandardMaterial({ color: 0xf6f5f2, emissive: 0xffffff, emissiveIntensity: .35, roughness: .5 }));
+  const bBlk = new THREE.Mesh(new THREE.CircleGeometry(bR * .66, 32),
+    new THREE.MeshStandardMaterial({ color: 0x171717, roughness: .5 }));
+  const bRed = new THREE.Mesh(new THREE.CircleGeometry(bR * .32, 32),
+    new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: .5, roughness: .4 }));
+  hdBadge.add(bWht, bBlk, bRed);
+  hdBadge.position.set((70 / 1280 - .5) * BW, .14 + BH + .25, BZ + .215);
+  eventStall.add(hdBadge);
+  eventStall.userData.icon = hdBadge;
 
   /* ---- WALL ART & CANVAS on backwall ---- */
   const abstractTex = makeTex(512, 640, (g, w, h)=>{
@@ -5547,11 +5538,11 @@ function animate(){
   const knot = interior.getObjectByName('spinKnot');
   if(knot && interior.visible){ knot.rotation.y = t*.7; knot.rotation.x = t*.3; }
 
-  /* event stall top header — sheen sweep left → right (~2.9s per pass) */
-  const sw = eventStall.userData.sweep;
-  if(sw && outside.visible && !galleryOpen){
-    const pr = (t * .35) % 1;
-    sw.mesh.position.x = -sw.w * .7 + pr * (sw.w * 1.4);
+  /* event stall header — sirf ICON animate: gentle breathing pulse */
+  const hdIcon = eventStall.userData.icon;
+  if(hdIcon && outside.visible && !galleryOpen){
+    const ip = 1 + Math.sin(t * 3) * .07;
+    hdIcon.scale.set(ip, ip, 1);
   }
 
   /* ceiling sky climate + ambient sounds */
@@ -5616,6 +5607,54 @@ function animate(){
 animate();
 
 /* debug/automation hook — screenshots & QA ke liye (harmless) */
+/* ===== RED-CARPET PASS — saare 21 products ke ACP/acrylic/material colors → PURE RED #ff0000;
+   high-contrast ke liye jet-blacks (l<.30) aur whites (l>=.85) anchors rehne do.
+   textured meshes (map = artwork/photos/logo) chhune Nahi. Idempotent — late (idle-built) meshes
+   ke liye kai triggers. M.steel product-groups me clone hokar red ho jaata hai (architecture safe). */
+function redCarpetApply(){
+  const RED_HEX = 0xff0000;
+  const recolor = c => {
+    const h = { h:0, s:0, l:0 };
+    c.getHSL(h);
+    if(h.s < .12){
+      if(h.l >= .30 && h.l < .88) c.setHex(RED_HEX);   // grey steel/plastic panels → red
+      return;                                            // blacks & whites = contrast anchors — stay
+    }
+    if(h.l < .85 && h.h > .03 && h.h < .96) c.setHex(RED_HEX);  // chromatic (yellow/blue/…) → red
+  };
+  products.forEach(pg => {
+    if(!pg || !pg.group) return;
+    pg.group.traverse(o => {
+      if(o.isLight && o.color){
+        const h = { h:0, s:0, l:0 };
+        o.color.getHSL(h);
+        if(h.s > .15 && h.h > .03 && h.h < .96) o.color.setHex(RED_HEX);
+        return;
+      }
+      if(!o.isMesh || !o.material) return;
+      let mm = Array.isArray(o.material) ? o.material : [o.material];
+      mm = mm.map(m => {
+        if(m === M.steel && !m.userData.noRed){          // shared steel → product-local red clone
+          const cl = m.clone(); cl.userData = {}; o.material = cl; return cl;
+        }
+        return m;
+      });
+      if(Array.isArray(o.material)) o.material = mm; else o.material = mm[0];
+      mm.forEach(m => {
+        if(!m || !m.color || !m.userData || m.userData.noRed || m.map || m.vertexColors) return;
+        recolor(m.color);
+        if(m.emissive && m.emissiveIntensity > 0){
+          const h = { h:0, s:0, l:0 };
+          m.emissive.getHSL(h);
+          if(h.l < .85 && h.s > .15 && h.h > .03 && h.h < .96) m.emissive.setHex(RED_HEX);
+        }
+      });
+    });
+  });
+}
+redCarpetApply();
+setTimeout(redCarpetApply, 4000);    // idle-built meshes (font/text jobs) ke baad
+setTimeout(redCarpetApply, 10000);   // safety re-run — idempotent
 window.__ART = {
   get mode(){ return mode; },
   gradeUniforms: cgiComp.uniforms,
@@ -5737,5 +5776,5 @@ addEventListener('resize', ()=>{
 });
 </script>
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a411dd7ccc222666',t:'MTc5MDQyMTQ3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a413d134491090f3',t:'MTc5MDQ0MTk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
