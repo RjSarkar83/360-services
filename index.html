@@ -2898,6 +2898,30 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
     new THREE.MeshStandardMaterial({ map: fasciaTex, emissive: 0xffffff, emissiveMap: fasciaTex, emissiveIntensity: .45, roughness:.4 }));
   fascia.position.set(0, .14 + BH + .25, BZ + .205); eventStall.add(fascia);
 
+  /* ---- header sheen: white light band left → right chalta rehta hai ---- */
+  const sweepTex = makeTex(256, 64, (g, w, h)=>{
+    g.clearRect(0, 0, w, h);
+    const gh = g.createLinearGradient(0, 0, w, 0);
+    gh.addColorStop(0, 'rgba(255,255,255,0)');
+    gh.addColorStop(.5, 'rgba(255,255,255,.95)');
+    gh.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gh; g.fillRect(0, 0, w, h);
+    const gv = g.createLinearGradient(0, 0, 0, h);          // upar-neeche soft falloff
+    gv.addColorStop(0, 'rgba(0,0,0,1)');
+    gv.addColorStop(.28, 'rgba(0,0,0,0)');
+    gv.addColorStop(.72, 'rgba(0,0,0,0)');
+    gv.addColorStop(1, 'rgba(0,0,0,1)');
+    g.globalCompositeOperation = 'destination-out';
+    g.fillStyle = gv; g.fillRect(0, 0, w, h);
+    g.globalCompositeOperation = 'source-over';
+  });
+  const fasciaSweep = new THREE.Mesh(new THREE.PlaneGeometry(BW * .34, .46),
+    new THREE.MeshBasicMaterial({ map: sweepTex, transparent: true, depthWrite: false,
+                                  blending: THREE.AdditiveBlending, opacity: .9 }));
+  fasciaSweep.position.set(-BW * .7, .14 + BH + .25, BZ + .212);
+  eventStall.add(fasciaSweep);
+  eventStall.userData.sweep = { mesh: fasciaSweep, w: BW };
+
   /* ---- WALL ART & CANVAS on backwall ---- */
   const abstractTex = makeTex(512, 640, (g, w, h)=>{
     g.fillStyle = '#f3ede2'; g.fillRect(0,0,w,h);
@@ -5248,6 +5272,13 @@ function animate(){
   /* interior knot spin */
   const knot = interior.getObjectByName('spinKnot');
   if(knot && interior.visible){ knot.rotation.y = t*.7; knot.rotation.x = t*.3; }
+
+  /* event stall top header — sheen sweep left → right (~2.9s per pass) */
+  const sw = eventStall.userData.sweep;
+  if(sw && outside.visible && !galleryOpen){
+    const pr = (t * .35) % 1;
+    sw.mesh.position.x = -sw.w * .7 + pr * (sw.w * 1.4);
+  }
 
   /* ceiling sky climate + ambient sounds */
   updateClimate(dt, t);
