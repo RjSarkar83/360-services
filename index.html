@@ -344,7 +344,7 @@
 <div class="gallery-overlay" id="galleryOverlay">
   <div class="gallery-head">
     <div class="gallery-title">
-      <img id="galIcon" src="assets/div-advertising.png" alt="">
+      <img id="galIcon" alt="">
       <div>
         <h2 id="galName">ADVERTiSiNG</h2>
         <p>ArtViSiON · Division Gallery</p>
@@ -401,7 +401,9 @@ const IS_MOBILE = /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent) || 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: !IS_MOBILE, powerPreference:'high-performance' });
 renderer.setPixelRatio(IS_MOBILE ? 1 : Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = !IS_MOBILE;   // mobile: shadows off
+THREE.Cache.enabled = true;
+renderer.shadowMap.enabled = !IS_MOBILE;
+renderer.debug.checkShaderErrors = false;   /* shaders verified — first-render link stall skip */   // mobile: shadows off
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -1454,7 +1456,7 @@ const acrylic = new THREE.Group();
 building.add(acrylic);
 {
   /* [LOGO] + ArtViSi + ON — 3D acrylic letters, sign band par mounted */
-  new FontLoader().load('./lib/gentilis_bold.typeface.json', (font)=>{
+  ('requestIdleCallback' in window ? requestIdleCallback : (fn)=>setTimeout(fn,1500))(()=> new FontLoader().load('./lib/gentilis_bold.typeface.json', (font)=>{
     const mk = (str, mat)=>{
       const geo = new TextGeometry(str, { font, size: 1.42, height: .22, curveSegments: 10,
         bevelEnabled: true, bevelThickness: .028, bevelSize: .02, bevelSegments: 3 });
@@ -1498,7 +1500,7 @@ building.add(acrylic);
     grp.add(logoG, B.m, O.m);
     grp.position.set(.8 - total/2, 13.3 - maxH/2, -4.30);
     acrylic.add(grp);
-  });
+  }), {timeout:5000});
 }
 register(acrylic, {
   name:'Acrylic Letters (3D)', sub:'ArtViSiON 3D Letters — Logo · Jet Black + Solid Red',
@@ -4236,7 +4238,7 @@ scene.add(interior);
     const lip = box(CW+.1, CW+.1, .17, new THREE.MeshStandardMaterial({ color:0x0a0a0b, roughness:.7 }), x, 4.15, z+.005, interior);
     lip.userData.divKey = dv.key;
     /* canvas artwork */
-    const tex = texLd.load(`assets/div-${dv.key}.png`, tt => { tt.colorSpace = THREE.SRGBColorSpace; tt.anisotropy = 8; });
+    const tex = texLd.load(`assets/div-${dv.key}.jpg`, tt => { tt.colorSpace = THREE.SRGBColorSpace; tt.anisotropy = 8; });
     const art = new THREE.Mesh(new THREE.PlaneGeometry(CW, CW),
       new THREE.MeshStandardMaterial({ map: tex, roughness:.85 }));
     art.position.set(x, 4.15, z+.1);
@@ -4829,7 +4831,7 @@ function openGallery(key){
   if(!dv) return;
   galleryOpen = true;
   galName.textContent = dv.label;
-  galIcon.src = `assets/div-${dv.key}.png`;
+  galIcon.src = `assets/div-${dv.key}.jpg`;
   document.getElementById('gsLetter').textContent = dv.letter;
   document.getElementById('gsTag').textContent = dv.tag;
   document.getElementById('gsList').innerHTML =
@@ -4860,7 +4862,7 @@ function openGallery(key){
     galGrid.appendChild(item);
   }
   /* division canvas cover — collage ka pehla bada tile */
-  addTile(`assets/div-${dv.key}.png`, 't-tall', false);
+  addTile(`assets/div-${dv.key}.jpg`, 't-tall', false);
   for(let i=1; i<=dv.photos; i++){
     const isBA = dv.beforeAfter && dv.beforeAfter.includes(i);
     if(isBA){ addTile(`assets/gallery/${dv.key}-${i}.jpg`, 'wide', true); continue; }
@@ -5446,5 +5448,5 @@ addEventListener('resize', ()=>{
   clearFocusOffset();
 });
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a411dd7ccc222666',t:'MTc5MDQyMTQ3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
