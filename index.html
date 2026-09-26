@@ -15,7 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#f6f5f2; --ink:#171717; --red:#ff0000; --red-deep:#c40000; --muted:#6b6965;
+    --paper:#f6f5f2; --ink:#171717; --red:#ff0000; --red-deep:#ff0000; --muted:#6b6965;
     --serif:'Playfair Display',Georgia,serif; --sans:Montserrat,'Noto Sans Devanagari',Arial,sans-serif;
     --glass-light:rgba(246,245,242,.92); --glass-dark:rgba(20,20,22,.78);
     --shadow-lg:0 24px 70px rgba(0,0,0,.35); --shadow-sm:0 8px 30px rgba(0,0,0,.22);
@@ -60,6 +60,14 @@
   .brand-chip h1 span{color:var(--red)}
   .brand-chip p{margin:0;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
 
+  /* top-left LIVE INDORE chip — time + weather, auto update */
+  .live-chip{position:fixed;z-index:22;top:18px;left:18px;display:flex;align-items:center;gap:10px;background:var(--glass-dark);backdrop-filter:blur(10px);color:#fff;padding:11px 18px;border-radius:999px;font-size:10px;letter-spacing:.14em;font-weight:600;text-transform:uppercase;border:1px solid rgba(255,255,255,.14);box-shadow:var(--shadow-sm);animation:hudIn .8s var(--ease-out) both;animation-delay:.5s;white-space:nowrap}
+  .live-chip .live-city{color:#ff0000;letter-spacing:.2em}
+  .live-chip .live-clock{font-variant-numeric:tabular-nums}
+  .live-chip .live-wx{color:#ffd9a0}
+  .live-chip .live-sep{width:1px;height:12px;background:rgba(255,255,255,.25)}
+  @media(max-width:640px){.live-chip{font-size:8.5px;padding:9px 13px;gap:7px;top:14px;left:14px}}
+
   /* top-right control cluster */
   .ctrl-cluster{position:fixed;z-index:22;top:18px;right:18px;display:flex;gap:8px;animation:hudIn .8s var(--ease-out) both;animation-delay:.55s}
   .ctrl-btn{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.5);background:var(--glass-light);backdrop-filter:blur(12px);box-shadow:var(--shadow-sm);cursor:pointer;display:grid;place-items:center;transition:.22s;color:var(--ink)}
@@ -70,7 +78,7 @@
   .climate-chip.show{display:flex}
 
   .hint{bottom:18px;left:50%;transform:translateX(-50%);background:var(--glass-dark);backdrop-filter:blur(10px);color:#fff;font-size:10px;letter-spacing:.13em;text-transform:uppercase;font-weight:600;padding:12px 22px;border-radius:999px;display:flex;gap:20px;white-space:nowrap;transition:opacity .5s;border:1px solid rgba(255,255,255,.12);box-shadow:var(--shadow-sm);animation:hudIn .8s var(--ease-out) both;animation-delay:.7s}
-  .hint b{color:#ff6b6b;font-weight:700}
+  .hint b{color:#ff0000;font-weight:700}
   .hint .kbd{display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:5px;padding:2px 7px;font-size:9px;margin-right:6px;letter-spacing:.08em}
   .hint.hidden{opacity:0}
   @media(max-width:640px){.hint{gap:10px;padding:10px 14px;font-size:8.5px}}
@@ -111,7 +119,7 @@
   .counter-nav button{width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.45);background:var(--glass-dark);color:#fff;font-size:17px;cursor:pointer;backdrop-filter:blur(10px);transition:.22s;box-shadow:var(--shadow-sm)}
   .counter-nav button:hover{background:var(--red);border-color:var(--red);transform:translateY(-2px)}
   .counter-nav .count{color:#fff;font-size:11px;letter-spacing:.2em;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.6)}
-  .counter-nav .count b{font-size:17px;color:#ff6b6b}
+  .counter-nav .count b{font-size:17px;color:#ff0000}
 
   /* ---------- Help modal ---------- */
   .help-modal{position:fixed;inset:0;z-index:90;background:rgba(10,10,11,.82);backdrop-filter:blur(10px);display:none;place-items:center;padding:20px}
@@ -128,7 +136,7 @@
   .help-card .btn{width:100%}
 
   /* ---------- Welcome splash ---------- */
-  .splash{position:fixed;inset:0;z-index:80;background:radial-gradient(circle at 50% 42%, #ff2a00 0%, var(--red) 55%, #c40000 100%);display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .8s}
+  .splash{position:fixed;inset:0;z-index:80;background:radial-gradient(circle at 50% 42%, #ff0000 0%, var(--red) 55%, #ff0000 100%);display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .8s}
   .splash.show{opacity:1;pointer-events:auto}
   .splash-inner{text-align:center;color:#fff;transform:scale(.85);transition:transform 1.2s cubic-bezier(.16,1,.3,1)}
   .splash.show .splash-inner{transform:scale(1)}
@@ -201,12 +209,12 @@
   .mob-card{max-width:340px;color:#fff}
   .mob-card img{width:76px;height:auto;margin:0 auto 18px;display:block;filter:drop-shadow(0 8px 30px rgba(255,0,0,.4))}
   .mob-card h2{font-family:var(--serif);font-weight:600;font-size:30px;margin:0 0 4px;letter-spacing:-.02em}
-  .mob-card h2 span{color:#ff5a4a}
+  .mob-card h2 span{color:#ff0000}
   .mob-card .tag2{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.55);font-weight:700;margin-bottom:18px}
   .mob-card p{font-size:13px;line-height:1.7;color:rgba(255,255,255,.75);margin:0 0 12px}
   .mob-card .note{font-size:11px;color:rgba(255,255,255,.45)}
   .mob-card .btn{width:100%;margin-top:18px;background:var(--red);border-color:var(--red);color:#fff;padding:16px}
-  .mob-card .btn:active{background:#c40000}
+  .mob-card .btn:active{background:#ff0000}
   .mob-tips{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
   .mob-tips span{font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:6px 12px;color:rgba(255,255,255,.65)}
 
@@ -239,7 +247,7 @@
       <span>👆 Drag = घुमाएँ</span><span>🤏 Pinch = ज़ूम</span><span>👇 Tap = प्रोडक्ट</span>
     </div>
     <button class="btn red" id="mobEnter">शुरू करें →</button>
-    <p class="note" style="margin-top:12px">19 Products · 5 Galleries · 87 Photos</p>
+    <p class="note" style="margin-top:12px">20 Products · 5 Galleries · 87 Photos</p>
   </div>
 </div>
 
@@ -260,6 +268,13 @@
   </div>
 </div>
 
+<div class="live-chip" id="liveChip" title="Indore — live time & weather">
+  <span class="live-city">Indore</span>
+  <span class="live-sep"></span>
+  <span class="live-clock" id="liveClock">--:--:--</span>
+  <span class="live-sep"></span>
+  <span class="live-wx" id="liveWx">🌡️ --°C</span>
+</div>
 <div class="ctrl-cluster">
   <div class="climate-chip" id="climateChip">🌧️ बारिश</div>
   <button class="ctrl-btn" id="btnSound" title="Sound on/off">
@@ -305,7 +320,7 @@
 <aside class="info-panel" id="infoPanel">
   <div class="info-head">
     <button class="info-close" id="infoClose" title="बंद करें">✕</button>
-    <div class="info-eyebrow" id="infoIndex">Product 01 / 18</div>
+    <div class="info-eyebrow" id="infoIndex">Product 01 / 20</div>
     <h2 id="infoTitle">—</h2>
     <h3 id="infoSub">—</h3>
   </div>
@@ -322,7 +337,7 @@
 
 <div class="counter-nav" id="counterNav">
   <button id="navPrev" title="पिछला प्रोडक्ट">←</button>
-  <div class="count"><b id="navNum">01</b> / <span id="navTotal">18</span></div>
+  <div class="count"><b id="navNum">01</b> / <span id="navTotal">20</span></div>
   <button id="navNext" title="अगला प्रोडक्ट">→</button>
 </div>
 
@@ -373,6 +388,8 @@
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from './lib/OrbitControls.js';
+import { FontLoader } from './lib/FontLoader.js';
+import { TextGeometry } from './lib/TextGeometry.js';
 
 /* ================= BRAND ================= */
 const RED = 0xff0000, INK = 0x171717, PAPER = 0xf6f5f2, CREAM = 0xefe9df;
@@ -540,7 +557,7 @@ scene.add(sun);
    Signage, backlit fabric, bulbs ki realistic glow. Desktop-only (mobile perf).
    Flow: scene → HDR RT → bright-pass → 3-level blur → composite (ACES + sRGB) */
 const FX_PARAM = new URLSearchParams(location.search).get('fx');   // ?fx=off → bloom band
-const CGI = { on: !IS_MOBILE && FX_PARAM !== 'off', strength: .48, threshold: .7, knee: .5 };
+const CGI = { on: !IS_MOBILE && FX_PARAM !== 'off', strength: .12, threshold: 1.0, knee: .18 };
 if(!CGI.on) document.body.classList.add('nofx');      /* ?fx=off → film-grain bhi band */
 const fsScene = new THREE.Scene();
 const fsCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -604,11 +621,15 @@ const cgiComp = new THREE.ShaderMaterial({
     }
     void main(){
       vec3 base = texture2D(tBase, vUv).rgb;
-      vec3 bloom = texture2D(tB0, vUv).rgb
-                 + texture2D(tB1, vUv).rgb * 0.72
-                 + texture2D(tB2, vUv).rgb * 0.50;
+      vec3 bloom = texture2D(tB0, vUv).rgb * 0.45
+                 + texture2D(tB1, vUv).rgb * 0.30
+                 + texture2D(tB2, vUv).rgb * 0.22;
       vec3 col = base + bloom * uStrength;
-      gl_FragColor = vec4(cgiACES(col), 1.0);
+      vec3 outc = cgiACES(col);
+      outc = clamp((outc - 0.5) * 1.10 + 0.5, 0.0, 1.0);    /* HIGH CONTRAST — products crisp, dhundla-pan hatta */
+      float luma = dot(outc, vec3(0.2126, 0.7152, 0.0722));
+      outc = clamp(mix(vec3(luma), outc, 1.03), 0.0, 1.0);  /* sirf halka sat — oversaturated glow nahi */
+      gl_FragColor = vec4(outc, 1.0);
       #include <colorspace_fragment>
     }`,
   depthTest:false, depthWrite:false
@@ -683,12 +704,20 @@ function renderFrame(){
 }
 if(CGI.on){ cgiResize(); renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.6)); }
 /* adaptive quality: bloom bojh lagaye to ek baar band */
-let cgiFpsAcc = 0, cgiFpsN = 0;
+let cgiFpsAcc = 0, cgiFpsN = 0, cgiWarmFrames = 0;
 function cgiWatchFps(dt){
   if(!CGI.on) return;
+  /* warm-up: pehle ~240 frames skip (shader-compile + asset-load jank).
+     Pehle yeh jank bhi count hota tha aur glow ek baar permanently band ho
+     jata tha — isi wajah se glow randomly "fail" hota tha. */
+  if(cgiWarmFrames++ < 240) return;
   cgiFpsAcc += dt; cgiFpsN++;
   if(cgiFpsN >= 90){
-    if(cgiFpsAcc / cgiFpsN > 1/34){ CGI.on = false; renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); }
+    if(cgiFpsAcc / cgiFpsN > 1/34){
+      CGI.on = false;
+      if(cgiBase){ cgiBase.dispose(); cgiLv.forEach(l => { l.a.dispose(); l.b.dispose(); }); cgiBase = null; cgiLv = []; }
+      renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    }
     cgiFpsAcc = 0; cgiFpsN = 0;
   }
 }
@@ -943,16 +972,19 @@ const acpTex = makeTex(512, 512, (g)=>{
   for(let x=0;x<=3;x++){ g.beginPath(); g.moveTo(x*171,0); g.lineTo(x*171,512); g.stroke(); }
 }, [3,1]);
 
-/* red ACP band */
-const redAcpTex = makeTex(512, 256, (g)=>{
-  g.fillStyle = '#d40000'; g.fillRect(0,0,512,256);
+/* BLACK ACP band — signage facade cladding (revised: red → matt black) */
+const blackAcpTex = makeTex(512, 256, (g)=>{
+  g.fillStyle = '#0c0d0f'; g.fillRect(0,0,512,256);
   for(let x=0;x<4;x++){
     const gr = g.createLinearGradient(x*128,0,x*128+128,256);
-    gr.addColorStop(0,'#ff0000'); gr.addColorStop(1,'#cc0000');
+    gr.addColorStop(0,'#25272c'); gr.addColorStop(1,'#0e0f12');
     g.fillStyle = gr; g.fillRect(x*128+3, 3, 122, 250);
   }
-  g.strokeStyle = '#8f0000'; g.lineWidth = 5;
+  g.strokeStyle = '#000000'; g.lineWidth = 5;
   for(let x=0;x<=4;x++){ g.beginPath(); g.moveTo(x*128,0); g.lineTo(x*128,256); g.stroke(); }
+  /* halki highlight — matt black panel ki subtle edge sheen */
+  g.strokeStyle = 'rgba(255,255,255,.05)'; g.lineWidth = 1;
+  for(let x=0;x<4;x++){ g.beginPath(); g.moveTo(x*128+4, 0); g.lineTo(x*128+4, 256); g.stroke(); }
 }, [4,1]);
 
 /* frosted vinyl window graphic — geometric pattern, no letters */
@@ -975,7 +1007,7 @@ const vinylTex = makeTex(512, 512, (g)=>{
 /* banner fabric — brand pattern */
 const bannerTex = makeTex(512, 1024, (g)=>{
   const gr = g.createLinearGradient(0,0,0,1024);
-  gr.addColorStop(0,'#ff1a00'); gr.addColorStop(.6,'#e60000'); gr.addColorStop(1,'#b30000');
+  gr.addColorStop(0,'#ff0000'); gr.addColorStop(.6,'#ff0000'); gr.addColorStop(1,'#ff0000');
   g.fillStyle = gr; g.fillRect(0,0,512,1024);
   g.globalAlpha = .14; g.fillStyle = '#fff';
   for(let i=-6;i<14;i++){ g.save(); g.translate(0, i*90); g.rotate(-.28); g.fillRect(-100, 0, 800, 26); g.restore(); }
@@ -1018,7 +1050,7 @@ const standeeTex = makeTex(512, 1024, (g)=>{
 /* backlight fabric — glowing gradient shapes */
 const backlitTex = makeTex(1024, 512, (g)=>{
   const gr = g.createLinearGradient(0,0,1024,512);
-  gr.addColorStop(0,'#ff3300'); gr.addColorStop(.45,'#ff0000'); gr.addColorStop(1,'#b90000');
+  gr.addColorStop(0,'#ff0000'); gr.addColorStop(.45,'#ff0000'); gr.addColorStop(1,'#ff0000');
   g.fillStyle = gr; g.fillRect(0,0,1024,512);
   g.globalAlpha = .8;
   const rg = g.createRadialGradient(300,256,20,300,256,300);
@@ -1070,7 +1102,7 @@ function makeMehrabTex(){
     g.fillStyle = '#f6f5f2'; g.fillRect(0,0,1024,512);
     for(let i=0;i<5;i++){
       const cx = 102 + i*205;
-      g.fillStyle = i%2 ? '#e20000' : '#171717';
+      g.fillStyle = i%2 ? '#ff0000' : '#171717';
       g.beginPath();
       g.moveTo(cx-72, 512); g.lineTo(cx-72, 220);
       g.quadraticCurveTo(cx, 60, cx+72, 220);
@@ -1080,10 +1112,10 @@ function makeMehrabTex(){
       g.moveTo(cx-48, 512); g.lineTo(cx-48, 240);
       g.quadraticCurveTo(cx, 120, cx+48, 240);
       g.lineTo(cx+48, 512); g.closePath(); g.fill();
-      g.fillStyle = i%2 ? '#171717' : '#e20000';
+      g.fillStyle = i%2 ? '#171717' : '#ff0000';
       g.beginPath(); g.arc(cx, 300, 26, 0, 7); g.fill();
     }
-    g.fillStyle = '#e20000';
+    g.fillStyle = '#ff0000';
     for(let x=0;x<1024;x+=64){ g.beginPath(); g.arc(x+32, 26, 32, 0, Math.PI); g.fill(); }
     g.fillStyle = '#171717';
     for(let x=16;x<1024;x+=42){ g.beginPath(); g.arc(x, 80, 5, 0, 7); g.fill(); }
@@ -1142,7 +1174,7 @@ const M = {
   redGloss: new THREE.MeshPhysicalMaterial({ color: RED, roughness:.15, metalness:.1, clearcoat:1, clearcoatRoughness:.15 }),
   cream: new THREE.MeshStandardMaterial({ color: CREAM, roughness:.9 }),
   paper: new THREE.MeshStandardMaterial({ color: PAPER, roughness:.92 }),
-  glass: new THREE.MeshPhysicalMaterial({ color:0xbfd4e2, roughness:.08, metalness:.1, transparent:true, opacity:.4, transmission:0, reflectivity:.6 }),
+  glass: new THREE.MeshPhysicalMaterial({ color:0xd9ecf6, roughness:.06, metalness:.08, transparent:true, opacity:.13, transmission:0, reflectivity:.35 }),
 };
 
 const outside = new THREE.Group();
@@ -1262,7 +1294,7 @@ function updateDust(t){
 
 /* red carpet path from gate to door */
 const carpet = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 30),
-  detail(new THREE.MeshStandardMaterial({ color: 0xd40000, roughness:.98 }), 'weave', 2, 14, .6, .55));
+  detail(new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.98 }), 'weave', 2, 14, .6, .55));
 carpet.rotation.x = -Math.PI/2;
 carpet.position.set(0, .02, 6);
 carpet.receiveShadow = true;
@@ -1324,14 +1356,14 @@ const walnutTex = makeTex(256, 512, (g)=>{
 const wingMat = detail(new THREE.MeshStandardMaterial({ map: walnutTex, roughness:.75, metalness:.05, envMapIntensity:.5 }), 'wood', 2, 3.2, .6, .55);
 box(7, 12, 10, wingMat, -26.5, 6, -11, building);
 box(7, 12, 10, wingMat, 26.5, 6, -11, building);
-/* wings par golden lip */
-const goldTrim = new THREE.MeshStandardMaterial({ color: 0xc9a24a, roughness:.3, metalness:.7 });
-box(7.3, .3, 10.3, goldTrim, -26.5, 12.1, -11, building);
-box(7.3, .3, 10.3, goldTrim, 26.5, 12.1, -11, building);
-/* roof lip — dark walnut + gold edge */
+/* wings par silver-steel lip */
+const steelTrim = new THREE.MeshStandardMaterial({ color: 0xc3c8ce, roughness:.28, metalness:.85 });
+box(7.3, .3, 10.3, steelTrim, -26.5, 12.1, -11, building);
+box(7.3, .3, 10.3, steelTrim, 26.5, 12.1, -11, building);
+/* roof lip — dark walnut + silver-steel edge */
 const glossSilver = new THREE.MeshPhysicalMaterial({ color: 0xc9cdd3, roughness:.12, metalness:.85, clearcoat:1, clearcoatRoughness:.1 });
 box(48, .7, 13.4, detail(new THREE.MeshStandardMaterial({ map: walnutTex, roughness:.6, metalness:.15 }), 'wood', 12, 3, .5, .45), 0, 15.85, -11, building);
-box(48.3, .16, 13.6, goldTrim, 0, 16.28, -11, building);
+box(48.3, .16, 13.6, steelTrim, 0, 16.28, -11, building);
 /* facade ke LEFT-RIGHT corners par RED pillars — full height */
 const finMat = new THREE.MeshPhysicalMaterial({ color: RED, roughness:.28, metalness:.15, clearcoat:.8 });
 [-22.7, 22.7].forEach(x=>{
@@ -1368,9 +1400,9 @@ function register(group, data){
 const acpSign = new THREE.Group();
 building.add(acpSign);
 {
-  /* band left-right pillars tak + top roof tak poora fill */
+  /* band left-right pillars tak + top roof tak poora fill — MATT BLACK ACP */
   const band = new THREE.Mesh(new THREE.BoxGeometry(44.7, 4.5, .5),
-    detail(new THREE.MeshStandardMaterial({ map: redAcpTex, roughness:.4, metalness:.25 }), 'brushed', 4, 2, .3, .28));
+    detail(new THREE.MeshStandardMaterial({ map: blackAcpTex, roughness:.42, metalness:.28 }), 'brushed', 4, 2, .3, .28));
   band.position.set(0, 13.3, -4.7); band.castShadow = true; acpSign.add(band);
   /* silver sign tray for the white lightbox face */
   const tray = new THREE.Mesh(new THREE.BoxGeometry(16.4, 3.15, .3),
@@ -1400,16 +1432,16 @@ building.add(acpSign);
       new THREE.MeshStandardMaterial({ color: 0xfff6e6, emissive: 0xffedd0, emissiveIntensity: 1.6 }));
     bulb.position.set(x, 15.37, -3.28); acpSign.add(bulb);
     /* focused spotlight washing down the sign face */
-    const spot = new THREE.SpotLight(0xfff0dc, 55, 9, .62, .45, 1.4);
+    const spot = new THREE.SpotLight(0xfff0dc, 30, 9, .52, .5, 1.4);
     spot.position.set(x, 15.55, -3.2);
     spot.target.position.set(x, 12.8, -4.4);
     acpSign.add(spot); acpSign.add(spot.target);
   });
 }
 register(acpSign, {
-  name:'ACP Cladding Signage', sub:'Matte Silver ACP Facade + White Lightbox Sign Band',
-  desc:'Showroom के facade पर premium matte silver ACP cladding — groove-line panels, weather-proof finish, और sign band पर clean white lightbox। Board अभी blank है — इसी पर आपका brand logo acrylic lit letters में लगता है। ऊपर gooseneck focus lights का professional setup दिन-रात even lighting देता है।',
-  specs:[['Cladding','Matte silver ACP, PVDF coat'],['Sign band','White lightbox, silver tray'],['Lighting','Gooseneck focus downlighters'],['Structure','MS frame + aluminium tray'],['Life','8–10 साल outdoor warranty']],
+  name:'ACP Cladding Signage', sub:'Matte Black ACP Facade + White Lightbox Sign Band',
+  desc:'Showroom के facade पर premium matte black ACP cladding — groove-line panels, weather-proof finish, और sign band पर clean white lightbox जिस पर ArtViSiON के 3D acrylic letters माउंटेड हैं। ऊपर gooseneck focus lights का professional setup दिन-रात even lighting देता है।',
+  specs:[['Cladding','Matte black ACP, PVDF coat'],['Sign band','Lightbox + ArtViSiON acrylic 3D letters'],['Lighting','Gooseneck focus downlighters'],['Structure','MS frame + aluminium tray'],['Life','8–10 साल outdoor warranty']],
   tags:['Facade','Lightbox','Professional Lit'],
   camPos:[0, 13.7, 7.5], camTarget:[0, 13.3, -4.6]
 });
@@ -1418,38 +1450,57 @@ register(acpSign, {
 const acrylic = new THREE.Group();
 building.add(acrylic);
 {
-  /* ACP Cladding Signage ke WHITE LIGHTBOX par hi mounted — jaisa real me hota hai */
-  const y = 13.3, z = -4.2, cx = 0;
-  /* plain matte red — koi glossy/clearcoat effect nahi */
-  const redFlat = new THREE.MeshPhysicalMaterial({
-    color: 0xff0a1e, roughness:.06, metalness:0,
-    transparent:true, opacity:.8,
-    clearcoat:1, clearcoatRoughness:.05,
-    emissive: 0xaa0010, emissiveIntensity:.45   // andar se LED-lit glow
-  });
-  const shapes = [
-    () => new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,.3,40), redFlat),
-    () => new THREE.Mesh(new THREE.BoxGeometry(.85,.4,.3), redFlat),
-    () => new THREE.Mesh(new THREE.CylinderGeometry(.46,.46,.3,3), redFlat),
-    () => new THREE.Mesh(new THREE.TorusGeometry(.38,.14,16,40), redFlat),
-    () => new THREE.Mesh(new THREE.BoxGeometry(.38,.85,.3), redFlat),
-    () => new THREE.Mesh(new THREE.CylinderGeometry(.48,.48,.3,6), redFlat),
-  ];
-  /* even spacing, sab lightbox ke center-line par */
-  const xs = [-5.4, -3.25, -1.15, 1.0, 3.05, 5.1];
-  shapes.forEach((make, i)=>{
-    const s = make();
-    if(s.geometry.type.includes('Cylinder')) s.rotation.x = Math.PI/2;
-    s.position.set(cx + xs[i], y, z + .1);
-    s.castShadow = true;
-    acrylic.add(s);
-
+  /* [LOGO] + ArtViSi + ON — 3D acrylic letters, sign band par mounted */
+  new FontLoader().load('./lib/gentilis_bold.typeface.json', (font)=>{
+    const mk = (str, mat)=>{
+      const geo = new TextGeometry(str, { font, size: 1.42, height: .22, curveSegments: 10,
+        bevelEnabled: true, bevelThickness: .028, bevelSize: .02, bevelSegments: 3 });
+      geo.computeBoundingBox();
+      const bb = geo.boundingBox;
+      const w = bb.max.x - bb.min.x, h = bb.max.y - bb.min.y;
+      geo.translate(-bb.min.x, -bb.min.y, 0);
+      const m = new THREE.Mesh(geo, mat);
+      m.castShadow = true;
+      return { m, w, h };
+    };
+    const artMat = new THREE.MeshPhysicalMaterial({
+      color: 0x17181b, roughness:.16, metalness:.05,
+      clearcoat:1, clearcoatRoughness:.06, transparent:true, opacity:.96
+    });
+    const redMat = new THREE.MeshPhysicalMaterial({
+      color: 0xff0000, roughness:.1, metalness:0,
+      clearcoat:1, clearcoatRoughness:.05, transparent:false,
+      emissive: 0xff0000, emissiveIntensity:.45
+    });
+    const whiteAcr = new THREE.MeshPhysicalMaterial({
+      color: 0xf4f5f7, roughness:.14, metalness:.03,
+      clearcoat:1, clearcoatRoughness:.06, transparent:true, opacity:.95
+    });
+    /* brand LOGO — white ring > ink disc > red core (3-layer acrylic disc) */
+    const logoG = new THREE.Group();
+    [[.56, whiteAcr, .10], [.36, artMat, .13], [.17, redMat, .15]].forEach(([r, mt, dz])=>{
+      const c = new THREE.Mesh(new THREE.CylinderGeometry(r, r, .12, 48), mt);
+      c.rotation.x = Math.PI/2; c.position.z = dz - .12; c.castShadow = true;
+      logoG.add(c);
+    });
+    const B = mk('ArtViSi', artMat);     /* baki sab black */
+    const O = mk('ON', redMat);          /* sirf ON red */
+    const gLogo = .52, gWord = .1;
+    const total = 1.12 + gLogo + B.w + gWord + O.w;
+    const maxH = Math.max(B.h, O.h);
+    const grp = new THREE.Group();
+    logoG.position.set(.56, maxH/2, 0);
+    B.m.position.x = 1.12 + gLogo;
+    O.m.position.x = 1.12 + gLogo + B.w + gWord;
+    grp.add(logoG, B.m, O.m);
+    grp.position.set(.8 - total/2, 13.3 - maxH/2, -4.30);
+    acrylic.add(grp);
   });
 }
 register(acrylic, {
-  name:'Acrylic Letters (3D)', sub:'Cast Acrylic — Translucent Red, LED Halo Glow',
-  desc:'Cast acrylic 3D letters और brand shapes — translucent red acrylic जिसमें रोशनी आर-पार झलकती है, बिल्कुल real acrylic की तरह। Laser-cut clean edges और पीछे से LED halo-lit glow। दिन में bold, रात में premium।',
-  specs:[['Material','8–18mm cast acrylic'],['Cutting','CNC laser, polished edge'],['Lighting','Front-lit / Halo back-lit LED'],['Mounting','Stud + spacer, wall-safe'],['Colours','Solid red, jet black, frost']],
+  name:'Acrylic Letters (3D)', sub:'ArtViSiON 3D Letters — Logo · Jet Black + Solid Red',
+  desc:'Signage band पर माउंटेड ArtViSiON के असली 3D acrylic letters — आगे brand logo, फिर "ArtViSi" जेट-ब्लैक और अंत में "ON" सॉलिड रेड cast acrylic, जिसमें अंदर की LED रोशनी आर-पार झलकती है। CNC laser clean edges, polished bevel और halo-lit glow। दिन में bold, रात में premium।',
+  specs:[['Material','8–18mm cast acrylic'],['Cutting','CNC laser, polished edge'],['Lighting','Front-lit / Halo back-lit LED'],['Mounting','Stud + spacer, wall-safe'],['Colours','Jet black + solid red']],
   tags:['3D Letters','Laser Cut','Halo Lit'],
   camPos:[0, 13.5, 5.5], camTarget:[0, 13.3, -4.4]
 });
@@ -1499,12 +1550,12 @@ windowDisplay.position.z = -1.3;
   const miniDot = new THREE.Mesh(new THREE.CircleGeometry(.2, 32), new THREE.MeshStandardMaterial({ color: RED }));
   miniDot.position.set(WX - 3.4, 1.95, ZP + .1); windowDisplay.add(miniDot);
 
-  /* --- PRODUCT 2: golden trophy --- */
-  const goldM = new THREE.MeshPhysicalMaterial({ color: 0xd4af37, roughness:.2, metalness:.9, clearcoat:.6 });
+  /* --- PRODUCT 2: silver-steel trophy --- */
+  const steelM = new THREE.MeshPhysicalMaterial({ color: 0xdadde2, roughness:.18, metalness:.95, clearcoat:.6 });
   box(1.2, 1.4, 1, M.paper, WX - 1.7, 1.15, ZP - .6, windowDisplay);
-  cyl(.28, .35, .12, goldM, WX - 1.7, 1.92, ZP - .6, windowDisplay);
-  cyl(.06, .11, .32, goldM, WX - 1.7, 2.12, ZP - .6, windowDisplay);
-  const cup = new THREE.Mesh(new THREE.SphereGeometry(.3, 24, 16, 0, Math.PI*2, 0, Math.PI/1.8), goldM);
+  cyl(.28, .35, .12, steelM, WX - 1.7, 1.92, ZP - .6, windowDisplay);
+  cyl(.06, .11, .32, steelM, WX - 1.7, 2.12, ZP - .6, windowDisplay);
+  const cup = new THREE.Mesh(new THREE.SphereGeometry(.3, 24, 16, 0, Math.PI*2, 0, Math.PI/1.8), steelM);
   cup.rotation.x = Math.PI; cup.position.set(WX - 1.7, 2.5, ZP - .6); cup.castShadow = true; windowDisplay.add(cup);
 
   /* --- PRODUCT 3: mini easel + canvas art --- */
@@ -1527,11 +1578,11 @@ windowDisplay.position.z = -1.3;
   const mq = new THREE.Group(); windowDisplay.add(mq);
   mq.position.set(WX + .6, 0, ZP + .3);
   mq.rotation.y = -.2;
-  /* Bengali laal-paar saree: off-white body + chaudi RED border + golden buti */
+  /* Bengali laal-paar saree: off-white body + chaudi RED border + silver buti */
   const dressTex = makeTex(256, 512, (g)=>{
     g.fillStyle = '#f7f2e6'; g.fillRect(0,0,256,512);           // cream/white body
-    /* golden buti (chhote motifs) */
-    g.fillStyle = 'rgba(201,162,74,.75)';
+    /* silver buti (chhote motifs) */
+    g.fillStyle = 'rgba(206,212,220,.85)';
     for(let y=0;y<9;y++) for(let x=0;x<6;x++){
       const cx = x*44+20 + (y%2)*22, cy = y*48+22;
       g.beginPath();
@@ -1539,17 +1590,17 @@ windowDisplay.position.z = -1.3;
       g.fill();
     }
     /* chaudi RED border neeche (Bengali signature) */
-    g.fillStyle = '#c40000'; g.fillRect(0, 428, 256, 84);
-    g.fillStyle = '#e20000'; g.fillRect(0, 436, 256, 68);
-    /* border par golden temple-motif zigzag */
-    g.fillStyle = '#e8b923';
+    g.fillStyle = '#ff0000'; g.fillRect(0, 428, 256, 84);
+    g.fillStyle = '#ff0000'; g.fillRect(0, 436, 256, 68);
+    /* border par silver temple-motif zigzag */
+    g.fillStyle = '#ced4dc';
     for(let x=0;x<256;x+=24){
       g.beginPath(); g.moveTo(x, 452); g.lineTo(x+12, 436); g.lineTo(x+24, 452); g.closePath(); g.fill();
     }
-    g.fillStyle = '#c9a24a'; g.fillRect(0, 424, 256, 5); g.fillRect(0, 500, 256, 5);
+    g.fillStyle = '#c5cad1'; g.fillRect(0, 424, 256, 5); g.fillRect(0, 500, 256, 5);
   });
   const dressM = new THREE.MeshStandardMaterial({ map: dressTex, roughness:.65 });
-  const blouseM = new THREE.MeshStandardMaterial({ color: 0xc40000, roughness:.5 });
+  const blouseM = new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.5 });
   const skinM = new THREE.MeshStandardMaterial({ color: 0xe9d3b8, roughness:.5 });   // warm skin tone
   /* round display base */
   cyl(.55, .62, .12, M.dark, 0, .42, 0, mq);
@@ -1584,7 +1635,7 @@ windowDisplay.position.z = -1.3;
   head.scale.y = 1.12;
   head.position.y = 3.9; head.castShadow = true; mq.add(head);
   /* lips — real shape: upar 2 lobes (cupid's bow) + neeche bhara hua lower lip */
-  const lipM = new THREE.MeshPhysicalMaterial({ color: 0xc4103a, roughness:.25, clearcoat:.9, clearcoatRoughness:.2 });
+  const lipM = new THREE.MeshPhysicalMaterial({ color: 0xff0000, roughness:.25, clearcoat:.9, clearcoatRoughness:.2 });
   const lipTop1 = new THREE.Mesh(new THREE.SphereGeometry(.028, 12, 10), lipM);
   lipTop1.scale.set(1.25, .62, .62); lipTop1.position.set(-.024, 3.845, .186); mq.add(lipTop1);
   const lipTop2 = new THREE.Mesh(new THREE.SphereGeometry(.028, 12, 10), lipM);
@@ -1592,7 +1643,7 @@ windowDisplay.position.z = -1.3;
   const lipBot = new THREE.Mesh(new THREE.SphereGeometry(.042, 14, 12), lipM);
   lipBot.scale.set(1.35, .68, .72); lipBot.position.set(0, 3.812, .188); mq.add(lipBot);
   /* lip crease shadow */
-  const lipLine = new THREE.Mesh(new THREE.SphereGeometry(.036, 10, 8), new THREE.MeshBasicMaterial({ color: 0x6e0a20 }));
+  const lipLine = new THREE.Mesh(new THREE.SphereGeometry(.036, 10, 8), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
   lipLine.scale.set(1.55, .12, .5); lipLine.position.set(0, 3.83, .19); mq.add(lipLine);
   /* Bengali hairstyle — center-part hair + peeche KHOPA (bun) + jasmine gajra */
   const hairM = new THREE.MeshStandardMaterial({ color: 0x131315, roughness:.5 });
@@ -1617,7 +1668,7 @@ windowDisplay.position.z = -1.3;
   bindi.position.set(0, 3.99, .195); mq.add(bindi);
   /* jhumka earrings */
   [-.19,.19].forEach(x=>{
-    const j = new THREE.Mesh(new THREE.ConeGeometry(.028, .06, 10), goldM);
+    const j = new THREE.Mesh(new THREE.ConeGeometry(.028, .06, 10), steelM);
     j.rotation.x = Math.PI; j.position.set(x, 3.8, .02); mq.add(j);
   });
   /* --- LEFT arm: jointed pivot — kandhe se neeche, kohni se kamar par (natural) --- */
@@ -1636,7 +1687,7 @@ windowDisplay.position.z = -1.3;
   foreL.rotation.z = 1.35; foreL.rotation.y = .35;  // kohni mud ke haath kamar par
   /* choodi (bangles) left wrist */
   for(let i=0;i<3;i++){
-    const bgl = new THREE.Mesh(new THREE.TorusGeometry(.052, .008, 8, 20), i===1 ? new THREE.MeshStandardMaterial({ color: RED, roughness:.4 }) : goldM);
+    const bgl = new THREE.Mesh(new THREE.TorusGeometry(.052, .008, 8, 20), i===1 ? new THREE.MeshStandardMaterial({ color: RED, roughness:.4 }) : steelM);
     bgl.position.set(0, -.34 - i*.025, 0); bgl.rotation.x = Math.PI/2; foreL.add(bgl);
   }
   /* --- RIGHT arm: FLYING KISS pivot (jointed, natural) --- */
@@ -1653,17 +1704,17 @@ windowDisplay.position.z = -1.3;
   hand.position.set(0, -.42, 0); foreArm.add(hand);
   /* choodi right wrist bhi */
   for(let i=0;i<3;i++){
-    const bgl = new THREE.Mesh(new THREE.TorusGeometry(.052, .008, 8, 20), i===1 ? new THREE.MeshStandardMaterial({ color: RED, roughness:.4 }) : goldM);
+    const bgl = new THREE.Mesh(new THREE.TorusGeometry(.052, .008, 8, 20), i===1 ? new THREE.MeshStandardMaterial({ color: RED, roughness:.4 }) : steelM);
     bgl.position.set(0, -.34 - i*.025, 0); bgl.rotation.x = Math.PI/2; foreArm.add(bgl);
   }
   kissArm.rotation.z = -.15;                   // rest — haath seedha neeche
   /* jewellery */
-  const neck = new THREE.Mesh(new THREE.TorusGeometry(.1, .018, 10, 28), goldM);
+  const neck = new THREE.Mesh(new THREE.TorusGeometry(.1, .018, 10, 28), steelM);
   neck.position.set(0, 3.54, .08); neck.rotation.x = 1.25; mq.add(neck);
-  const neck2 = new THREE.Mesh(new THREE.TorusGeometry(.14, .012, 10, 28), goldM);
+  const neck2 = new THREE.Mesh(new THREE.TorusGeometry(.14, .012, 10, 28), steelM);
   neck2.position.set(0, 3.44, .1); neck2.rotation.x = 1.3; mq.add(neck2);
   /* kiss heart particle (hidden by default, kiss ke waqt udta hai) */
-  const heartM = new THREE.MeshStandardMaterial({ color: 0xff2050, emissive: 0x881020, emissiveIntensity: .8, transparent: true, opacity: 0 });
+  const heartM = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: .8, transparent: true, opacity: 0 });
   const heart = new THREE.Group();
   const h1 = new THREE.Mesh(new THREE.SphereGeometry(.055, 12, 10), heartM); h1.position.x = -.04; heart.add(h1);
   const h2 = new THREE.Mesh(new THREE.SphereGeometry(.055, 12, 10), heartM); h2.position.x = .04; heart.add(h2);
@@ -1686,7 +1737,7 @@ windowDisplay.position.z = -1.3;
 }
 register(windowDisplay, {
   name:'Sale & Offer Window Display', sub:'Retail Window Styling — Mannequin + Offer Staging',
-  desc:'Sale और offer season के लिए complete window display — center में fashionable mannequin जो राहगीर की नज़र रोक लेती है, साथ में offer staging: mini glowing lightbox, golden award trophy, easel पर vector art canvas और rolled banner prints। मेहराब-pattern backdrop और spotlight staging से पूरी window एक offer-story कहती है।',
+  desc:'Sale और offer season के लिए complete window display — center में fashionable mannequin जो राहगीर की नज़र रोक लेती है, साथ में offer staging: mini glowing lightbox, silver-steel award trophy, easel पर vector art canvas और rolled banner prints। मेहराब-pattern backdrop और spotlight staging से पूरी window एक offer-story कहती है।',
   specs:[['Styling','Mannequin + offer props'],['Podiums','MDF + laminate, LED wash'],['Lighting','Focused spotlights + ambient'],['Props','Lightbox, trophy, canvas, prints'],['Refresh','Sale / season-wise change']],
   tags:['Sale Display','Retail','Visual Merchandising'],
   camPos:[13.1, 3.4, 8], camTarget:[13.1, 2.8, -3.4]
@@ -1807,17 +1858,17 @@ function drawSegScene(t){
   g.strokeStyle = 'rgba(0,0,0,.07)'; g.lineWidth = 2;
   for(let i=0;i<8;i++){ const x = W*.5 + (i-4)*W*.16; g.beginPath(); g.moveTo(W*.5 + (i-4)*W*.05, H*.72); g.lineTo(x, H); g.stroke(); }
   /* back wall red accent + brand circles */
-  g.fillStyle = '#e20000'; g.fillRect(W*.06, H*.14, W*.26, H*.58);
+  g.fillStyle = '#ff0000'; g.fillRect(W*.06, H*.14, W*.26, H*.58);
   g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(W*.19, H*.42, H*.14, 0, 7); g.fill();
   g.fillStyle = '#171717'; g.beginPath(); g.arc(W*.19, H*.42, H*.09, 0, 7); g.fill();
-  g.fillStyle = '#e20000'; g.beginPath(); g.arc(W*.19, H*.42, H*.045, 0, 7); g.fill();
+  g.fillStyle = '#ff0000'; g.beginPath(); g.arc(W*.19, H*.42, H*.045, 0, 7); g.fill();
   /* gallery frames on wall — jhilmilate picture lights ke saath */
   for(let i=0;i<3;i++){
     const fx = W*.4 + i*W*.17, fy = H*.2;
     g.fillStyle = '#171717'; g.fillRect(fx, fy, W*.12, H*.3);
-    g.fillStyle = i===1 ? '#e20000' : '#f6f5f2';
+    g.fillStyle = i===1 ? '#ff0000' : '#f6f5f2';
     g.fillRect(fx+6, fy+6, W*.12-12, H*.3-12);
-    g.fillStyle = i===1 ? '#f6f5f2' : '#e20000';
+    g.fillStyle = i===1 ? '#f6f5f2' : '#ff0000';
     g.beginPath(); g.arc(fx + W*.06, fy + H*.15, H*.05, 0, 7); g.fill();
     /* warm picture light glow (pulse) */
     const gl = .35 + .25*Math.sin(t*2 + i*2);
@@ -1855,7 +1906,7 @@ function drawSegScene(t){
     g.fillStyle = '#26282c'; g.fillRect(sx-10, 0, 20, 8);
   }
   /* thin red frame border (SEG edge) */
-  g.strokeStyle = '#e20000'; g.lineWidth = 8; g.strokeRect(4,4,W-8,H-8);
+  g.strokeStyle = '#ff0000'; g.lineWidth = 8; g.strokeRect(4,4,W-8,H-8);
   seg.tex.needsUpdate = true;
 }
 register(backlit, {
@@ -1873,38 +1924,38 @@ let welcomeSign;
 let printTable;   // Product 13 — alag clickable product
 {
   const px = 5.6, GZ = 20;
-  /* ===== MATT ACP materials — low-sheen composite panels (no gloss, no gold leaf) ===== */
-  const acpRedM   = detail(new THREE.MeshStandardMaterial({ color: 0xc20a0a, roughness:.88, metalness:.12 }), 'brushed', 3, 3, .35, .3);
+  /* ===== MATT ACP materials — low-sheen composite panels (no gloss) — REVISED: black + steel silver ===== */
+  const acpBodyM  = detail(new THREE.MeshStandardMaterial({ color: 0x121316, roughness:.9, metalness:.12 }), 'brushed', 3, 3, .35, .3);   // jet-black body panels (pehle red)
   const acpBlackM = detail(new THREE.MeshStandardMaterial({ color: 0x1d1e21, roughness:.9,  metalness:.1 }), 'brushed', 3, 3, .35, .3);
-  const acpGoldM  = detail(new THREE.MeshStandardMaterial({ color: 0xb59a62, roughness:.78, metalness:.28 }), 'brushed', 3, 3, .35, .3);   // matt champagne ACP
+  const acpSteelM = detail(new THREE.MeshStandardMaterial({ color: 0xb7bcc2, roughness:.55, metalness:.45 }), 'brushed', 3, 3, .35, .3);  // matt silver-steel ACP
   const acpWhiteM = detail(new THREE.MeshStandardMaterial({ color: 0xeeebe4, roughness:.92, metalness:.05 }), 'brushed', 3, 3, .35, .3);
-  /* CNC-cut जाली on matt red ACP (cut-outs me black backing) */
+  /* CNC-cut जाली on matt black ACP (cut-outs me steel-silver backing) */
   const jaaliTex = makeTex(256, 256, (g)=>{
-    g.fillStyle = '#b80a0a'; g.fillRect(0,0,256,256);
-    g.fillStyle = '#1d1e21';
+    g.fillStyle = '#141518'; g.fillRect(0,0,256,256);
+    g.fillStyle = '#aeb3ba';
     for(let y=0;y<4;y++) for(let x=0;x<4;x++){
       const cx = x*64+32, cy = y*64+32;
       g.beginPath();
       for(let i=0;i<8;i++){ const a = i/8*Math.PI*2, r = i%2 ? 10 : 22; g[i?'lineTo':'moveTo'](cx + Math.cos(a)*r, cy + Math.sin(a)*r); }
       g.closePath(); g.fill();
     }
-    g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 2;               // ACP panel groove joints
+    g.strokeStyle = 'rgba(255,255,255,.06)'; g.lineWidth = 2;               // ACP panel groove joints
     g.beginPath(); g.moveTo(0,128); g.lineTo(256,128); g.stroke();
   }, [1, 3]);
   const jaaliM = new THREE.MeshStandardMaterial({ map: jaaliTex, roughness:.88, metalness:.12 });
 
-  /* ---- PILLARS — square ACP-clad boxes: black plinth, matt gold reveals, जाली shaft, folded-ACP pyramid cap ---- */
+  /* ---- PILLARS — square ACP-clad boxes: black plinth, matt steel reveals, जाली shaft, folded-ACP pyramid cap ---- */
   [-px, px].forEach(x=>{
     box(1.7, .5, 1.7, acpBlackM, x, .25, GZ, archGate);
-    box(1.5, .08, 1.5, acpGoldM, x, .54, GZ, archGate);
-    box(1.3, .35, 1.3, acpRedM, x, .75, GZ, archGate);
+    box(1.5, .08, 1.5, acpSteelM, x, .54, GZ, archGate);
+    box(1.3, .35, 1.3, acpBodyM, x, .75, GZ, archGate);
     box(1.05, 5.8, 1.05, jaaliM, x, 3.82, GZ, archGate);
-    [2.3, 4.6].forEach(y=> box(1.12, .08, 1.12, acpGoldM, x, y, GZ, archGate));   // slim reveal bands
-    box(1.3, .1, 1.3, acpGoldM, x, 6.77, GZ, archGate);
+    [2.3, 4.6].forEach(y=> box(1.12, .08, 1.12, acpSteelM, x, y, GZ, archGate));   // slim reveal bands
+    box(1.3, .1, 1.3, acpSteelM, x, 6.77, GZ, archGate);
     box(1.5, .3, 1.5, acpBlackM, x, 6.97, GZ, archGate);
-    const cap = new THREE.Mesh(new THREE.ConeGeometry(.95, .9, 4), acpRedM);        // folded ACP pyramid (छतरी का minimal रूप)
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(.95, .9, 4), acpBodyM);        // folded ACP pyramid (छतरी का minimal रूप)
     cap.rotation.y = Math.PI/4; cap.position.set(x, 7.57, GZ); cap.castShadow = true; archGate.add(cap);
-    const fin = new THREE.Mesh(new THREE.ConeGeometry(.12, .45, 4), acpGoldM);
+    const fin = new THREE.Mesh(new THREE.ConeGeometry(.12, .45, 4), acpSteelM);
     fin.rotation.y = Math.PI/4; fin.position.set(x, 8.24, GZ); archGate.add(fin);
   });
 
@@ -1923,18 +1974,18 @@ let printTable;   // Product 13 — alag clickable product
     return sh;
   }
   const bandGeo = (sh, d) => { const g = new THREE.ExtrudeGeometry(sh, { depth: d, bevelEnabled: false }); g.translate(0, 0, -d/2); return g; };
-  const arch = new THREE.Mesh(bandGeo(archBand(px + .52, 3.7, .7, px - .5, 2.75, .55, .16), .7), acpRedM);
+  const arch = new THREE.Mesh(bandGeo(archBand(px + .52, 3.7, .7, px - .5, 2.75, .55, .16), .7), acpBodyM);
   arch.position.z = GZ; arch.castShadow = true; archGate.add(arch);
-  /* matt gold ACP trim — outer edge + inner scallop edge (dono taraf) */
-  const trimOuter = new THREE.Mesh(bandGeo(archBand(px + .64, 3.82, .74, px + .52, 3.7, .7), .74), acpGoldM);
+  /* matt silver-steel ACP trim — outer edge + inner scallop edge (dono taraf) */
+  const trimOuter = new THREE.Mesh(bandGeo(archBand(px + .64, 3.82, .74, px + .52, 3.7, .7), .74), acpSteelM);
   trimOuter.position.z = GZ; archGate.add(trimOuter);
   [-1, 1].forEach(s=>{
-    const trimIn = new THREE.Mesh(bandGeo(archBand(px - .42, 2.83, .57, px - .5, 2.75, .55, .16), .06), acpGoldM);
+    const trimIn = new THREE.Mesh(bandGeo(archBand(px - .42, 2.83, .57, px - .5, 2.75, .55, .16), .06), acpSteelM);
     trimIn.position.z = GZ + s*.37; archGate.add(trimIn);
   });
   /* center peak — folded ACP finial */
   const peakBase = box(.5, .25, .5, acpBlackM, 0, archY + .35 + 3.82 + .74 + .1, GZ, archGate);
-  const peak = new THREE.Mesh(new THREE.ConeGeometry(.3, .7, 4), acpGoldM);
+  const peak = new THREE.Mesh(new THREE.ConeGeometry(.3, .7, 4), acpSteelM);
   peak.rotation.y = Math.PI/4; peak.position.set(0, peakBase.position.y + .47, GZ); archGate.add(peak);
 
   /* ---- तोरण (गेंदा-फूल garland) — halka, kam blooms ---- */
@@ -1948,7 +1999,7 @@ let printTable;   // Product 13 — alag clickable product
     archGate.add(bloom);
   }
 
-  /* ---- WELCOME board — matt black ACP tray + matt gold ACP frame ---- */
+  /* ---- WELCOME board — matt black ACP tray + matt silver-steel ACP frame ---- */
   welcomeSign = new THREE.Mesh(new THREE.BoxGeometry(6.4, 1.9, .3),
     [acpBlackM, acpBlackM, acpBlackM, acpBlackM,
      new THREE.MeshStandardMaterial({ map: welcomeTex, emissive:0xffffff, emissiveMap: welcomeTex, emissiveIntensity:.42, roughness:.8 }),
@@ -1956,8 +2007,8 @@ let printTable;   // Product 13 — alag clickable product
   welcomeSign.position.set(0, 8.6, GZ);
   welcomeSign.castShadow = true;
   archGate.add(welcomeSign);
-  box(6.7, 2.2, .12, acpGoldM, 0, 8.6, GZ - .12, archGate);
-  /* back side: "पुनः पधारे — हमें खुशी होगी" (gold frame ke peeche, board ke saath jhoolta hai) */
+  box(6.7, 2.2, .12, acpSteelM, 0, 8.6, GZ - .12, archGate);
+  /* back side: "पुनः पधारे — हमें खुशी होगी" (steel frame ke peeche, board ke saath jhoolta hai) */
   const welcomeBack = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 1.9),
     new THREE.MeshStandardMaterial({ map: welcomeBackTex, emissive:0xffffff, emissiveMap: welcomeBackTex, emissiveIntensity:.42, roughness:.8 }));
   welcomeBack.position.set(0, 0, -.2); welcomeBack.rotation.y = Math.PI;
@@ -1980,12 +2031,12 @@ let printTable;   // Product 13 — alag clickable product
   [[-1.35,-.6],[1.35,-.6],[-1.35,.6],[1.35,.6]].forEach(([x,z])=> box(.1, 1, .1, tWoodD, x, .52, z, printTable));
   box(2.7, .08, 1.2, tWoodD, 0, .35, 0, printTable);   // lower shelf
   /* red table runner */
-  box(.85, .02, 1.62, new THREE.MeshStandardMaterial({ color: 0xd40000, roughness:.9 }), 0, 1.17, 0, printTable);
+  box(.85, .02, 1.62, new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.9 }), 0, 1.17, 0, printTable);
 
   const paperM = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness:.85 });
   const paperC = new THREE.MeshStandardMaterial({ color: 0xf6f0e2, roughness:.85 });
   /* 1. VISITING CARDS — chhota stack + spread fan */
-  for(let i=0;i<6;i++) box(.35, .012, .2, i%2 ? paperM : new THREE.MeshStandardMaterial({ color: 0xe20000, roughness:.7 }), -1.2, 1.2 + i*.013, -.45, printTable);
+  for(let i=0;i<6;i++) box(.35, .012, .2, i%2 ? paperM : new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.7 }), -1.2, 1.2 + i*.013, -.45, printTable);
   [[-.06,.14],[0,0],[.06,-.14]].forEach(([dx,rz],i)=>{
     const c = box(.35, .01, .2, i===1 ? new THREE.MeshStandardMaterial({ color: 0x171717 }) : paperM, -.78 + dx, 1.21 + i*.012, -.42, printTable);
     c.rotation.y = rz;
@@ -1994,7 +2045,7 @@ let printTable;   // Product 13 — alag clickable product
   box(.62, .04, .84, new THREE.MeshStandardMaterial({ color: 0x26282c, roughness:.5 }), -.15, 1.2, -.35, printTable);
   for(let i=0;i<4;i++) box(.56, .01, .78, i%2 ? paperM : paperC, -.15, 1.23 + i*.011, -.35, printTable);
   /* 3. BILL BOOK + CHALLAN pads — bound stacks */
-  [[-1.15, .28, 0xe20000], [-.72, .3, 0x1e6fd9]].forEach(([x, z, c])=>{
+  [[-1.15, .28, 0xff0000], [-.72, .3, 0x1e6fd9]].forEach(([x, z, c])=>{
     box(.42, .1, .3, paperC, x, 1.25, z, printTable);
     box(.42, .025, .3, new THREE.MeshStandardMaterial({ color: c, roughness:.6 }), x, 1.31, z, printTable);
     box(.44, .015, .06, new THREE.MeshStandardMaterial({ color: 0x171717 }), x, 1.32, z - .13, printTable);
@@ -2002,11 +2053,11 @@ let printTable;   // Product 13 — alag clickable product
   /* 4. PAMPHLETS — tri-fold khade display stand me */
   const standM = new THREE.MeshPhysicalMaterial({ color: 0xdfe4ea, roughness:.15, transparent:true, opacity:.4 });
   box(.5, .5, .04, standM, .45, 1.42, -.5, printTable);
-  [[-.001, 0xe20000], [.02, 0xffb400], [.041, 0x1e6fd9]].forEach(([dz, c])=>{
+  [[-.001, 0xff0000], [.02, 0xffb400], [.041, 0x1e6fd9]].forEach(([dz, c])=>{
     box(.42, .4, .012, new THREE.MeshStandardMaterial({ color: c, roughness:.7 }), .45, 1.4, -.47 + dz*4, printTable);
   });
   /* 5. MAGAZINES — overlap spread */
-  [[0, 0xe20000], [.22, 0x171717], [.44, 0x2e8b57]].forEach(([dx, c], i)=>{
+  [[0, 0xff0000], [.22, 0x171717], [.44, 0x2e8b57]].forEach(([dx, c], i)=>{
     const mag = box(.5, .015, .68, new THREE.MeshStandardMaterial({ color: c, roughness:.65 }), .62 + dx, 1.2 + i*.014, .25, printTable);
     mag.rotation.y = -.12 + i*.12;
     /* cover par white band */
@@ -2018,7 +2069,7 @@ let printTable;   // Product 13 — alag clickable product
   const bladeM = new THREE.MeshStandardMaterial({ color: 0xb9bdc3, metalness:.8, roughness:.3 });
   const s1 = box(.3, .01, .04, bladeM, -.45, 1.21, .42, printTable); s1.rotation.y = .5;
   const s2 = box(.3, .01, .04, bladeM, -.45, 1.222, .42, printTable); s2.rotation.y = -.5;
-  const sRing = new THREE.Mesh(new THREE.TorusGeometry(.035, .01, 8, 16), new THREE.MeshStandardMaterial({ color: 0xe20000 }));
+  const sRing = new THREE.Mesh(new THREE.TorusGeometry(.035, .01, 8, 16), new THREE.MeshStandardMaterial({ color: 0xff0000 }));
   sRing.rotation.x = Math.PI/2; sRing.position.set(-.32, 1.22, .48); printTable.add(sRing);
   /* cutter knife */
   box(.22, .02, .05, new THREE.MeshStandardMaterial({ color: 0xffb400, roughness:.5 }), -.05, 1.21, .5, printTable);
@@ -2027,7 +2078,7 @@ let printTable;   // Product 13 — alag clickable product
   const rul = box(.5, .008, .05, bladeM, -.7, 1.207, .55, printTable); rul.rotation.y = .25;
   /* pen holder + pens */
   cyl(.06, .05, .16, new THREE.MeshStandardMaterial({ color: 0x171717 }), .1, 1.28, -.55, printTable);
-  [[-.02, 0xe20000],[0, 0x1e6fd9],[.02, 0x171717]].forEach(([dx, c], i)=>{
+  [[-.02, 0xff0000],[0, 0x1e6fd9],[.02, 0x171717]].forEach(([dx, c], i)=>{
     const pen = cyl(.008, .008, .22, new THREE.MeshStandardMaterial({ color: c }), .1 + dx, 1.42, -.55 + dx, printTable);
     pen.rotation.z = dx*6; pen.rotation.x = dx*4;
   });
@@ -2035,11 +2086,11 @@ let printTable;   // Product 13 — alag clickable product
   cyl(.045, .05, .14, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness:.6 }), .35, 1.27, .52, printTable);
   cyl(.015, .02, .05, new THREE.MeshStandardMaterial({ color: 0xff7a00 }), .35, 1.37, .52, printTable);
   /* stapler */
-  box(.16, .04, .05, new THREE.MeshStandardMaterial({ color: 0xe20000, roughness:.5 }), 1.25, 1.23, -.4, printTable);
+  box(.16, .04, .05, new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.5 }), 1.25, 1.23, -.4, printTable);
   /* lower shelf par paper rolls + box */
   const roll1 = cyl(.08, .08, .9, paperC, -.7, .47, 0, printTable); roll1.rotation.z = Math.PI/2;
-  const roll2 = cyl(.07, .07, .8, new THREE.MeshStandardMaterial({ color: 0xe20000, roughness:.8 }), -.6, .6, .1, printTable); roll2.rotation.z = Math.PI/2; roll2.rotation.y = .2;
-  box(.5, .3, .4, new THREE.MeshStandardMaterial({ color: 0xb8860b, roughness:.85 }), .8, .52, .05, printTable);
+  const roll2 = cyl(.07, .07, .8, new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.8 }), -.6, .6, .1, printTable); roll2.rotation.z = Math.PI/2; roll2.rotation.y = .2;
+  box(.5, .3, .4, new THREE.MeshStandardMaterial({ color: 0xa9aeb5, roughness:.7 }), .8, .52, .05, printTable);
   /* table light */
 
   /* table clickable — arch gate product ka hissa */
@@ -2047,8 +2098,8 @@ let printTable;   // Product 13 — alag clickable product
 
 register(archGate, {
   name:'Arch Gate — Matt ACP Indian Entry', sub:'Matt ACP मेहराब Arch Fabrication · "Welcome" पर click करके अंदर आइए',
-  desc:'Premium Indian-style arch gate अब पूरी तरह Matt ACP से fabricate किया गया है — बिना gloss के clean, modern finish। Pillars square ACP-clad boxes हैं: matt black plinth, matt champagne-gold ACP की slim reveal bands, CNC-cut जाली वाला matt red ACP shaft और ऊपर folded-ACP pyramid cap (छतरी का minimal रूप)। ऊपर flat ACP band से बना pointed मेहराब arch, अंदर scalloped edge और दोनों तरफ़ matt gold ACP trim, बीच में ACP finial। Welcome board matt black ACP tray और matt gold ACP frame में, नीचे गेंदा-फूल तोरण। पूरे environment में सिर्फ़ इसी पर लिखा है: "Welcome" — click कीजिए और अंदर enter हो जाइए। Side में paper-printing range की display table है। शादी, events, showroom launch — custom ACP arch gates design-to-install।',
-  specs:[['Cladding','4mm Matt ACP — red, black, champagne gold'],['Structure','MS pipe frame + ACP routed & folded'],['जाली','CNC-cut matt red ACP, black backing'],['Finish','Matt / low-sheen PVDF, no gloss'],['Details','Pointed मेहराब, pyramid caps, तोरण'],['Size','Custom — 10ft से 40ft तक']],
+  desc:'Premium Indian-style arch gate अब पूरी तरह Matt ACP से fabricate किया गया है — बिना gloss के clean, modern finish। Pillars square ACP-clad boxes हैं: matt black plinth, matt silver-steel ACP की slim reveal bands, CNC-cut जाली वाला matt black ACP shaft और ऊपर folded-ACP pyramid cap (छतरी का minimal रूप)। ऊपर flat ACP band से बना pointed मेहराब arch, अंदर scalloped edge और दोनों तरफ़ matt silver-steel ACP trim, बीच में ACP finial। Welcome board matt black ACP tray और matt silver-steel ACP frame में, नीचे गेंदा-फूल तोरण। पूरे environment में सिर्फ़ इसी पर लिखा है: "Welcome" — click कीजिए और अंदर enter हो जाइए। Side में paper-printing range की display table है। शादी, events, showroom launch — custom ACP arch gates design-to-install।',
+  specs:[['Cladding','4mm Matt ACP — black + steel silver'],['Structure','MS pipe frame + ACP routed & folded'],['जाली','CNC-cut matt black ACP, steel-silver motif'],['Finish','Matt / low-sheen PVDF, no gloss'],['Details','Pointed मेहराब, pyramid caps, तोरण'],['Size','Custom — 10ft से 40ft तक']],
   tags:['Matt ACP','Indian Arch','Fabrication'],
   camPos:[3, 6, 31], camTarget:[1.5, 6, 20]
 });
@@ -2088,7 +2139,7 @@ outside.add(owl);
   const acpSilver= new THREE.MeshPhysicalMaterial({ color: 0xd3d7dc, roughness:.22, metalness:.8, clearcoat:.8 });
   const acrWhite = new THREE.MeshPhysicalMaterial({ color: 0xffffff, emissive: 0xfff3e6, emissiveIntensity: .45, roughness:.18, clearcoat:1 });   // frosted backlit
   const acrClear = new THREE.MeshPhysicalMaterial({ color: 0xe8f3ff, roughness:.04, transparent:true, opacity:.32, clearcoat:1 });
-  const acrRed   = new THREE.MeshPhysicalMaterial({ color: 0xff1a1a, emissive: 0xaa0000, emissiveIntensity: .35, roughness:.1, transparent:true, opacity:.9, clearcoat:1 });
+  const acrRed   = new THREE.MeshPhysicalMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: .35, roughness:.1, transparent:true, opacity:.9, clearcoat:1 });
   const acrYellow= new THREE.MeshPhysicalMaterial({ color: 0xffb100, emissive: 0x7a4a00, emissiveIntensity: .3, roughness:.12, clearcoat:1 });
   const acrBlack = new THREE.MeshPhysicalMaterial({ color: 0x0c0c0e, roughness:.06, clearcoat:1 });
   /* extruded panel helper — shape ko cut-panel ki tarah (depth + halka bevel) */
@@ -2357,11 +2408,11 @@ let printRoll = null, printHead2 = null;
   /* printed banner niklta hua — red gradient artwork */
   const printedTex = makeTex(256, 512, (g)=>{
     const gr = g.createLinearGradient(0,0,0,512);
-    gr.addColorStop(0,'#ff2a00'); gr.addColorStop(.5,'#e20000'); gr.addColorStop(1,'#8f0000');
+    gr.addColorStop(0,'#ff0000'); gr.addColorStop(.5,'#ff0000'); gr.addColorStop(1,'#ff0000');
     g.fillStyle = gr; g.fillRect(0,0,256,512);
     g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(128, 140, 60, 0, 7); g.fill();
     g.fillStyle = '#171717'; g.beginPath(); g.arc(128, 140, 38, 0, 7); g.fill();
-    g.fillStyle = '#e20000'; g.beginPath(); g.arc(128, 140, 18, 0, 7); g.fill();
+    g.fillStyle = '#ff0000'; g.beginPath(); g.arc(128, 140, 18, 0, 7); g.fill();
     g.fillStyle = '#171717'; g.fillRect(48, 300, 160, 12);
     g.fillStyle = '#f6f5f2'; g.fillRect(48, 340, 160, 8); g.fillRect(48, 370, 160, 8);
   });
@@ -2452,19 +2503,19 @@ function drawLedAd(t){
   if(phase === 0){
     /* scene 1: red sweep + circle brand mark */
     const gr = g.createLinearGradient(0,0,W,0);
-    gr.addColorStop(0,'#8f0000'); gr.addColorStop(.5,'#e20000'); gr.addColorStop(1,'#8f0000');
+    gr.addColorStop(0,'#ff0000'); gr.addColorStop(.5,'#ff0000'); gr.addColorStop(1,'#ff0000');
     g.fillStyle = gr; g.fillRect(0,0,W,H);
     const cx = W*(-.2 + k*1.4);
     g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(cx, H/2, 62, 0, 7); g.fill();
     g.fillStyle = '#171717'; g.beginPath(); g.arc(cx, H/2, 40, 0, 7); g.fill();
-    g.fillStyle = '#e20000'; g.beginPath(); g.arc(cx, H/2, 19, 0, 7); g.fill();
+    g.fillStyle = '#ff0000'; g.beginPath(); g.arc(cx, H/2, 19, 0, 7); g.fill();
   } else if(phase === 1){
     /* scene 2: black bg + rising red bars (equalizer feel) */
     g.fillStyle = '#101013'; g.fillRect(0,0,W,H);
     const nb = Math.floor(W/42);                 // full width bars
     for(let i=0;i<nb;i++){
       const bh = (Math.sin(t*3 + i*1.1)*.5 + .5) * H * .7 + 18;
-      g.fillStyle = i%3 ? '#e20000' : '#f6f5f2';
+      g.fillStyle = i%3 ? '#ff0000' : '#f6f5f2';
       g.fillRect(8 + i*42, H - bh, 30, bh);
     }
   } else {
@@ -2473,11 +2524,11 @@ function drawLedAd(t){
     [W*.3, W*.78].forEach(cx2=>{
       for(let r=0;r<4;r++){
         const rad = ((k + r*.25) % 1) * W * .35;
-        g.strokeStyle = r%2 ? '#e20000' : '#171717';
+        g.strokeStyle = r%2 ? '#ff0000' : '#171717';
         g.lineWidth = 10 - r*2;
         g.beginPath(); g.arc(cx2, H/2, rad, 0, 7); g.stroke();
       }
-      g.fillStyle = '#e20000'; g.beginPath(); g.arc(cx2, H/2, 26, 0, 7); g.fill();
+      g.fillStyle = '#ff0000'; g.beginPath(); g.arc(cx2, H/2, 26, 0, 7); g.fill();
     });
   }
   /* LED pixel grid feel */
@@ -2512,7 +2563,7 @@ function drawLedSky(ctx2, W, H, t, local){
     });
   } else if(key === 'sunset'){
     const g = ctx2.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#3d2f52'); g.addColorStop(.42,'#c4553a'); g.addColorStop(.72,'#f2903f'); g.addColorStop(1,'#ffd489');
+    g.addColorStop(0,'#3d2f52'); g.addColorStop(.42,'#ff0000'); g.addColorStop(.72,'#f2903f'); g.addColorStop(1,'#ffd489');
     ctx2.fillStyle = g; ctx2.fillRect(0,0,W,H);
     const sx = W*.33, sy = H*.72 + (lt/SEG)*18;     // front screen ke beech me dheere dhalta sooraj
     const sg = ctx2.createRadialGradient(sx, sy, 6, sx, sy, 80);
@@ -2583,7 +2634,7 @@ building.add(translite);
   const tFaceTex = new THREE.TextureLoader().load('assets/translit-face.png', tt => { tt.colorSpace = THREE.SRGBColorSpace; });
   [ .24, -.24].forEach((dz, i)=>{
     const face = new THREE.Mesh(new THREE.CircleGeometry(1.78, 48),
-      new THREE.MeshStandardMaterial({ map: tFaceTex, transparent:true, emissive: 0xffffff, emissiveMap: tFaceTex, emissiveIntensity: .95, roughness:.5 }));
+      new THREE.MeshStandardMaterial({ map: tFaceTex, transparent:true, emissive: 0xffffff, emissiveMap: tFaceTex, emissiveIntensity: .7, roughness:.5 }));
     face.position.set(0, 0, dz);
     if(i === 1) face.rotation.y = Math.PI;
     tSpin.add(face);
@@ -2608,7 +2659,7 @@ outside.add(totem);
     g.fillStyle = '#17181c'; g.fillRect(0,0,256,1024);
     /* top section: 360° badge */
     const grd = g.createLinearGradient(0,0,0,300);
-    grd.addColorStop(0,'#e20000'); grd.addColorStop(1,'#8f0000');
+    grd.addColorStop(0,'#ff0000'); grd.addColorStop(1,'#ff0000');
     g.fillStyle = grd; g.fillRect(12,12,232,290);
     g.strokeStyle = '#f6f5f2'; g.lineWidth = 5;
     g.beginPath(); g.arc(128, 130, 72, .6, Math.PI*2 + .1); g.stroke();
@@ -2621,14 +2672,14 @@ outside.add(totem);
     g.font = '600 17px Montserrat, Arial';
     g.fillText('A-2-Z Design Solution', 128, 248);
     /* divider */
-    g.fillStyle = '#c9a24a'; g.fillRect(24, 316, 208, 5);
+    g.fillStyle = '#c5cad1'; g.fillRect(24, 316, 208, 5);
     /* A B C D E typography blocks */
     const rows = [
-      ['A', 'ADVERTiSiNG', '#e20000'],
+      ['A', 'ADVERTiSiNG', '#ff0000'],
       ['B', 'BRANDiNG',    '#f6f5f2'],
-      ['C', 'CREATiVE',    '#e20000'],
+      ['C', 'CREATiVE',    '#ff0000'],
       ['D', 'DESiGNiNG',   '#f6f5f2'],
-      ['E', 'EXECUTiON',   '#e20000'],
+      ['E', 'EXECUTiON',   '#ff0000'],
     ];
     rows.forEach(([ltr, word, col], i)=>{
       const y0 = 340 + i*132;
@@ -2641,7 +2692,7 @@ outside.add(totem);
       g.fillText(ltr, 30, y0 + 58);
       /* word vertical-ish chhota */
       g.font = '700 21px Montserrat, Arial';
-      g.fillStyle = col === '#e20000' ? '#f6f5f2' : '#e20000';
+      g.fillStyle = col === '#ff0000' ? '#f6f5f2' : '#ff0000';
       g.fillText(word, 96, y0 + 46);
       g.fillStyle = 'rgba(255,255,255,.35)';
       g.fillRect(96, y0 + 66, 128, 3);
@@ -2661,14 +2712,14 @@ outside.add(totem);
     if(i === 1) face.rotation.y = Math.PI;
     totem.add(face);
   });
-  /* golden top cap */
-  box(1.6, .12, .55, goldTrim, 0, 6.56, 0, totem);
+  /* silver-steel top cap */
+  box(1.6, .12, .55, steelTrim, 0, 6.56, 0, totem);
 
   totem.rotation.y = .5;
 }
 register(totem, {
   name:'Totem — 360° Division Pylon', sub:'Freestanding Totem · A B C D E Typography',
-  desc:'Freestanding totem pylon — top पर 360° all-round branding badge और नीचे पाँच divisions की typography: A Advertising, B Branding, C Creative, D Designing, E Execution — हर एक अपने division number के साथ। Double-sided backlit faces, golden top cap। Malls, campuses और showroom entries के लिए premium wayfinding + brand statement एक साथ।',
+  desc:'Freestanding totem pylon — top पर 360° all-round branding badge और नीचे पाँच divisions की typography: A Advertising, B Branding, C Creative, D Designing, E Execution — हर एक अपने division number के साथ। Double-sided backlit faces, silver-steel top cap। Malls, campuses और showroom entries के लिए premium wayfinding + brand statement एक साथ।',
   specs:[['Height','6–12 ft custom'],['Faces','2-side backlit acrylic / flex'],['Body','MS + ACP, powder coat'],['Print','UV / translite, typography'],['Base','RCC anchor / movable']],
   tags:['Totem','Pylon','Typography'],
   camPos:[-16.5, 3.6, 20.5], camTarget:[-19, 3.4, 16]
@@ -2692,11 +2743,11 @@ let acrSpin = null;                     // ghoomta hua sculpture (animate me spi
   detail(acpSilv, 'brushed', 2, 2, .4, .2);
   const acpBlk = new THREE.MeshStandardMaterial({ color: 0x151619, roughness:.42, metalness:.35 });
   detail(acpBlk, 'brushed', 2, 2, .4, .2);
-  const redTrim = new THREE.MeshStandardMaterial({ color: 0xe20000, roughness:.3, metalness:.2 });
+  const redTrim = new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.3, metalness:.2 });
   /* laal cast acrylic — raat me andar se glow */
-  const redAcr = new THREE.MeshPhysicalMaterial({ color: 0xe8102a, roughness:.08, metalness:0,
+  const redAcr = new THREE.MeshPhysicalMaterial({ color: 0xff0000, roughness:.08, metalness:0,
     transparent:true, opacity:.88, clearcoat:1, clearcoatRoughness:.06,
-    emissive: 0xb30012, emissiveIntensity:.95 });
+    emissive: 0xff0000, emissiveIntensity:.95 });
   /* frost white acrylic — backlit face */
   const frostAcr = new THREE.MeshPhysicalMaterial({ color: 0xf2f6ff, roughness:.38, metalness:0,
     transparent:true, opacity:.92, clearcoat:.4, emissive: 0xffffff, emissiveIntensity:.5 });
@@ -2704,19 +2755,19 @@ let acrSpin = null;                     // ghoomta hua sculpture (animate me spi
     transparent:true, opacity:.26, clearcoat:1, clearcoatRoughness:.03 });
   /* hairline neon edge tubes — bloom pickup */
   const neonRed = new THREE.MeshStandardMaterial({ color: 0x22000a, roughness:.4,
-    emissive: 0xff2038, emissiveIntensity:.72 });
+    emissive: 0xff0000, emissiveIntensity:.72 });
   NEON_TICKLE.push(
     { m: redAcr,  day: .95, night: 1.55 },
     { m: frostAcr, day: .5, night: .85 },
     { m: neonRed, day: .72, night: 1.35 }
   );
 
-  /* ---- plinth: black granite step + silver ACP + red trim + gold band ---- */
+  /* ---- plinth: black granite step + silver ACP + red trim + steel band ---- */
   box(2.9, .55, 2.9, granite, 0, .275, 0, acrMon);
   box(2.55, .34, 2.55, acpSilv, 0, .72, 0, acrMon);
   box(2.6, .07, 2.6, redTrim, 0, .56, 0, acrMon);
   box(1.7, .5, 1.7, acpBlk, 0, 1.14, 0, acrMon);
-  box(1.8, .08, 1.8, goldTrim, 0, 1.43, 0, acrMon);
+  box(1.8, .08, 1.8, steelTrim, 0, 1.43, 0, acrMon);
   /* plinth corners par LED stud lights (emissive discs) */
   const stud = (sx, sz)=>{
     const d = new THREE.Mesh(new THREE.CylinderGeometry(.07, .085, .035, 14), neonRed);
@@ -2725,12 +2776,24 @@ let acrSpin = null;                     // ghoomta hua sculpture (animate me spi
   [[1.18,1.18],[-1.18,1.18],[1.18,-1.18],[-1.18,-1.18]].forEach(([x,z])=>stud(x,z));
   /* fixed uplights — red, sculpture ko neeche se roshan */
   [[0,1.05],[0,-1.05]].forEach(([x,z])=>{
-    const p = new THREE.PointLight(0xff3040, 1.1, 6, 1.6);
+    const p = new THREE.PointLight(0xff0000, 1.1, 6, 1.6);
     p.position.set(x, .95, z); acrMon.add(p);
   });
   /* saamne se soft white fill */
   const pFill = new THREE.PointLight(0xfff2e0, .7, 6, 1.6);
   pFill.position.set(0, 3.2, 1.7); acrMon.add(pFill);
+
+  /* brand LOGO plaque — plinth ke front face par (3-layer acrylic disc) */
+  const monLogo = new THREE.Group();
+  [[.21, 0xf4f5f7, .10], [.14, 0x17181b, .115], [.065, 0xff0000, .13]].forEach(([r, c, dz])=>{
+    const disc = new THREE.Mesh(new THREE.CylinderGeometry(r, r, .09, 44),
+      new THREE.MeshPhysicalMaterial({ color: c, roughness:.14, metalness:.03,
+        clearcoat:1, clearcoatRoughness:.06, transparent:true, opacity:.95 }));
+    disc.rotation.x = Math.PI/2; disc.position.z = dz - .12; disc.castShadow = true;
+    monLogo.add(disc);
+  });
+  monLogo.position.set(0, 1.14, .90);
+  acrMon.add(monLogo);
 
   /* ---- ROTATING SCULPTURE ---- */
   acrSpin = new THREE.Group();
@@ -2773,8 +2836,8 @@ let acrSpin = null;                     // ghoomta hua sculpture (animate me spi
     v2.rotation.z = -.48; v2.position.set(.17, 2.18, 0); v2.castShadow = true;
     acrSpin.add(v1, v2);
   }
-  /* crown finial — gold cone */
-  const fin = new THREE.Mesh(new THREE.ConeGeometry(.17, .32, 20), goldTrim);
+  /* crown finial — silver-steel cone */
+  const fin = new THREE.Mesh(new THREE.ConeGeometry(.17, .32, 20), steelTrim);
   fin.position.set(0, 5.08, 0); fin.castShadow = true; acrSpin.add(fin);
 }
 register(acrMon, {
@@ -2800,7 +2863,7 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
   const acpBlack  = new THREE.MeshPhysicalMaterial({ color: 0x141518, roughness:.3, metalness:.5, clearcoat:.7 });
   const acrylicClear = new THREE.MeshPhysicalMaterial({ color: 0xeaf4ff, roughness:.04, metalness:0, transparent:true, opacity:.35, clearcoat:1, clearcoatRoughness:.02 });
   const acrylicWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff4ec, emissiveIntensity: .55, roughness:.2 });
-  const ledRedStrip  = new THREE.MeshStandardMaterial({ color: 0xff2020, emissive: 0xff1010, emissiveIntensity: 1.6 });
+  const ledRedStrip  = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 1.6 });
   const wallWhite = new THREE.MeshStandardMaterial({ color: 0xf4f2ee, roughness:.8 });
   const devBody   = new THREE.MeshStandardMaterial({ color: 0x1b1c20, roughness:.35, metalness:.6 });
   const devSilver = new THREE.MeshStandardMaterial({ color: 0xb9bec6, roughness:.3, metalness:.85 });
@@ -2817,12 +2880,12 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
   [-1, 1].forEach(s=> box(.08, BH, .2, acpRed, s*(BW/2 + .04), .14 + BH/2, BZ, eventStall));
   /* top fascia header — red ACP + backlit 360° brand badge */
   box(BW + .1, .5, .3, acpRed, 0, .14 + BH + .25, BZ + .05, eventStall);
-  box(BW + .12, .05, .32, goldTrim, 0, .14 + BH + .52, BZ + .05, eventStall);
+  box(BW + .12, .05, .32, steelTrim, 0, .14 + BH + .52, BZ + .05, eventStall);
   const fasciaTex = makeTex(1280, 126, (g, w, h)=>{
-    g.fillStyle = '#c40000'; g.fillRect(0,0,w,h);
+    g.fillStyle = '#ff0000'; g.fillRect(0,0,w,h);
     g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(70, h/2, 38, 0, 7); g.fill();
     g.fillStyle = '#171717'; g.beginPath(); g.arc(70, h/2, 25, 0, 7); g.fill();
-    g.fillStyle = '#e20000'; g.beginPath(); g.arc(70, h/2, 12, 0, 7); g.fill();
+    g.fillStyle = '#ff0000'; g.beginPath(); g.arc(70, h/2, 12, 0, 7); g.fill();
     const title = 'EVENT/EXHIBITION STALL & DIGITAL ASSETS';
     let fs = 50; g.textAlign = 'left'; g.textBaseline = 'middle';
     do { g.font = `800 ${fs}px Montserrat, Arial`; fs -= 2; } while(g.measureText(title).width > w - 170 && fs > 20);
@@ -2835,7 +2898,7 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
   /* ---- WALL ART & CANVAS on backwall ---- */
   const abstractTex = makeTex(512, 640, (g, w, h)=>{
     g.fillStyle = '#f3ede2'; g.fillRect(0,0,w,h);
-    const cols = ['#e20000','#171717','#c9a24a','#8f0000','#f6f5f2'];
+    const cols = ['#ff0000','#171717','#c5cad1','#ff0000','#f6f5f2'];
     for(let i=0;i<9;i++){
       g.fillStyle = cols[i%5]; g.globalAlpha = .85;
       g.beginPath(); g.arc(80 + (i*97)%360, 90 + (i*151)%480, 40 + (i*23)%90, 0, 7); g.fill();
@@ -2847,11 +2910,11 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
     const gr = g.createLinearGradient(0,0,0,h); gr.addColorStop(0,'#171717'); gr.addColorStop(1,'#3a0000');
     g.fillStyle = gr; g.fillRect(0,0,w,h);
     for(let i=0;i<14;i++){
-      g.fillStyle = i%3===0 ? '#e20000' : (i%3===1 ? '#c9a24a' : '#f6f5f2');
+      g.fillStyle = i%3===0 ? '#ff0000' : (i%3===1 ? '#c5cad1' : '#f6f5f2');
       g.save(); g.translate(w/2, h/2); g.rotate(i*Math.PI/7);
       g.fillRect(-6, 20, 12, 150 + (i%4)*30); g.restore();
     }
-    g.fillStyle = '#e20000'; g.beginPath(); g.arc(w/2, h/2, 36, 0, 7); g.fill();
+    g.fillStyle = '#ff0000'; g.beginPath(); g.arc(w/2, h/2, 36, 0, 7); g.fill();
     g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(w/2, h/2, 16, 0, 7); g.fill();
   });
   const miniTex = (c1, c2)=> makeTex(256, 256, (g, w, h)=>{
@@ -2869,10 +2932,10 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
     return face;
   }
   const blackFrame = new THREE.MeshStandardMaterial({ color: 0x151515, roughness:.4, metalness:.3 });
-  canvasArt(artTex, 1.45, 1.45, 0, 2.15, goldTrim);                 // center hero canvas (owl-mandala)
+  canvasArt(artTex, 1.45, 1.45, 0, 2.15, steelTrim);                 // center hero canvas (owl-mandala)
   canvasArt(abstractTex, .85, 1.08, -1.5, 2.2, blackFrame);          // left framed
   canvasArt(stripesTex, .85, 1.08, 1.5, 2.2, blackFrame);            // right framed
-  [['#171717','#e20000'],['#f3ede2','#c9a24a'],['#8f0000','#171717']].forEach(([a,b], i)=>{
+  [['#171717','#ff0000'],['#f3ede2','#c5cad1'],['#ff0000','#171717']].forEach(([a,b], i)=>{
     canvasArt(miniTex(a, b), .4, .4, -1.9 + i*.5, 1.25, null);       // left mini trio
     canvasArt(miniTex(b, a), .4, .4,  .9 + i*.5, 1.25, null);        // right mini trio
   });
@@ -2898,7 +2961,7 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
   box(CW - .3, .55, .03, acrylicWhite, 0, .72, CZ + CD/2, eventStall);
   box(CW - .2, .65, .04, acrylicClear, 0, .72, CZ + CD/2 + .04, eventStall);
   /* front acrylic par brand mark (laser-cut feel) */
-  [[.18, 0xf6f5f2],[.12, 0x171717],[.055, 0xe20000]].forEach(([r, c], i)=>{
+  [[.18, 0xf6f5f2],[.12, 0x171717],[.055, 0xff0000]].forEach(([r, c], i)=>{
     const d = new THREE.Mesh(new THREE.CircleGeometry(r, 36), new THREE.MeshStandardMaterial({ color: c, roughness:.3 }));
     d.position.set(0, .72, CZ + CD/2 + .065 + i*.002); eventStall.add(d);
   });
@@ -2975,23 +3038,23 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
     g.fillStyle = '#101114'; g.fillRect(0,0,w,h);
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.font = '800 26px Montserrat, Arial'; g.fillStyle = '#fff'; g.fillText('DIGITAL ASSETS', w/2, 34);
-    g.font = '700 13px Montserrat, Arial'; g.fillStyle = '#e20000'; g.fillText('SOCIAL · PROFILE · THUMBNAIL', w/2, 60);
+    g.font = '700 13px Montserrat, Arial'; g.fillStyle = '#ff0000'; g.fillText('SOCIAL · PROFILE · THUMBNAIL', w/2, 60);
     /* profile assets — cover + DP */
-    const cg = g.createLinearGradient(0,90,w,190); cg.addColorStop(0,'#8f0000'); cg.addColorStop(1,'#e20000');
+    const cg = g.createLinearGradient(0,90,w,190); cg.addColorStop(0,'#ff0000'); cg.addColorStop(1,'#ff0000');
     g.fillStyle = cg; g.fillRect(18, 86, w-36, 110);
     g.fillStyle = 'rgba(255,255,255,.18)'; for(let i=0;i<6;i++){ g.beginPath(); g.arc(40+i*48, 120+(i%2)*30, 18, 0, 7); g.fill(); }
     g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(70, 200, 38, 0, 7); g.fill();
     g.fillStyle = '#171717'; g.beginPath(); g.arc(70, 200, 26, 0, 7); g.fill();
-    g.fillStyle = '#e20000'; g.beginPath(); g.arc(70, 200, 12, 0, 7); g.fill();
+    g.fillStyle = '#ff0000'; g.beginPath(); g.arc(70, 200, 12, 0, 7); g.fill();
     g.fillStyle = '#fff'; g.font = '700 16px Montserrat, Arial'; g.textAlign = 'left'; g.fillText('@360services', 118, 214);
     g.fillStyle = 'rgba(255,255,255,.55)'; g.font = '500 12px Montserrat, Arial'; g.fillText('Profile · Cover · Highlights', 118, 234);
     /* highlight covers */
-    ['#e20000','#c9a24a','#f6f5f2','#e20000','#c9a24a'].forEach((c,i)=>{
+    ['#ff0000','#c5cad1','#f6f5f2','#ff0000','#c5cad1'].forEach((c,i)=>{
       g.strokeStyle = c; g.lineWidth = 3; g.beginPath(); g.arc(46+i*52, 282, 19, 0, 7); g.stroke();
       g.fillStyle = '#222'; g.beginPath(); g.arc(46+i*52, 282, 15, 0, 7); g.fill();
     });
     /* post grid 3x3 */
-    const pc = ['#e20000','#171717','#c9a24a','#f6f5f2','#8f0000','#e20000','#2a2c31','#c9a24a','#e20000'];
+    const pc = ['#ff0000','#171717','#c5cad1','#f6f5f2','#ff0000','#ff0000','#2a2c31','#c5cad1','#ff0000'];
     for(let r=0;r<3;r++) for(let c=0;c<3;c++){
       const x = 18 + c*89, y = 324 + r*89, i = r*3+c;
       g.fillStyle = pc[i]; g.fillRect(x, y, 84, 84);
@@ -3001,18 +3064,18 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
       else { g.beginPath(); g.moveTo(x+10,y+74); g.lineTo(x+42,y+22); g.lineTo(x+74,y+74); g.fill(); }
     }
     /* video thumbnail with play button */
-    const vg = g.createLinearGradient(0,600,w,760); vg.addColorStop(0,'#171717'); vg.addColorStop(1,'#8f0000');
+    const vg = g.createLinearGradient(0,600,w,760); vg.addColorStop(0,'#171717'); vg.addColorStop(1,'#ff0000');
     g.fillStyle = vg; g.fillRect(18, 610, w-36, 150);
     g.fillStyle = '#fff'; g.font = '800 24px Montserrat, Arial'; g.textAlign = 'left'; g.fillText('TOP 5', 32, 646);
     g.fillStyle = '#ffcc00'; g.fillText('DESIGN TIPS', 32, 676);
-    g.fillStyle = '#e20000'; g.beginPath(); g.roundRect ? g.roundRect(196, 690, 72, 50, 12) : g.rect(196, 690, 72, 50); g.fill();
+    g.fillStyle = '#ff0000'; g.beginPath(); g.roundRect ? g.roundRect(196, 690, 72, 50, 12) : g.rect(196, 690, 72, 50); g.fill();
     g.fillStyle = '#fff'; g.beginPath(); g.moveTo(222, 702); g.lineTo(246, 715); g.lineTo(222, 728); g.fill();
     g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(32, 728, 52, 20); g.fillStyle = '#fff'; g.font = '600 12px Montserrat, Arial'; g.fillText('10:24', 40, 739);
     /* platform chips */
     g.textAlign = 'center'; g.font = '700 13px Montserrat, Arial';
     ['Instagram','Facebook','YouTube','LinkedIn'].forEach((t,i)=>{
       const x = 18 + (i%2)*134, y = 782 + Math.floor(i/2)*38;
-      g.fillStyle = i===2 ? '#e20000' : '#2a2c31'; g.fillRect(x, y, 128, 30);
+      g.fillStyle = i===2 ? '#ff0000' : '#2a2c31'; g.fillRect(x, y, 128, 30);
       g.fillStyle = '#fff'; g.fillText(t, x+64, y+16);
     });
   });
@@ -3024,7 +3087,7 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
   box(.5, .05, .3, M.steel, 1.9, .16, .7, eventStall);
   /* acrylic brochure stand — side me */
   box(.35, 1.2, .06, acrylicClear, -1.85, .75, .7, eventStall);
-  [0, 1, 2].forEach(i=> box(.28, .34, .01, new THREE.MeshStandardMaterial({ color: [0xe20000, 0x171717, 0xc9a24a][i], roughness:.7 }), -1.85, .45 + i*.38, .74, eventStall));
+  [0, 1, 2].forEach(i=> box(.28, .34, .01, new THREE.MeshStandardMaterial({ color: [0xff0000, 0x171717, 0xc5cad1][i], roughness:.7 }), -1.85, .45 + i*.38, .74, eventStall));
 }
 /* device screens par wahi Video-Advertisement LED animation (3 scenes, same timing) */
 function drawAdScenes(g, W, H, t){
@@ -3033,18 +3096,18 @@ function drawAdScenes(g, W, H, t){
   const S = Math.min(W, H) / 256;
   if(phase === 0){
     const gr = g.createLinearGradient(0,0,W,0);
-    gr.addColorStop(0,'#8f0000'); gr.addColorStop(.5,'#e20000'); gr.addColorStop(1,'#8f0000');
+    gr.addColorStop(0,'#ff0000'); gr.addColorStop(.5,'#ff0000'); gr.addColorStop(1,'#ff0000');
     g.fillStyle = gr; g.fillRect(0,0,W,H);
     const cx = W*(-.2 + k*1.4);
     g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(cx, H/2, 62*S, 0, 7); g.fill();
     g.fillStyle = '#171717'; g.beginPath(); g.arc(cx, H/2, 40*S, 0, 7); g.fill();
-    g.fillStyle = '#e20000'; g.beginPath(); g.arc(cx, H/2, 19*S, 0, 7); g.fill();
+    g.fillStyle = '#ff0000'; g.beginPath(); g.arc(cx, H/2, 19*S, 0, 7); g.fill();
   } else if(phase === 1){
     g.fillStyle = '#101013'; g.fillRect(0,0,W,H);
     const bw = Math.max(10, 42*S*.6), nb = Math.floor(W/bw);
     for(let i=0;i<nb;i++){
       const bh = (Math.sin(t*3 + i*1.1)*.5 + .5) * H * .7 + 18*S;
-      g.fillStyle = i%3 ? '#e20000' : '#f6f5f2';
+      g.fillStyle = i%3 ? '#ff0000' : '#f6f5f2';
       g.fillRect(4 + i*bw, H - bh, bw*.72, bh);
     }
   } else {
@@ -3052,11 +3115,11 @@ function drawAdScenes(g, W, H, t){
     const cx2 = W/2, cy2 = H/2, maxR = Math.max(W, H) * .6;
     for(let r=0;r<4;r++){
       const rad = ((k + r*.25) % 1) * maxR;
-      g.strokeStyle = r%2 ? '#e20000' : '#171717';
+      g.strokeStyle = r%2 ? '#ff0000' : '#171717';
       g.lineWidth = (10 - r*2) * S;
       g.beginPath(); g.arc(cx2, cy2, rad, 0, 7); g.stroke();
     }
-    g.fillStyle = '#e20000'; g.beginPath(); g.arc(cx2, cy2, 26*S, 0, 7); g.fill();
+    g.fillStyle = '#ff0000'; g.beginPath(); g.arc(cx2, cy2, 26*S, 0, 7); g.fill();
   }
   g.fillStyle = 'rgba(0,0,0,.14)';
   for(let y=0;y<H;y+=4) g.fillRect(0, y, W, 1);
@@ -3096,7 +3159,7 @@ let rickWheels = [];
   ws.position.set(0, 1.85, 1.28); ws.rotation.x = -.15; rickshaw.add(ws);
   /* rear panel + seat */
   box(1.6, .7, .1, hoodM, 0, 1.55, -1.15, rickshaw);
-  box(1.4, .3, .8, new THREE.MeshStandardMaterial({ color: 0x7a1010, roughness:.9 }), 0, 1.35, -.55, rickshaw);
+  box(1.4, .3, .8, new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.9 }), 0, 1.35, -.55, rickshaw);
   /* handlebar */
   const hb = cyl(.03,.03,.9, rimM, 0, 1.6, .95, rickshaw); hb.rotation.z = Math.PI/2;
   /* headlight */
@@ -3259,7 +3322,7 @@ let canopyGrp = null, wallArtGrp = null;   // Products 17 & 18
     for(let x=0;x<=4;x++){ g.beginPath(); g.moveTo(x*128,0); g.lineTo(x*128,256); g.stroke(); }
     g.beginPath(); g.moveTo(0,128); g.lineTo(512,128); g.stroke();
     /* red accent strip panels */
-    g.fillStyle = '#e20000';
+    g.fillStyle = '#ff0000';
     g.fillRect(131, 3, 122, 122);
     g.fillRect(387, 131, 122, 122);
   });
@@ -3287,10 +3350,10 @@ let canopyGrp = null, wallArtGrp = null;   // Products 17 & 18
     tent.castShadow = true;
     canopyGrp.add(tent);
   }
-  /* peak par golden finial ball */
-  const finial = new THREE.Mesh(new THREE.SphereGeometry(.22, 16, 12), goldTrim);
+  /* peak par silver-steel finial ball */
+  const finial = new THREE.Mesh(new THREE.SphereGeometry(.22, 16, 12), steelTrim);
   finial.position.set(0, 7.3, 0); backyard.add(finial);
-  cyl(.05, .05, .5, goldTrim, 0, 7, 0, backyard);
+  cyl(.05, .05, .5, steelTrim, 0, 7, 0, backyard);
   /* neeche latakti scalloped valance (jhalar) chaaron taraf */
   const valM = new THREE.MeshStandardMaterial({ color: RED, roughness:.8, side: THREE.DoubleSide });
   const valWhite = new THREE.MeshStandardMaterial({ color: 0xf6f2e8, roughness:.85, side: THREE.DoubleSide });
@@ -3327,7 +3390,7 @@ let canopyGrp = null, wallArtGrp = null;   // Products 17 & 18
   box(6, 1.15, 1, M.steel, 0, .575, 0, bar);   // counter bottom silver
   box(6.3, .12, 1.3, new THREE.MeshPhysicalMaterial({ color: 0x2b1d10, roughness:.15, clearcoat:1 }), 0, 1.2, 0, bar);
   /* LED strip front (animate hoga) */
-  const ledM = new THREE.MeshStandardMaterial({ color: RED, emissive: 0xff0022, emissiveIntensity: 1.5 });
+  const ledM = new THREE.MeshStandardMaterial({ color: RED, emissive: 0xff0000, emissiveIntensity: 1.5 });
   const led1 = box(6, .08, .03, ledM, 0, 1.05, .53, bar); barLEDs.push(led1);
   const led2 = box(6, .08, .03, ledM.clone(), 0, .25, .53, bar); barLEDs.push(led2);
   /* ---- BAR AREA WALL PAINT — showroom back wall par artistic paint + canvas art ---- */
@@ -3335,7 +3398,7 @@ let canopyGrp = null, wallArtGrp = null;   // Products 17 & 18
     /* painted feature wall (deep maroon-red artistic paint with texture strokes) */
     const wallPaintTex = makeTex(512, 256, (g)=>{
       const gr = g.createLinearGradient(0,0,0,256);
-      gr.addColorStop(0,'#5a1015'); gr.addColorStop(.5,'#7a1820'); gr.addColorStop(1,'#4a0d12');
+      gr.addColorStop(0,'#ff0000'); gr.addColorStop(.5,'#ff0000'); gr.addColorStop(1,'#4a0d12');
       g.fillStyle = gr; g.fillRect(0,0,512,256);
       /* texture paint strokes */
       for(let i=0;i<70;i++){
@@ -3368,7 +3431,7 @@ let canopyGrp = null, wallArtGrp = null;   // Products 17 & 18
   }
   /* back bar shelf — glowing bottles */
   box(6, 2.5, .35, M.steel, 0, 2.1, -1.35, bar);   // shelf silver
-  const bottleCols = [0xff5a3c, 0x3cd0ff, 0xffc73c, 0x7aff5a, 0xd06aff, 0xff3c7e];
+  const bottleCols = [0xff0000, 0x3cd0ff, 0xffc73c, 0x7aff5a, 0xd06aff, 0xff3c7e];
   for(let sh=0; sh<2; sh++){
     box(5.6, .06, .3, new THREE.MeshStandardMaterial({ color: 0x555a60, metalness:.6, roughness:.3 }), 0, 1.55 + sh*.85, -1.3, bar);
     for(let b=0; b<8; b++){
@@ -3404,7 +3467,7 @@ let canopyGrp = null, wallArtGrp = null;   // Products 17 & 18
     new THREE.MeshStandardMaterial({ map: dbTex, metalness:.95, roughness:.15 }));
   discoBall.position.set(3.2, 4.55, 0); backyard.add(discoBall);
   /* rangin club spotlights — ghoomti hui (animate) */
-  (IS_MOBILE ? [0xff2a5a] : [0xff2a5a, 0x3c8aff, 0xb03cff]).forEach((c, i)=>{
+  (IS_MOBILE ? [0xff0000] : [0xff0000, 0x3c8aff, 0xb03cff]).forEach((c, i)=>{
     const sp = new THREE.SpotLight(c, 30, 16, .55, .6, 1.2);
     sp.position.set(3.2, 5, 0);
     sp.target.position.set(Math.cos(i*2.1)*4, .2, Math.sin(i*2.1)*3);
@@ -3425,7 +3488,7 @@ let canopyGrp = null, wallArtGrp = null;   // Products 17 & 18
   cyl(.45, .05, .06, darkM3, 0, .62, 1.15, lounge);
   cyl(.05, .07, .6, M.steel, 0, .3, 1.15, lounge);
   cyl(.05, .04, .16, new THREE.MeshPhysicalMaterial({ color: 0xffb43c, roughness:.05, transparent:true, opacity:.7 }), -.15, .72, 1.1, lounge);
-  cyl(.05, .04, .16, new THREE.MeshPhysicalMaterial({ color: 0xff3c5a, roughness:.05, transparent:true, opacity:.7 }), .16, .72, 1.2, lounge);
+  cyl(.05, .04, .16, new THREE.MeshPhysicalMaterial({ color: 0xff0000, roughness:.05, transparent:true, opacity:.7 }), .16, .72, 1.2, lounge);
 
   /* ---- DRESSING CORNER (chhota, side me — wood table/chair/stool) ---- */
   const dress = new THREE.Group(); backyard.add(dress);
@@ -3461,7 +3524,7 @@ let canopyGrp = null, wallArtGrp = null;   // Products 17 & 18
     const DF = { w: 5, d: 4, size: 1.05, x: .6, z: .4 };   // canopy ke beech, bar aur lounge ke beech me
     /* dark border frame */
     box(DF.w*DF.size + .5, .06, DF.d*DF.size + .5, darkM3, DF.x, .05, DF.z, backyard);
-    const palette = [0xff2a5a, 0x3c8aff, 0xffc73c, 0x39ff6a, 0xb03cff, 0xff6a3c, 0x3cffe0, 0xffffff];
+    const palette = [0xff0000, 0x3c8aff, 0xffc73c, 0x39ff6a, 0xb03cff, 0xff6a3c, 0x3cffe0, 0xffffff];
     for(let r=0; r<DF.d; r++){
       for(let c=0; c<DF.w; c++){
         const m = new THREE.MeshStandardMaterial({
@@ -3491,7 +3554,7 @@ let canopyGrp = null, wallArtGrp = null;   // Products 17 & 18
     const pole = cyl(.05, .06, 3.1, new THREE.MeshStandardMaterial({ color: 0xf6f5f2, roughness:.5 }), 0, 1.55, 0, bu);
     pole.rotation.z = .12;
     /* canopy — 8 rangin panels wala shallow cone */
-    const uniCols = [0xff3c5a, 0xff8a3c, 0xffd23c, 0x5ad45a, 0x3cc8ff, 0x6a5aff, 0xb03cff, 0xff5ad0];
+    const uniCols = [0xff0000, 0xff8a3c, 0xffd23c, 0x5ad45a, 0x3cc8ff, 0x6a5aff, 0xb03cff, 0xff5ad0];
     for(let i=0;i<8;i++){
       const seg2 = new THREE.Mesh(
         new THREE.ConeGeometry(1.55, .55, 8, 1, true, i*Math.PI/4, Math.PI/4),
@@ -3513,7 +3576,7 @@ let canopyGrp = null, wallArtGrp = null;   // Products 17 & 18
     chairF.rotation.y = .55;
     const frameM2 = new THREE.MeshStandardMaterial({ color: 0xd8d4cc, roughness:.4, metalness:.5 });
     const strTex = makeTex(128, 128, (g)=>{
-      for(let i=0;i<8;i++){ g.fillStyle = i%2 ? '#ff3c5a' : '#f6f5f2'; g.fillRect(0, i*16, 128, 16); }
+      for(let i=0;i<8;i++){ g.fillStyle = i%2 ? '#ff0000' : '#f6f5f2'; g.fillRect(0, i*16, 128, 16); }
     });
     const fabM = new THREE.MeshStandardMaterial({ map: strTex, roughness:.85 });
     /* solid seat base */
@@ -3546,21 +3609,21 @@ let canopyGrp = null, wallArtGrp = null;   // Products 17 & 18
   deck.rotation.x = -Math.PI/2; deck.position.y = .02; deck.receiveShadow = true; backyard.add(deck);
   /* edge LED strips */
   [[0, -CD2/2 - 1.4, CW2 + 3, .12],[0, CD2/2 + 1.4, CW2 + 3, .12]].forEach(([x, z, w])=>{
-    const strip = box(w, .05, .1, new THREE.MeshStandardMaterial({ color: RED, emissive: 0xff0022, emissiveIntensity: 1.2 }), x, .06, z, backyard);
+    const strip = box(w, .05, .1, new THREE.MeshStandardMaterial({ color: RED, emissive: 0xff0000, emissiveIntensity: 1.2 }), x, .06, z, backyard);
     barLEDs.push(strip);
   });
 }
 
-/* ---------- 17. CANOPY DESIGN (ACP gazebo — backyard) ---------- */
+/* ---------- 18. CANOPY DESIGN (ACP gazebo — backyard) ---------- */
 register(canopyGrp, {
   name:'Canopy Design', sub:'ACP Panel Canopy — Designer Gazebo Structure',
-  desc:'Backyard lounge के ऊपर ACP panel canopy — charcoal composite panels groove-lines के साथ, red accent panels का rhythm, pyramid hip design golden finial के साथ। नीचे scalloped valance और festoon lights। Cafes, lounges, entrances और outdoor seating के लिए weather-proof designer canopies — MS structure + ACP skin, design से install तक।',
-  specs:[['Skin','3mm ACP, PVDF coat'],['Structure','MS pipe frame, powder coat'],['Design','Hip / gable / flat custom'],['Accents','Red panels + gold finial'],['Life','10+ साल outdoor']],
+  desc:'Backyard lounge के ऊपर ACP panel canopy — charcoal composite panels groove-lines के साथ, red accent panels का rhythm, pyramid hip design silver-steel finial के साथ। नीचे scalloped valance और festoon lights। Cafes, lounges, entrances और outdoor seating के लिए weather-proof designer canopies — MS structure + ACP skin, design से install तक।',
+  specs:[['Skin','3mm ACP, PVDF coat'],['Structure','MS pipe frame, powder coat'],['Design','Hip / gable / flat custom'],['Accents','Red panels + steel finial'],['Life','10+ साल outdoor']],
   tags:['Canopy','ACP','Outdoor Structure'],
   camPos:[0, 7.5, -33], camTarget:[0, 5.5, -22]
 });
 
-/* ---------- 18. WALL ART & CANVAS (bar wall — backyard) ---------- */
+/* ---------- 19. WALL ART & CANVAS (bar wall — backyard) ---------- */
 register(wallArtGrp, {
   name:'Wall Art & Canvas', sub:'Artistic Wall Paint + Framed Canvas Gallery',
   desc:'Bar area की पूरी back wall पर artistic treatment — deep maroon-red textured paint strokes full-height में, और तीन framed canvas paintings (हमारे vector artworks) center-piece के साथ। Restaurants, lounges, offices और homes के लिए custom wall murals, texture paint art और canvas print installations — design से paint-brush तक सब in-house।',
@@ -3569,7 +3632,7 @@ register(wallArtGrp, {
   camPos:[0, 1.8, -30.5], camTarget:[0, 2.6, -19]
 });
 
-/* ---------- PRODUCT 19 — EVENT/EXHIBITION STALL & DIGITAL ASSETS (showroom ke left corner, list me last) ---------- */
+/* ---------- PRODUCT 20 — EVENT/EXHIBITION STALL & DIGITAL ASSETS (showroom ke left corner, list me last) ---------- */
 register(eventStall, {
   name:'Event/Exhibition Stall & Digital Assets', sub:'Open ACP + Acrylic Exhibition Counter · Social Media Posts · Profile Assets · Video Thumbnails',
   desc:'Brand ki poori online presence ka design — sab ek hi jagah। (1) Social Media Posts — daily, festival, offer posts, carousel, stories aur reels covers, sab aapke brand style me। (2) Profile Setup — DP, Facebook cover, YouTube channel art, LinkedIn banner, Insta highlights, WhatsApp catalogue। (3) Video Thumbnails — YouTube aur shorts ke covers jo turant click karwayen। (4) और भी — animated posts, Meta-Google ads, e-invites, QR standee, content calendar। Saari sizes aur delivery formats neeche specs me — expo ho ya online, brand hamesha ek-jaisa aur professional दिखे।',
@@ -3671,7 +3734,7 @@ const natureAnim = { birds: [], flocks: [], walkers: [], grazers: [], hoppers: [
   /* ---- FLOWER beds (instanced tiny blooms) ---- */
   const nFl = Math.round(240 * Q);
   const flowers = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.11, 0), new THREE.MeshLambertMaterial({ color: 0xffffff }), nFl);
-  const flCols = [0xff4d6d, 0xffd23f, 0xffffff, 0xff8c42, 0xc86bfa, 0xff66b3];
+  const flCols = [0xff0000, 0xffd23f, 0xffffff, 0xff8c42, 0xc86bfa, 0xff66b3];
   const beds = [];      // phoolon ki kyariyaan — sirf grass zone me
   for(let k=0; beds.length < 8 && k < 400; k++){
     const a = rnd()*Math.PI*2, r = 1.12 + rnd()*.35;
@@ -3894,7 +3957,7 @@ const natureAnim = { birds: [], flocks: [], walkers: [], grazers: [], hoppers: [
         const R = 30 + ring*28, n = 7 + ring*4;
         for(let k=0;k<n;k++){
           const an = Math.PI * (k + .5) / n, x = 128 + Math.cos(an)*R, y = 128 - Math.sin(an)*R;
-          g.fillStyle = '#c9a227'; g.beginPath(); g.ellipse(x, y, 8, 10, 0, 0, 7); g.fill();
+          g.fillStyle = '#c5cad1'; g.beginPath(); g.ellipse(x, y, 8, 10, 0, 0, 7); g.fill();
           g.fillStyle = '#0f7a8a'; g.beginPath(); g.ellipse(x, y, 5.5, 7, 0, 0, 7); g.fill();
           g.fillStyle = '#10205a'; g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill();
         }
@@ -4109,7 +4172,7 @@ scene.add(interior);
       g.closePath(); g.fill();
     }
   },[2,2]);
-  const goldMat = new THREE.MeshStandardMaterial({ map: frameTex, roughness:.45, metalness:.35 });
+  const frameMat = new THREE.MeshStandardMaterial({ map: frameTex, roughness:.45, metalness:.35 });
 
   const texLd = new THREE.TextureLoader();
   const divisions = [
@@ -4124,8 +4187,8 @@ scene.add(interior);
   divisions.forEach((dv, i)=>{
     const x = startX + i*(CW+GAP);
     const z = -room.d/2 + .42;
-    /* golden frame */
-    const fr = box(CW+.34, CW+.34, .16, goldMat, x, 4.15, z, interior);
+    /* black gallery frame */
+    const fr = box(CW+.34, CW+.34, .16, frameMat, x, 4.15, z, interior);
     fr.userData.divKey = dv.key;
     /* inner shadow lip */
     const lip = box(CW+.1, CW+.1, .17, new THREE.MeshStandardMaterial({ color:0x0a0a0b, roughness:.7 }), x, 4.15, z+.005, interior);
@@ -4137,8 +4200,8 @@ scene.add(interior);
     art.position.set(x, 4.15, z+.1);
     art.userData.divKey = dv.key;
     interior.add(art);
-    /* small golden picture light above */
-    const bar = box(1.3, .09, .3, goldMat, x, 6.2, z+.25, interior);
+    /* small picture light above */
+    const bar = box(1.3, .09, .3, frameMat, x, 6.2, z+.25, interior);
     const gl = new THREE.Mesh(new THREE.PlaneGeometry(1.1, .05),
       new THREE.MeshStandardMaterial({ color:0xfff2d0, emissive:0xffe9b0, emissiveIntensity:1.8 }));
     gl.position.set(x, 6.14, z+.28); gl.rotation.x = -.9; interior.add(gl);
@@ -4154,7 +4217,7 @@ scene.add(interior);
   {
     const SX = room.w/2 - .38, SZ = 0;
     /* red feature panel */
-    const sp = box(.16, 5.6, 7.6, new THREE.MeshStandardMaterial({ color: 0xe20000, roughness:.75 }), SX, 2.9, SZ, selfie);
+    const sp = box(.16, 5.6, 7.6, new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.75 }), SX, 2.9, SZ, selfie);
     /* paper circle rings (brand mark) as photo backdrop */
     [[2.1, PAPER],[1.4, INK],[.7, RED]].forEach(([r, col], i)=>{
       const c = new THREE.Mesh(new THREE.CircleGeometry(r, 48), new THREE.MeshStandardMaterial({ color: col, roughness:.85 }));
@@ -4165,7 +4228,7 @@ scene.add(interior);
     [-1,1].forEach(s=>{
       for(let f=0; f<4; f++){
         const feather = new THREE.Mesh(new THREE.CircleGeometry(.55 - f*.08, 24),
-          new THREE.MeshStandardMaterial({ color: f%2 ? 0xf6f5f2 : 0xffd75e, roughness:.85 }));
+          new THREE.MeshStandardMaterial({ color: f%2 ? 0xf6f5f2 : 0xd6dade, roughness:.85 }));
         feather.rotation.y = -Math.PI/2;
         feather.scale.y = 2.2;
         feather.position.set(SX - .12, 3.1 - f*.16, SZ + s*(2.15 + f*.42));
@@ -4187,7 +4250,7 @@ scene.add(interior);
       new THREE.MeshStandardMaterial({ color: 0x1c1c1e, roughness:.5 }));
     stage.position.set(SX - 1.9, .11, SZ); stage.receiveShadow = true; selfie.add(stage);
     const stageRing = new THREE.Mesh(new THREE.TorusGeometry(1.72, .045, 10, 48),
-      new THREE.MeshStandardMaterial({ color: RED, emissive: 0x660000, roughness:.5 }));
+      new THREE.MeshStandardMaterial({ color: RED, emissive: 0xff0000, roughness:.5 }));
     stageRing.rotation.x = Math.PI/2;
     stageRing.position.set(SX - 1.9, .23, SZ); selfie.add(stageRing);
     /* selfie ring light on tripod */
@@ -4424,6 +4487,7 @@ function exitShowroom(){
     camera.position.set(0, 4.5, 34);
     controls.target.set(0, 5, 10);
     controls.minDistance = 3.5; controls.maxDistance = 78;
+    controls.maxPolarAngle = 1.52;
     controls.enabled = true;
     mode = 'outside';
     hint.classList.remove('hidden');
@@ -4468,7 +4532,7 @@ function drawSky(dt, t){
     });
   } else if(c.key === 'sunset'){
     const g = ctx2.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#3d2f52'); g.addColorStop(.42,'#c4553a'); g.addColorStop(.72,'#f2903f'); g.addColorStop(1,'#ffd489');
+    g.addColorStop(0,'#3d2f52'); g.addColorStop(.42,'#ff0000'); g.addColorStop(.72,'#f2903f'); g.addColorStop(1,'#ffd489');
     ctx2.fillStyle = g; ctx2.fillRect(0,0,W,H);
     /* sun */
     const sg = ctx2.createRadialGradient(W*.5, H*.66, 8, W*.5, H*.66, 90);
@@ -4961,7 +5025,7 @@ function animate(){
       if(k >= 1){ rickPhase = 'driving'; rickPhaseT = t; rickSpeed = RICK.speed; }
     } else if(rickPhase === 'driving'){
       rickSpeed += (RICK.speed - rickSpeed) * .02;
-      rickAngle += rickSpeed / 60;
+      rickAngle += rickSpeed * dt;
       px = RICK.cx + RICK.rx * Math.cos(rickAngle);
       pz = RICK.cz + RICK.rz * Math.sin(rickAngle);
       spin = rickSpeed / RICK.speed;
@@ -4976,7 +5040,7 @@ function animate(){
     if(Math.hypot(mdx, mdz) > .002) rickshaw.rotation.y = Math.atan2(mdx, mdz);
     rickPrev.set(px, 0, pz);
     rickshaw.rotation.z = Math.sin(t*11) * (rickPhase === 'revving' ? .02 : .008);
-    rickWheels.forEach(wg => { wg.rotation.x += 0.16 * spin; });
+    rickWheels.forEach(wg => { wg.rotation.x += 0.16 * spin * dt * 60; });
     updateRickAudio();
   } else updateRickAudio();
 
@@ -5084,7 +5148,7 @@ function animate(){
   /* printer head sweep + roll spin (FIX D) */
   if(printHead2 && outside.visible && camDistTo(21.5, 1.5, 6) < 40){
     printHead2.position.x = Math.sin(t*2.6) * 1.35;
-    if(printRoll) printRoll.rotation.x += .01;
+    if(printRoll) printRoll.rotation.x += .01 * dt * 60;
   }
 
   /* window mannequin — halka sway + FLYING KISS (7s cycle) */
@@ -5167,7 +5231,7 @@ function animate(){
 
   /* camera tween */
   if(tween.active){
-    tween.t += (1/60) / tween.dur;
+    tween.t += dt / tween.dur;
     const k = easeInOut(Math.min(tween.t, 1));
     camera.position.lerpVectors(tween.fromPos, tween.toPos, k);
     controls.target.lerpVectors(tween.fromTgt, tween.toTgt, k);
@@ -5278,6 +5342,37 @@ setTimeout(()=>{
 }, 600);
 
 
+/* ===== LIVE INDORE CLOCK + WEATHER (top-left corner) ===== */
+(function(){
+  const clk = document.getElementById('liveClock');
+  const wx = document.getElementById('liveWx');
+  const tick = ()=>{
+    try { clk.textContent = new Date().toLocaleTimeString('en-GB', { timeZone:'Asia/Kolkata', hour12:false }); }
+    catch(e){ clk.textContent = new Date().toLocaleTimeString(); }
+  };
+  tick(); setInterval(tick, 1000);
+  const WMO = {0:['☀️','Clear'],1:['🌤️','Mainly Clear'],2:['⛅','Partly Cloudy'],3:['☁️','Overcast'],
+    45:['🌫️','Fog'],48:['🌫️','Rime Fog'],51:['🌦️','Light Drizzle'],53:['🌦️','Drizzle'],55:['🌧️','Dense Drizzle'],
+    56:['🌧️','Freezing Drizzle'],57:['🌧️','Freezing Drizzle'],61:['🌧️','Light Rain'],63:['🌧️','Rain'],
+    65:['🌧️','Heavy Rain'],66:['🌧️','Freezing Rain'],67:['🌧️','Freezing Rain'],71:['🌨️','Light Snow'],
+    73:['🌨️','Snow'],75:['❄️','Heavy Snow'],77:['❄️','Snow Grains'],80:['🌦️','Rain Showers'],
+    81:['🌧️','Rain Showers'],82:['⛈️','Violent Showers'],85:['🌨️','Snow Showers'],86:['🌨️','Snow Showers'],
+    95:['⛈️','Thunderstorm'],96:['⛈️','Thunderstorm + Hail'],99:['⛈️','Severe Thunderstorm']};
+  const loadWx = ()=>{
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=22.7196&longitude=75.8577&current=temperature_2m,weather_code&timezone=Asia%2FKolkata')
+      .then(r=>{ if(!r.ok) throw new Error('wx'); return r.json(); })
+      .then(j=>{
+        const t = Math.round(j.current.temperature_2m);
+        const w = WMO[j.current.weather_code] || ['🌡️',''];
+        wx.textContent = w[0] + ' ' + t + '\u00b0C';
+        wx.title = 'Indore — ' + (w[1] || '');
+      })
+      .catch(()=>{ wx.textContent = '\u{1F321}️ --\u00b0C'; });
+  };
+  loadWx();
+  setInterval(loadWx, 10*60*1000);   /* 10 min refresh */
+})();
+
 /* Plan C: mobile landing card */
 if(IS_MOBILE){
   document.getElementById('mobLanding').classList.add('show');
@@ -5295,5 +5390,5 @@ addEventListener('resize', ()=>{
   clearFocusOffset();
 });
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2c8cee6b8b2d7e5',t:'MTc4Njk3MTA2NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a400f3475c2f3cac',t:'MTc5MDI0NDExMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a40f9ab64c2f1699',t:'MTc5MDM5Nzc3MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a410dab069c980aa',t:'MTc5MDQxMDg3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
