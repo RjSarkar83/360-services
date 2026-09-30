@@ -74,6 +74,8 @@
   .ctrl-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   .ctrl-btn:hover{background:var(--ink);color:#fff;transform:translateY(-2px)}
   .ctrl-btn.muted{color:var(--red)}
+  .ctrl-btn.active{background:var(--red);color:#fff;border-color:var(--red)}
+  .ctrl-btn.active:hover{background:#c00}
   .climate-chip{position:static;background:var(--glass-dark);backdrop-filter:blur(8px);color:#fff;padding:0 18px;border-radius:999px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;display:none;align-items:center;border:1px solid rgba(255,255,255,.12)}
   .climate-chip.show{display:flex}
 
@@ -299,6 +301,9 @@
   </button>
   <button class="ctrl-btn" id="btnHome" title="शुरुआती व्यू — पूरा शोरूम">
     <svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>
+  </button>
+  <button class="ctrl-btn" id="btnExplode" title="Exploded View — poora environment alag-alag">
+    <svg viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6"/><path d="M7 7 3 3"/><path d="M3 6V3h3"/><path d="M17 7l4-4"/><path d="M21 6V3h-3"/><path d="M7 17l-4 4"/><path d="M3 18v3h3"/><path d="M17 17l4 4"/><path d="M21 18v3h-3"/></svg>
   </button>
   <button class="ctrl-btn" id="btnFull" title="Fullscreen">
     <svg viewBox="0 0 24 24"><path d="M8 3H3v5"/><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M16 21h5v-5"/></svg>
@@ -5186,6 +5191,7 @@ function panelWidth(){ return Math.min(430, innerWidth*.92); }
 function clearFocusOffset(){ camera.clearViewOffset(); }
 
 function focusProduct(i){
+  if(exploded) setExplode(false);
   if(mode === 'entering' || mode === 'interior') return;
   mode = 'focus'; focusIndex = i;
   const p = products[i];
@@ -5231,6 +5237,7 @@ fitHomeView();
 addEventListener('resize', fitHomeView);
 
 function goHome(dur){
+  if(exploded) setExplode(false);
   if(mode === 'interior' || mode === 'entering') return;
   if(rickPhase === 'showcase'){ rickPhase = 'revving'; rickPhaseT = clock.getElapsedTime(); }
   if(mode === 'focus'){ mode = 'outside'; focusIndex = -1; hideInfo(); hint.classList.remove('hidden'); }
@@ -5239,6 +5246,7 @@ function goHome(dur){
 }
 
 function exitFocus(){
+  if(exploded) setExplode(false);
   if(mode !== 'focus') return;
   mode = 'outside'; focusIndex = -1;
   if(rickPhase === 'showcase'){ rickPhase = 'revving'; rickPhaseT = clock.getElapsedTime(); }
@@ -5303,6 +5311,40 @@ function exitShowroom(){
   }, 1000);
 }
 
+/* ================= EXPLODED 3D ENVIRONMENT VIEW ================= */
+let exploded = false, expAnim = null;
+const EXP_C = new THREE.Vector3(0, 5, -6);
+const EXP_VIEW = { pos:[0, 27, 55], tgt:[0, 10, -4] };
+const EXP_SKIP = [ground, dust, carpet, building, rickshaw, backyard, nature];
+function envPieces(){
+  const list = [];
+  outside.children.forEach(ch => { if(EXP_SKIP.indexOf(ch) < 0) list.push(ch); });
+  building.children.forEach(ch => list.push(ch));
+  return list;
+}
+function setExplode(on){
+  if(on === exploded) return;
+  exploded = on;
+  const pieces = envPieces();
+  pieces.forEach((ch,i)=>{
+    if(!ch.userData._oPos) ch.userData._oPos = ch.position.clone();
+    if(on){
+      const c = new THREE.Box3().setFromObject(ch).getCenter(new THREE.Vector3());
+      const d = c.clone().sub(EXP_C);
+      ch.userData._tPos = ch.userData._oPos.clone().add(new THREE.Vector3(d.x*1.55, 3.2 + (i%6)*2.1, d.z*1.55));
+    } else {
+      ch.userData._tPos = ch.userData._oPos.clone();
+    }
+  });
+  expAnim = { t:0, dur:1.4, pieces:pieces, from:pieces.map(ch=>ch.position.clone()), to:pieces.map(ch=>ch.userData._tPos.clone()) };
+  const btn = document.getElementById('btnExplode');
+  if(btn) btn.classList.toggle('active', on);
+}
+function toggleExplode(){
+  if(mode === 'interior' || mode === 'entering') return;   // exploded view sirf exterior
+  setExplode(!exploded);
+  flyTo(exploded ? EXP_VIEW.pos : HOME_VIEW.pos, exploded ? EXP_VIEW.tgt : HOME_VIEW.tgt, 1.3);
+}
 /* ================= CEILING SKY CLIMATE (interior) ================= */
 const CLIMATES = [
   { key:'rain',   label:'🌧️ बारिश · Soft Music',   dur: 24 },
@@ -5742,6 +5784,7 @@ btnSound.addEventListener('click', ()=>{
     : '<path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M22 9l-6 6"/><path d="M16 9l6 6"/>';
 });
 document.getElementById('btnHome').addEventListener('click', ()=> goHome(1.6));
+document.getElementById('btnExplode').addEventListener('click', ()=> toggleExplode());
 document.getElementById('btnFull').addEventListener('click', ()=>{
   if(document.fullscreenElement) document.exitFullscreen();
   else document.documentElement.requestFullscreen();
@@ -6022,6 +6065,17 @@ function animate(){
     }
   }
 
+  /* exploded environment — products ko radial + vertical me bloom */
+  if(expAnim){
+    expAnim.t += dt / expAnim.dur;
+    const ek = easeInOut(Math.min(expAnim.t, 1));
+    for(let i=0;i<expAnim.pieces.length;i++){
+      const ch = expAnim.pieces[i];
+      if(ch && ch.position) ch.position.lerpVectors(expAnim.from[i], expAnim.to[i], ek);
+    }
+    if(expAnim.t >= 1) expAnim = null;
+  }
+
   controls.update();
 
   /* interior me camera ko deewaron ke ANDAR clamp karo */
@@ -6236,5 +6290,5 @@ addEventListener('resize', ()=>{
 });
 </script>
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a411dd7ccc222666',t:'MTc5MDQyMTQ3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4144d625df5b1c5',t:'MTc5MDQ0NzAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a436bbfe992580af',t:'MTc5MDgwODA3OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4144d625df5b1c5',t:'MTc5MDQ0NzAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a436e59a6e9a6470',t:'MTc5MDgwOTc4Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
