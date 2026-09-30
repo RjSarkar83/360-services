@@ -3160,101 +3160,127 @@ let ledScreens = [];
   ledScreens.push(scrR);
 
 }
-/* ================= GALLERY SLIDESHOW — ADVERTiSiNG se EXECUTION tak, L2R slide transition ================= */
-const GAL_SHOW = { hold:3.2, trans:.85, t0:0, list:null, imgs:new Map(), drawn:new Map() };
-function galList(){
-  if(!GAL_SHOW.list){
-    GAL_SHOW.list = [];
-    DIVISIONS.forEach(dv=>{
-      for(let i=1;i<=dv.photos;i++) GAL_SHOW.list.push({ url:`assets/gallery/${dv.key}-${i}.jpg`, label:dv.label });
-    });
-  }
-  return GAL_SHOW.list;
+/* ================= DISPLAY ANIMATION — brand intro (pehle wala) → smooth L2R Division Gallery ================= */
+const GAL = { list:null, n:0, imgs:new Map(),
+  mode:'brand', brandScene:0, brandT:0,
+  idx:0, phase:'hold', phaseT:0, needDraw:true,
+  scene:4.0, hold:3.2, trans:1.0, lastT:0 };
+function galInit(){
+  if(!GAL.list){ GAL.list=[]; DIVISIONS.forEach(dv=>{ for(let i=1;i<=dv.photos;i++) GAL.list.push({url:`assets/gallery/${dv.key}-${i}.jpg`, label:dv.label}); }); GAL.n=GAL.list.length; }
 }
 function galImg(idx){
-  const list = galList(), n = list.length;
-  idx = ((idx % n) + n) % n;
-  let img = GAL_SHOW.imgs.get(idx);
-  if(img) return img;
-  if(GAL_SHOW.imgs.size >= 6){                    // chhota window — 87 images kabhi ek saath memory me nahi
-    let far = -1, maxD = -1;
-    GAL_SHOW.imgs.forEach((_, k)=>{
-      const d = Math.min(Math.abs(k - idx), n - Math.abs(k - idx));
-      if(d > maxD){ maxD = d; far = k; }
-    });
-    GAL_SHOW.imgs.delete(far);
-  }
-  img = new Image();
-  img.crossOrigin = 'anonymous';                  // canvas tainted na ho → WebGL texture safe
-  img.decoding = 'async';
-  img.src = list[idx].url;
-  if(img.decode) img.decode().catch(()=>{});      // pehle se decode → slide aate waqt hitch nahi
-  GAL_SHOW.imgs.set(idx, img);
-  return img;
+  galInit(); const n=GAL.n; idx=((idx%n)+n)%n;
+  let img=GAL.imgs.get(idx); if(img) return img;
+  if(GAL.imgs.size>=6){ let far=-1,mx=-1; GAL.imgs.forEach((_,k)=>{ const d=Math.min(Math.abs(k-idx),n-Math.abs(k-idx)); if(d>mx){mx=d;far=k;} }); GAL.imgs.delete(far); }
+  img=new Image(); img.crossOrigin='anonymous'; img.decoding='async'; img.src=GAL.list[idx].url;
+  if(img.decode) img.decode().catch(()=>{});
+  GAL.imgs.set(idx,img); return img;
 }
-/* screen ka shape photo se bahut alag ho (mobile portrait) → peeche dhundhla blur-fill */
-function galBlur(img, W, H){
-  const key = W + 'x' + H;
-  const store = img._bg || (img._bg = {});
-  if(store[key]) return store[key];
-  const mk = (w, h)=>{ const c = document.createElement('canvas'); c.width = w; c.height = h; return c.getContext('2d'); };
-  const sw = 12, sh = Math.max(4, Math.round(12 * H / W));
-  const a = mk(sw, sh), sc = Math.max(sw / img.naturalWidth, sh / img.naturalHeight);
-  a.imageSmoothingQuality = 'high';
-  a.drawImage(img, (sw - img.naturalWidth * sc) / 2, (sh - img.naturalHeight * sc) / 2, img.naturalWidth * sc, img.naturalHeight * sc);
-  const b = mk(sw * 5, sh * 5);
-  b.imageSmoothingQuality = 'high';
-  b.drawImage(a.canvas, 0, 0, sw * 5, sh * 5);
-  return (store[key] = b.canvas);
-}
-function drawGalSlide(g, W, H, t){
-  const list = galList(), n = list.length;
-  const per = GAL_SHOW.hold + GAL_SHOW.trans;
-  const cyc = ((Math.max(t - GAL_SHOW.t0, 0) + GAL_SHOW.trans) / per) % n;   // slide-1 seedha hold se shuru hota hai
-  const idx = Math.floor(cyc);
-  const p = cyc - idx;
-  const inTrans = p * per < GAL_SHOW.trans;
-  const tp = inTrans ? (p * per) / GAL_SHOW.trans : 0;
-  const key = inTrans ? 't' : idx;                // hold me redraw skip, transition me har frame
-  if(GAL_SHOW.drawn.get(g) === key) return false;
-  galImg(idx); galImg(idx + 1); galImg(idx + 2);  // lookahead prefetch
-  let ready = true;
-  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
-  const slide = (i, x)=>{
-    const img = galImg(i);
-    if(!img.complete){ ready = false; return; }   // abhi load ho rahi hai → agle frame par dobara
-    const iw = img.naturalWidth, ih = img.naturalHeight;
-    if(!iw) return;                               // toota hua link — skip
-    const sc = Math.max(W / iw, H / ih);
-    if((W * H) / (iw * sc * ih * sc) >= .5){      // crop kam → full-bleed cover
-      g.drawImage(img, x + (W - iw * sc) / 2, (H - ih * sc) / 2, iw * sc, ih * sc);
-      return;
+function galReady(idx){ const im=galImg(idx); return !!(im&&im.complete&&im.naturalWidth); }
+function galEase(x){ return x<.5 ? 4*x*x*x : 1-Math.pow(-2*x+2,3)/2; }
+function galReset(){ GAL.mode='brand'; GAL.brandScene=0; GAL.brandT=0; GAL.idx=0; GAL.phase='hold'; GAL.phaseT=0; GAL.needDraw=true; }
+function galUpdate(t){
+  galInit();
+  const dt=Math.min(Math.max(t-(GAL.lastT||t),0),.1); GAL.lastT=t;
+  if(GAL.mode==='brand'){
+    GAL.brandT+=dt;
+    if(GAL.brandT>=GAL.scene){ GAL.brandT=0; GAL.brandScene++; GAL.needDraw=true;
+      if(GAL.brandScene>=3){ GAL.mode='gallery'; GAL.idx=0; GAL.phase='hold'; GAL.phaseT=0; GAL.needDraw=true; } }
+  } else {
+    GAL.phaseT+=dt;
+    if(GAL.phase==='hold'){
+      const next=(GAL.idx+1)%GAL.n;
+      if((GAL.phaseT>=GAL.hold && galReady(next)) || GAL.phaseT>=GAL.hold+10){ GAL.phase='trans'; GAL.phaseT=0; GAL.needDraw=true; }
+    } else if(GAL.phaseT>=GAL.trans){
+      const prev=GAL.idx; GAL.idx=(GAL.idx+1)%GAL.n; GAL.phase='hold'; GAL.phaseT=0; GAL.needDraw=true;
+      if(prev===GAL.n-1 && GAL.idx===0) galReset();     // poori gallery khatam → phir se brand intro
     }
-    g.drawImage(galBlur(img, W, H), x, 0, W, H);  // crop bahut → poori photo + blur-fill
-    g.fillStyle = 'rgba(0,0,0,.4)'; g.fillRect(x, 0, W, H);
-    const s2 = Math.min(W / iw, H / ih);
-    g.drawImage(img, x + (W - iw * s2) / 2, (H - ih * s2) / 2, iw * s2, ih * s2);
-  };
-  g.fillStyle = '#0c0d0f'; g.fillRect(0, 0, W, H);
-  if(inTrans){ slide((idx - 1 + n) % n, W * tp); slide(idx, -W * (1 - tp)); }   // L2R: naya left se aata hai, purana right ko jata hai
-  else slide(idx, 0);
+  }
+}
+/* brand intro — pehle wala 3-scene animation (red sweep / equalizer / expanding rings) */
+function drawBrand(g, W, H, t, scene, k){
+  const S = Math.min(W, H) / 256;
+  if(scene === 0){
+    g.fillStyle = '#ff0000'; g.fillRect(0,0,W,H);
+    const cx = W*(-.2 + k*1.4);
+    g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(cx, H/2, 62*S, 0, 7); g.fill();
+    g.fillStyle = '#171717'; g.beginPath(); g.arc(cx, H/2, 40*S, 0, 7); g.fill();
+    g.fillStyle = '#ff0000'; g.beginPath(); g.arc(cx, H/2, 19*S, 0, 7); g.fill();
+  } else if(scene === 1){
+    g.fillStyle = '#101013'; g.fillRect(0,0,W,H);
+    const bw = Math.max(10, 42*S*.6), nb = Math.floor(W/bw);
+    for(let i=0;i<nb;i++){
+      const bh = (Math.sin(t*3 + i*1.1)*.5 + .5) * H * .7 + 18*S;
+      g.fillStyle = i%3 ? '#ff0000' : '#f6f5f2';
+      g.fillRect(4 + i*bw, H - bh, bw*.72, bh);
+    }
+  } else {
+    g.fillStyle = '#f6f5f2'; g.fillRect(0,0,W,H);
+    const cx2 = W/2, cy2 = H/2, maxR = Math.max(W, H) * .6;
+    for(let r=0;r<4;r++){
+      const rad = ((k + r*.25) % 1) * maxR;
+      g.strokeStyle = r%2 ? '#ff0000' : '#171717';
+      g.lineWidth = Math.max(1, (10 - r*2) * S);
+      g.beginPath(); g.arc(cx2, cy2, rad, 0, 7); g.stroke();
+    }
+    g.fillStyle = '#ff0000'; g.beginPath(); g.arc(cx2, cy2, 26*S, 0, 7); g.fill();
+  }
+  g.fillStyle = 'rgba(0,0,0,.14)';
+  for(let y=0;y<H;y+=4) g.fillRect(0, y, W, 1);
+}
+/* portrait screen (mobile device) par poori photo + peeche blur-fill */
+function galBlur(img,W,H){
+  const key=W+'x'+H, store=img._bg||(img._bg={});
+  if(store[key]) return store[key];
+  const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c.getContext('2d');};
+  const sw=12, sh=Math.max(4,Math.round(12*H/W));
+  const a=mk(sw,sh); a.imageSmoothingQuality='high';
+  const sc=Math.max(sw/img.naturalWidth, sh/img.naturalHeight);
+  a.drawImage(img,(sw-img.naturalWidth*sc)/2,(sh-img.naturalHeight*sc)/2,img.naturalWidth*sc,img.naturalHeight*sc);
+  const b=mk(sw*5,sh*5); b.imageSmoothingQuality='high'; b.drawImage(a.canvas,0,0,sw*5,sh*5);
+  return (store[key]=b.canvas);
+}
+function galSlideImg(g,img,W,H,x){
+  const iw=img.naturalWidth, ih=img.naturalHeight;
+  if(!iw) return;
+  const sc=Math.max(W/iw,H/ih);
+  if((W*H)/(iw*sc*ih*sc)>=.5){ g.drawImage(img,x+(W-iw*sc)/2,(H-ih*sc)/2,iw*sc,ih*sc); return; }
+  g.drawImage(galBlur(img,W,H),x,0,W,H);
+  g.fillStyle='rgba(0,0,0,.4)'; g.fillRect(x,0,W,H);
+  const s2=Math.min(W/iw,H/ih); g.drawImage(img,x+(W-iw*s2)/2,(H-ih*s2)/2,iw*s2,ih*s2);
+}
+function drawDisplay(g,W,H,t){
+  if(GAL.mode==='brand'){ drawBrand(g,W,H,t,GAL.brandScene,GAL.brandT/GAL.scene); GAL.needDraw=false; return true; }
+  const n=GAL.n, idx=GAL.idx, next=(idx+1)%n;
+  const inT=GAL.phase==='trans', tp=inT?galEase(GAL.phaseT/GAL.trans):0;
+  let fade=1;
+  if(idx===0 && GAL.phase==='hold') fade=Math.min(1, GAL.phaseT/.6);   // brand→gallery: black se soft fade-in
+  const changed = inT || fade<1 || GAL.needDraw;
+  if(!changed) return false;
+  GAL.needDraw=false;
+  g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high';
+  g.fillStyle='#0c0d0f'; g.fillRect(0,0,W,H);
+  if(inT){
+    const a=galImg(idx); if(a.complete&&a.naturalWidth) galSlideImg(g,a,W,H,W*tp);
+    const b=galImg(next); if(b.complete&&b.naturalWidth) galSlideImg(g,b,W,H,-W*(1-tp));
+  } else {
+    const a=galImg(idx); if(a.complete&&a.naturalWidth) galSlideImg(g,a,W,H,0);
+  }
   /* bottom strip — division label + counter + red progress */
-  const bh = Math.max(18, H * .13);
-  const gr = g.createLinearGradient(0, H - bh, 0, H);
-  gr.addColorStop(0, 'rgba(10,10,12,0)'); gr.addColorStop(.5, 'rgba(10,10,12,.7)'); gr.addColorStop(1, 'rgba(10,10,12,.92)');
-  g.fillStyle = gr; g.fillRect(0, H - bh, W, bh);
-  const fs = Math.max(9, Math.round(Math.min(H * .068, W * .08)));
-  const cy = H - bh / 2;
-  g.textBaseline = 'middle';
-  g.font = `700 ${fs}px Montserrat, Arial`;
-  const lab = list[idx].label, cnt = (idx + 1) + '/' + n, sfx = ' \u00b7 ArtViSiON \u00b7 Division Gallery';
-  const lw = g.measureText(lab).width, sw = g.measureText(sfx).width, cw = g.measureText(cnt).width;
-  g.textAlign = 'left'; g.fillStyle = '#ff2b2b'; g.fillText(lab, 12, cy);
-  if(12 + lw + sw + 10 + cw + 12 <= W){ g.fillStyle = 'rgba(255,255,255,.82)'; g.fillText(sfx, 12 + lw, cy); }
-  g.textAlign = 'right'; g.fillStyle = 'rgba(255,255,255,.72)'; g.fillText(cnt, W - 12, cy);
-  g.fillStyle = 'rgba(255,255,255,.16)'; g.fillRect(0, H - 3, W, 3);
-  g.fillStyle = '#ff0000'; g.fillRect(0, H - 3, W * ((idx + 1) / n), 3);
-  GAL_SHOW.drawn.set(g, ready ? key : null);
+  const bh=Math.max(18,H*.13);
+  const gr=g.createLinearGradient(0,H-bh,0,H); gr.addColorStop(0,'rgba(10,10,12,0)');gr.addColorStop(.5,'rgba(10,10,12,.7)');gr.addColorStop(1,'rgba(10,10,12,.92)');
+  g.fillStyle=gr; g.fillRect(0,H-bh,W,bh);
+  const fs=Math.max(9,Math.round(Math.min(H*.068,W*.08))), cy=H-bh/2;
+  g.textBaseline='middle'; g.font=`700 ${fs}px Montserrat, Arial`;
+  const lab=GAL.list[idx].label, cnt=(idx+1)+'/'+n, sfx=' \u00b7 ArtViSiON \u00b7 Division Gallery';
+  const lw=g.measureText(lab).width, sw=g.measureText(sfx).width, cw=g.measureText(cnt).width;
+  g.textAlign='left'; g.fillStyle='#ff2b2b'; g.fillText(lab,12,cy);
+  if(12+lw+sw+10+cw+12<=W){ g.fillStyle='rgba(255,255,255,.82)'; g.fillText(sfx,12+lw,cy); }
+  g.textAlign='right'; g.fillStyle='rgba(255,255,255,.72)'; g.fillText(cnt,W-12,cy);
+  g.fillStyle='rgba(255,255,255,.16)'; g.fillRect(0,H-3,W,3);
+  const prog = inT ? (idx+tp)/n : (idx+1)/n;
+  g.fillStyle='#ff0000'; g.fillRect(0,H-3,W*prog,3);
+  if(fade<1){ g.fillStyle='rgba(0,0,0,'+(1-fade)+')'; g.fillRect(0,0,W,H); }
   return true;
 }
 /* LED display — ArtViSiON gallery slideshow */
@@ -3262,7 +3288,8 @@ function drawLedAd(t){
   const g = ledDisplay.userData.ledCtx;
   if(!g) return;
   const W = 768, H = 256;
-  if(!drawGalSlide(g, W, H, t)) return;
+  galUpdate(t);
+  drawDisplay(g, W, H, t);
   /* LED pixel grid feel */
   g.fillStyle = 'rgba(0,0,0,.18)';
   for(let y=0;y<H;y+=4) g.fillRect(0, y, W, 1);
@@ -3767,7 +3794,8 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
 }
 /* device screens par wahi Video-Advertisement LED animation (3 scenes, same timing) */
 function drawAdScenes(g, W, H, t){
-  if(!drawGalSlide(g, W, H, t)) return false;
+  galUpdate(t);
+  if(!drawDisplay(g, W, H, t)) return false;
   g.fillStyle = 'rgba(0,0,0,.14)';
   for(let y=0;y<H;y+=4) g.fillRect(0, y, W, 1);
   return true;
@@ -3775,8 +3803,7 @@ function drawAdScenes(g, W, H, t){
 function drawStallAd(t){
   [stallAdL, stallAdP].forEach(a=>{
     if(!a) return;
-    if(!drawAdScenes(a.ctx, a.w, a.h, t)) return;
-    a.tex.needsUpdate = true;
+    if(drawAdScenes(a.ctx, a.w, a.h, t)) a.tex.needsUpdate = true;
   });
 }
 
@@ -5068,7 +5095,7 @@ function focusProduct(i){
   if(mode === 'entering' || mode === 'interior') return;
   mode = 'focus'; focusIndex = i;
   const p = products[i];
-  if(p.group === ledDisplay || p.group === eventStall) GAL_SHOW.t0 = clock.getElapsedTime();   // gallery slideshow: ADVERTiSiNG ki pehli image se shuru
+  if(p.group === ledDisplay || p.group === eventStall) galReset();   // display: brand intro → gallery, shuruaat se
   /* rickshaw showcase — focus par park (peeche ka logo dikhe); doosre product par switch → wapas chalu */
   if(rickPhase === 'showcase' && p.group !== rickshaw){ rickPhase = 'revving'; rickPhaseT = clock.getElapsedTime(); }
   if(p.group === rickshaw){ rickPhase = 'showcase'; rickshaw.position.copy(rickPark); rickshaw.rotation.y = 0; }
@@ -6003,6 +6030,7 @@ window.__ART = {
   get ceilSkyTex(){ return interior.userData.ceilSkyTex; },
   get frame(){ return animate.frameNo || 0; },
   get tween(){ return tween; },
+  get gal(){ return GAL; },   // slideshow state (debug/introspection)
   scene, camera, renderer, setEnvFromSky, controls,
   get cgi(){ return CGI; }
 };
@@ -6114,5 +6142,5 @@ addEventListener('resize', ()=>{
 });
 </script>
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a411dd7ccc222666',t:'MTc5MDQyMTQ3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4144d625df5b1c5',t:'MTc5MDQ0NzAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a43607a30cd088e0',t:'MTc5MDgwMDY5MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4144d625df5b1c5',t:'MTc5MDQ0NzAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a43655d0bd9747df',t:'MTc5MDgwMzg5Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
