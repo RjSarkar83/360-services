@@ -1247,18 +1247,18 @@ const acpTex = makeTex(512, 512, (g)=>{
   for(let x=0;x<=3;x++){ g.beginPath(); g.moveTo(x*171,0); g.lineTo(x*171,512); g.stroke(); }
 }, [3,1]);
 
-/* PURE RED ACP band — signage facade cladding (red-carpet scheme: pure red panels + jet-black grooves) */
+/* BLACK ACP band — signage facade cladding (solid black panels + deep-black grooves) */
 const blackAcpTex = makeTex(512, 256, (g)=>{
-  g.fillStyle = '#ff0000'; g.fillRect(0,0,512,256);
+  g.fillStyle = '#0c0d0f'; g.fillRect(0,0,512,256);
   for(let x=0;x<4;x++){
     const gr = g.createLinearGradient(x*128,0,x*128+128,256);
-    gr.addColorStop(0,'#ff1717'); gr.addColorStop(1,'#d60000');
+    gr.addColorStop(0,'#2c2e33'); gr.addColorStop(1,'#141518');
     g.fillStyle = gr; g.fillRect(x*128+3, 3, 122, 250);
   }
   g.strokeStyle = '#000000'; g.lineWidth = 5;
   for(let x=0;x<=4;x++){ g.beginPath(); g.moveTo(x*128,0); g.lineTo(x*128,256); g.stroke(); }
   /* halki highlight — matt black panel ki subtle edge sheen */
-  g.strokeStyle = 'rgba(255,255,255,.05)'; g.lineWidth = 1;
+  g.strokeStyle = 'rgba(255,255,255,.10)'; g.lineWidth = 1;
   for(let x=0;x<4;x++){ g.beginPath(); g.moveTo(x*128+4, 0); g.lineTo(x*128+4, 256); g.stroke(); }
 }, [4,1]);
 
@@ -1399,27 +1399,36 @@ function makeMehrabTex(){
 
 /* WELCOME sign — the ONLY text in the whole environment */
 function drawWelcome(g){
-  g.fillStyle = '#ff0000'; g.fillRect(0,0,1024,300);
+  g.fillStyle = '#ff0000'; g.fillRect(0,0,1024,300);            // red ACP board face
   const gr = g.createLinearGradient(0,0,0,300);
   gr.addColorStop(0,'rgba(255,255,255,.22)'); gr.addColorStop(.4,'rgba(255,255,255,0)');
   g.fillStyle = gr; g.fillRect(0,0,1024,300);
   g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 6;
   g.strokeRect(18,18,988,264);
-  g.fillStyle = '#ffffff';
+  g.fillStyle = '#ffffff';                                      // white text
   g.font = 'italic 600 150px "Playfair Display", Georgia, serif';
   g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillText('Welcome', 512, 148);
 }
 const welcomeTex = makeTex(1024, 300, drawWelcome);
+/* Welcome board night glow — sirf TEXT glow kare, red ACP face solid rahe (red light nahi) */
+function drawWelcomeGlow(g){
+  g.fillStyle = '#000'; g.fillRect(0,0,1024,300);
+  g.fillStyle = '#fff';
+  g.font = 'italic 600 150px "Playfair Display", Georgia, serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('Welcome', 512, 148);
+}
+const welcomeGlowTex = makeTex(1024, 300, drawWelcomeGlow);
 /* WELCOME board ka pichhla hissa — bahar jaate visitors ke liye */
 function drawWelcomeBack(g){
-  g.fillStyle = '#ff0000'; g.fillRect(0,0,1024,300);
+  g.fillStyle = '#ff0000'; g.fillRect(0,0,1024,300);            // red ACP board face
   const gr = g.createLinearGradient(0,0,0,300);
   gr.addColorStop(0,'rgba(255,255,255,.22)'); gr.addColorStop(.4,'rgba(255,255,255,0)');
   g.fillStyle = gr; g.fillRect(0,0,1024,300);
   g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 6;
   g.strokeRect(18,18,988,264);
-  g.fillStyle = '#ffffff';
+  g.fillStyle = '#ffffff';                                      // white text
   g.font = '700 104px "Noto Sans Devanagari", "Mangal", "Nirmala UI", sans-serif';
   g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillText('पुनः पधारे', 512, 102);
@@ -1427,10 +1436,22 @@ function drawWelcomeBack(g){
   g.fillText('हमें खुशी होगी', 512, 208);
 }
 const welcomeBackTex = makeTex(1024, 300, drawWelcomeBack);
+function drawWelcomeBackGlow(g){
+  g.fillStyle = '#000'; g.fillRect(0,0,1024,300);
+  g.fillStyle = '#fff';
+  g.font = '700 104px "Noto Sans Devanagari", "Mangal", "Nirmala UI", sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('पुनः पधारे', 512, 102);
+  g.font = '600 72px "Noto Sans Devanagari", "Mangal", "Nirmala UI", sans-serif';
+  g.fillText('हमें खुशी होगी', 512, 208);
+}
+const welcomeBackGlowTex = makeTex(1024, 300, drawWelcomeBackGlow);
 if(document.fonts && document.fonts.load){
   document.fonts.load('700 104px "Noto Sans Devanagari"').then(()=>{
     drawWelcomeBack(welcomeBackTex.image.getContext('2d'));
     welcomeBackTex.needsUpdate = true;
+    drawWelcomeBackGlow(welcomeBackGlowTex.image.getContext('2d'));
+    welcomeBackGlowTex.needsUpdate = true;
   }).catch(()=>{});
 }
 /* redraw once the Playfair webfont is ready, so the sign uses the brand serif */
@@ -1438,6 +1459,8 @@ if(document.fonts && document.fonts.load){
   document.fonts.load('italic 600 150px "Playfair Display"').then(()=>{
     drawWelcome(welcomeTex.image.getContext('2d'));
     welcomeTex.needsUpdate = true;
+    drawWelcomeGlow(welcomeGlowTex.image.getContext('2d'));
+    welcomeGlowTex.needsUpdate = true;
   }).catch(()=>{});
 }
 
@@ -1567,13 +1590,17 @@ function updateDust(t){
   }
 }
 
-/* red carpet path from gate to door */
+/* silver-grey runner carpet — gate se door tak (clean environment, red sirf kinari piping) */
 const carpet = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 30),
-  detail(new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.98 }), 'weave', 2, 14, .6, .55));
+  detail(new THREE.MeshStandardMaterial({ color: 0xb6bbc1, roughness:.98 }), 'weave', 2, 14, .6, .55));
 carpet.rotation.x = -Math.PI/2;
 carpet.position.set(0, .02, 6);
 carpet.receiveShadow = true;
 outside.add(carpet);
+/* runner ki dono kinari par sirf patli red piping — minimal red accent */
+[-2.02, 2.02].forEach(x=>{
+  box(.1, .022, 30, new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.85 }), x, .03, 6, outside, false);
+});
 
 /* ================= SHOWROOM BUILDING ================= */
 const building = new THREE.Group();
@@ -1684,17 +1711,34 @@ building.add(acpSign);
     new THREE.MeshStandardMaterial({ color: 0xf4f4f7, roughness:.35, metalness:.6 }));
   tray.position.set(0, 13.3, -4.42); acpSign.add(tray);
 
-  /* TWO-LINE lightbox face (icon hata diya): neeche BIG 'PRODUCTion DESiGN' — upar 3D letters line */
-  const LW = 16, LH = LW/4;   // face is 4:1
-  const signFace = makeTex(2048, 512, (g, w, h)=>{
+  /* TWO-LINE lightbox face (icon hata diya): neeche 'PRODUCTion DESiGN' — upar 3D letters line
+     line-2 ki width = ArtViSiON 3D letters ki exact width (left-right bahar nahi niklega) */
+  const LW = 16, LH = LW/4;   // face is 4:1 (2048px / 16 units = 128 px per unit)
+  const drawSignFace = (g, w, h, targetPx)=>{
     g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h);
     g.strokeStyle = '#cdd0d4'; g.lineWidth = 30; g.strokeRect(15, 15, w - 30, h - 30);
     const tag = 'PRODUCTion DESiGN';
-    let fs = 170; g.textAlign = 'center'; g.textBaseline = 'middle';
-    do { g.font = `800 ${fs}px Montserrat, Arial, sans-serif`; fs -= 8; } while(g.measureText(tag).width > w * .88 && fs > 40);
+    const maxW = targetPx || w * .88;
+    let fs = 170;
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = `800 ${fs}px Montserrat, Arial, sans-serif`;
+    const mw = g.measureText(tag).width;
+    if(mw > 1) fs = Math.max(36, fs * maxW / mw);
+    g.font = `800 ${fs}px Montserrat, Arial, sans-serif`;
     g.fillStyle = '#171717';
     g.fillText(tag, w / 2, h * .76);
-  });
+  };
+  const signFace = makeTex(2048, 512, (g, w, h)=> drawSignFace(g, w, h, acpSign.userData.signTextPx));
+  acpSign.userData.redrawSignFace = (px)=>{
+    acpSign.userData.signTextPx = px;
+    drawSignFace(signFace.image.getContext('2d'), 2048, 512, px);
+    signFace.needsUpdate = true;
+  };
+  if(document.fonts && document.fonts.load){
+    document.fonts.load('800 170px Montserrat').then(()=>{
+      if(acpSign.userData.redrawSignFace) acpSign.userData.redrawSignFace(acpSign.userData.signTextPx);
+    }).catch(()=>{});
+  }
   const logo = new THREE.Mesh(new THREE.PlaneGeometry(LW, LH),
     new THREE.MeshStandardMaterial({ map: signFace,
       emissive: 0xffffff, emissiveMap: signFace, emissiveIntensity: .22, roughness:.6 }));
@@ -1721,9 +1765,9 @@ building.add(acpSign);
   });
 }
 register(acpSign, {
-  name:'ACP Cladding Signage', sub:'Solid Red ACP Facade + White Lightbox Sign Band',
-  desc:'Showroom के facade पर premium pure-red (#ff0000) ACP cladding — groove-line panels, weather-proof finish, और sign band पर clean white lightbox जिस पर ArtViSiON के 3D acrylic letters माउंटेड हैं। ऊपर gooseneck focus lights का professional setup दिन-रात even lighting देता है।',
-  specs:[['Cladding','Solid red ACP, PVDF coat'],['Sign band','Lightbox + ArtViSiON acrylic 3D letters'],['Lighting','Gooseneck focus downlighters'],['Structure','MS frame + aluminium tray'],['Life','8–10 साल outdoor warranty']],
+  name:'ACP Cladding Signage', sub:'Solid Black ACP Facade + White Lightbox Sign Band',
+  desc:'Showroom के facade पर premium solid black ACP cladding — groove-line panels, weather-proof matt finish, और sign band पर clean white lightbox जिस पर ArtViSiON के 3D acrylic letters माउंटेड हैं। Black + white का crisp contrast — ऊपर gooseneck focus lights का professional setup दिन-रात even lighting देता है।',
+  specs:[['Cladding','Solid black ACP, PVDF coat'],['Sign band','Lightbox + ArtViSiON acrylic 3D letters'],['Lighting','Gooseneck focus downlighters'],['Structure','MS frame + aluminium tray'],['Life','8–10 साल outdoor warranty']],
   tags:['Facade','Lightbox','Professional Lit'],
   camPos:[0, 15, 40], camTarget:[0, 11.5, -4.6]
 });
@@ -1747,9 +1791,10 @@ building.add(acrylic);
       m.castShadow = true;
       return { m, w, h };
     };
+    /* 'ArtViSi' — SOLID jet black cast acrylic (FIXED: hamesha black — redCarpetApply se protected) */
     const artMat = new THREE.MeshPhysicalMaterial({
-      color: 0xff0000, roughness:.16, metalness:.05,
-      clearcoat:1, clearcoatRoughness:.06, transparent:true, opacity:.96
+      color: 0x0c0c0e, roughness:.22, metalness:.05,
+      clearcoat:.85, clearcoatRoughness:.1, transparent:false
     });
     /* logo ke beech ka ink-disc = brand ART — jet black rakho (high-contrast anchor) */
     const inkAcr = new THREE.MeshPhysicalMaterial({
@@ -1761,12 +1806,15 @@ building.add(acrylic);
       clearcoat:1, clearcoatRoughness:.05, transparent:false,
       emissive: 0xff0000, emissiveIntensity:.45
     });
+    /* brand colors FIXED — ArtViSi BLACK + ON RED, kabhi recolor nahi honge */
+    artMat.userData.noRed = true;
+    redMat.userData.noRed = true;
     const whiteAcr = new THREE.MeshPhysicalMaterial({
       color: 0xf4f5f7, roughness:.14, metalness:.03,
       clearcoat:1, clearcoatRoughness:.06, transparent:true, opacity:.95
     });
-    const B = mk('ArtViSi', artMat);     /* line 1 — ArtViSiON, BIG + centered */
-    const O = mk('ON', redMat);
+    const B = mk('ArtViSi', artMat);     /* line 1 — ArtViSi (jet black) */
+    const O = mk('ON', redMat);          /* ON — solid red cast acrylic */
     const gWord = .16;
     const total = B.w + gWord + O.w;
     const maxH = Math.max(B.h, O.h);
@@ -1776,12 +1824,14 @@ building.add(acrylic);
     grp.add(B.m, O.m);
     grp.position.set(-total/2, 13.95 - maxH/2, -4.30);   /* center + upper zone (neeche line-2 face text) */
     acrylic.add(grp);
+    /* line-2 'PRODUCTion DESiGN' ko ArtViSiON letters ki exact width tak fit karo */
+    if(acpSign.userData.redrawSignFace) acpSign.userData.redrawSignFace(total * 128);
   }, {timeout:5000});
 }
 register(acrylic, {
-  name:'Acrylic Letters (3D)', sub:'ArtViSiON 3D Letters — All Solid Red + PRODUCTion DESiGN Board',
-  desc:'Signage band पर माउंटेड ArtViSiON के असली 3D acrylic letters — "ArtViSi · ON" सब सॉलिड रेड cast acrylic — नीचे lightbox board पर बड़ा "PRODUCTion DESiGN", जिसमें अंदर की LED रोशनी आर-पार झलकती है। CNC laser clean edges, polished bevel और halo-lit glow। दिन में bold, रात में premium।',
-  specs:[['Material','8–18mm cast acrylic'],['Cutting','CNC laser, polished edge'],['Lighting','Front-lit / Halo back-lit LED'],['Mounting','Stud + spacer, wall-safe'],['Colours','Solid red on white lightbox']],
+  name:'Acrylic Letters (3D)', sub:'ArtViSiON 3D Letters — Black "ArtViSi" + Red "ON" + PRODUCTion DESiGN Board',
+  desc:'Signage band पर माउंटेड ArtViSiON के असली 3D acrylic letters — "ArtViSi" jet-black cast acrylic में और "ON" सॉलिड रेड cast acrylic में — नीचे lightbox board पर "PRODUCTion DESiGN", जो ArtViSiON letters की exact width में perfectly aligned है (left-right se bahar nahi nikalta), और जिसमें अंदर की LED रोशनी आर-पार झलकती है। CNC laser clean edges, polished bevel और halo-lit glow। Black + red का bold contrast — दिन में bold, रात में premium।',
+  specs:[['Material','8–18mm cast acrylic'],['Cutting','CNC laser, polished edge'],['Lighting','Front-lit / Halo back-lit LED'],['Mounting','Stud + spacer, wall-safe'],['Colours','Jet-black ArtViSi + red ON']],
   tags:['3D Letters','Laser Cut','Halo Lit'],
   camPos:[0, 13.5, 5.5], camTarget:[0, 13.3, -4.4]
 });
@@ -2028,15 +2078,38 @@ register(windowDisplay, {
 const doorGroup = new THREE.Group();
 building.add(doorGroup);
 {
-  /* glossy silver door frame + leaves */
-  box(6.4, 6, .4, glossSilver, 0, 3, -4.9, doorGroup);
-  const dGlass = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 5), M.glass);
+  /* door frame — FIXED silver (noRed lock; pehle red recolor hota tha = door par laal effect) */
+  const doorSilverM = glossSilver.clone(); doorSilverM.userData = { noRed:true };
+  const dGlassM = M.glass.clone(); dGlassM.userData = { noRed:true };
+  /* hollow frame — 4 rails (andar se waterfall dikhe) */
+  box(6.4, .3, .4, doorSilverM, 0, 5.85, -4.9, doorGroup);
+  box(.4, 6, .4, doorSilverM, -3, 3, -4.9, doorGroup);
+  box(.4, 6, .4, doorSilverM, 3, 3, -4.9, doorGroup);
+  box(6.4, .45, .4, doorSilverM, 0, .225, -4.9, doorGroup);
+  const dGlass = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 5), dGlassM);
   dGlass.position.set(0, 2.8, -4.62); doorGroup.add(dGlass);
-  box(.14, 5, .1, glossSilver, 0, 2.8, -4.6, doorGroup);
-  box(.1, 1.4, .1, M.steel, -.55, 2.6, -4.5, doorGroup);
-  box(.1, 1.4, .1, M.steel, .55, 2.6, -4.5, doorGroup);
-  /* canopy — glossy silver */
-  box(8, .35, 3, glossSilver, 0, 6.4, -3.6, doorGroup);
+  box(.14, 5, .1, doorSilverM, 0, 2.8, -4.6, doorGroup);
+  box(.1, 1.4, .1, doorSilverM, -.55, 2.6, -4.5, doorGroup);
+  box(.1, 1.4, .1, doorSilverM, .55, 2.6, -4.5, doorGroup);
+  /* ===== door ke PICHE — interior waterfall wall (home se thoda sa door se dikhe) ===== */
+  const wfallTex = makeTex(64, 256, (g)=>{
+    g.fillStyle = '#24313c'; g.fillRect(0, 0, 64, 256);
+    for(let i=0;i<48;i++){ g.fillStyle = `rgba(210,232,246,${.22 + Math.random()*.5})`; g.fillRect(Math.random()*64, Math.random()*256, 1.5 + Math.random()*3, 16 + Math.random()*52); }
+    for(let i=0;i<18;i++){ g.fillStyle = 'rgba(120,170,205,.45)'; g.fillRect(Math.random()*64, Math.random()*256, 2, 22 + Math.random()*34); }
+  });
+  wfallTex.wrapS = wfallTex.wrapT = THREE.RepeatWrapping; wfallTex.repeat.set(2, 1.35);
+  const wfall = new THREE.Mesh(new THREE.PlaneGeometry(5.5, 5.2),
+    new THREE.MeshBasicMaterial({ map: wfallTex }));
+  wfall.position.set(0, 3.05, -4.86); doorGroup.add(wfall);
+  /* basin strip + mist glow */
+  box(5.5, .38, .22, new THREE.MeshStandardMaterial({ color: 0x14181c, roughness:.4, metalness:.3, userData:{ noRed:true } }), 0, .44, -4.84, doorGroup);
+  const wfallGlow = new THREE.Mesh(new THREE.PlaneGeometry(5.5, 1.1),
+    new THREE.MeshBasicMaterial({ color: 0x9fd4ef, transparent:true, opacity:.26, depthWrite:false }));
+  wfallGlow.position.set(0, .98, -4.82); doorGroup.add(wfallGlow);
+  doorGroup.userData.wfallTex = wfallTex;
+  /* canopy — solid BLACK ACP (gate ka bahar wala canopy) */
+  const doorCanopyM = detail(new THREE.MeshStandardMaterial({ map: blackAcpTex, roughness:.68, metalness:.14 }), 'brushed', 4, 2, .3, .28);
+  box(8, .35, 3, doorCanopyM, 0, 6.4, -3.6, doorGroup);
 }
 
 /* ---------- ROOFTOP MS STEEL ENTRY STRUCTURE (bulb-decorated, clickable => enter) ---------- */
@@ -2114,66 +2187,378 @@ const backlit = new THREE.Group();
 building.add(backlit);
 let seg = null;   // animated showroom-interior scene
 {
-  const fr = box(18.8, 6, .45, M.dark, -13.1, 3.1, -4.85, backlit);
+  /* outer frame — solid BLACK ACP border (window display jaisa crisp framing) */
+  const segFrameM = detail(new THREE.MeshStandardMaterial({ map: blackAcpTex, roughness:.42, metalness:.28 }), 'brushed', 4, 2, .3, .28);
+  const segRevealM = new THREE.MeshPhysicalMaterial({ color: 0xaeb5bc, metalness:.85, roughness:.25, clearcoat:.5, userData:{ noRed:true } });
+  box(19.1, 6.3, .55, segFrameM, -13.1, 3.1, -4.85, backlit);
+  /* slim steel reveal — frame aur glass ke beech patli premium line */
+  box(18.42, 5.72, .14, segRevealM, -13.1, 3.1, -4.62, backlit);
   /* ANIMATED canvas — showroom ke ANDAR ka drishya (live render hota rahega) */
   const segCv = document.createElement('canvas'); segCv.width = 1280; segCv.height = 400;
   const segCtx = segCv.getContext('2d');
   const segTex = new THREE.CanvasTexture(segCv);
   segTex.colorSpace = THREE.SRGBColorSpace;
+  /* CRYSTAL CLEAR face — texture ke exact colours, bilkul window display vitrine jaisa */
   const fab = new THREE.Mesh(new THREE.PlaneGeometry(18.2, 5.5),
-    new THREE.MeshStandardMaterial({ map: segTex, emissive: 0xffffff, emissiveMap: segTex, emissiveIntensity: 1.05, roughness:.85 }));
+    new THREE.MeshBasicMaterial({ map: segTex }));
   fab.position.set(-13.1, 3.1, -4.58); backlit.add(fab);
+  /* crystal clear glass front — vitrine jaisa reflections ke saath */
+  const segGlassM = M.glass.clone(); segGlassM.userData = { noRed: true };
+  const segGlass = new THREE.Mesh(new THREE.PlaneGeometry(18.2, 5.5), segGlassM);
+  segGlass.position.set(-13.1, 3.1, -4.55); backlit.add(segGlass);
+  const segSheenTex = makeTex(1024, 320, (g)=>{
+    g.fillStyle = 'rgba(255,255,255,0)'; g.fillRect(0,0,1024,320);
+    g.save(); g.transform(1, 0, -.32, 1, 0, 0);
+    const s1 = g.createLinearGradient(180, 0, 430, 320);
+    s1.addColorStop(0, 'rgba(255,255,255,0)');
+    s1.addColorStop(.5, 'rgba(255,255,255,.14)');
+    s1.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = s1; g.fillRect(190, -30, 150, 400);
+    const s2 = g.createLinearGradient(560, 0, 700, 320);
+    s2.addColorStop(0, 'rgba(255,255,255,0)');
+    s2.addColorStop(.5, 'rgba(255,255,255,.09)');
+    s2.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = s2; g.fillRect(580, -30, 90, 400);
+    g.restore();
+    const top = g.createLinearGradient(0, 0, 0, 80);
+    top.addColorStop(0, 'rgba(255,255,255,.13)');
+    top.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = top; g.fillRect(0, 0, 1024, 80);
+  });
+  const segSheen = new THREE.Mesh(new THREE.PlaneGeometry(18.2, 5.5),
+    new THREE.MeshBasicMaterial({ map: segSheenTex, transparent:true, depthWrite:false }));
+  segSheen.position.set(-13.1, 3.1, -4.54); backlit.add(segSheen);
 
   seg = { ctx: segCtx, tex: segTex, W: 1280, H: 400 };
 }
-/* SEG lightbox par showroom-interior ka animated illustration */
+/* SEG lightbox par showroom-interior ka animated illustration —
+   5 division backlit boxes + real business-girl presenter jo walk karke
+   A B C D E services explain karti hai (speech bubble ke saath) */
+/* SEG boxes: A B C D E letters ki jagah service icons (services ke naam ke anusar) */
+function drawServiceIcon(g, idx, cx, cy, s, col, glow){
+  glow = glow || 0;
+  g.save();
+  g.translate(cx, cy);
+  if(glow > .02){ g.shadowColor = `rgba(255,170,60,${.85*glow})`; g.shadowBlur = 18*glow; }
+  g.strokeStyle = col; g.fillStyle = col;
+  g.lineWidth = Math.max(2.4, s*.15); g.lineCap = 'round'; g.lineJoin = 'round';
+  if(idx === 0){
+    /* ADVERTiSiNG — megaphone + sound waves */
+    g.beginPath();
+    g.moveTo(-s*.95, -s*.28); g.lineTo(-s*.18, -s*.28); g.lineTo(s*.5, -s*.85);
+    g.lineTo(s*.5, s*.85); g.lineTo(-s*.18, s*.28); g.lineTo(-s*.95, s*.28);
+    g.closePath(); g.stroke();
+    g.beginPath(); g.moveTo(-s*.58, s*.28); g.lineTo(-s*.58, s*.72); g.lineTo(-s*.26, s*.72); g.stroke();
+    g.beginPath(); g.arc(s*.62, 0, s*.32, -Math.PI*.42, Math.PI*.42); g.stroke();
+    g.beginPath(); g.arc(s*.62, 0, s*.62, -Math.PI*.4, Math.PI*.4); g.stroke();
+  } else if(idx === 1){
+    /* BRANDING — diamond + sparkle */
+    g.beginPath();
+    g.moveTo(0, -s*.85); g.lineTo(s*.78, -s*.08); g.lineTo(0, s*.85); g.lineTo(-s*.78, -s*.08);
+    g.closePath(); g.stroke();
+    g.beginPath(); g.moveTo(-s*.78, -s*.08); g.lineTo(s*.78, -s*.08); g.stroke();
+    g.beginPath(); g.moveTo(-s*.34, -s*.62); g.lineTo(0, -s*.08); g.lineTo(s*.34, -s*.62); g.stroke();
+    g.beginPath(); g.moveTo(s*.98, -s*.78); g.lineTo(s*.98, -s*.34); g.moveTo(s*.76, -s*.56); g.lineTo(s*1.2, -s*.56); g.stroke();
+  } else if(idx === 2){
+    /* CREATiVE — lightbulb + rays */
+    g.beginPath(); g.arc(0, -s*.18, s*.52, 0, 7); g.stroke();
+    g.beginPath(); g.moveTo(-s*.27, s*.28); g.lineTo(-s*.23, s*.56); g.lineTo(s*.23, s*.56); g.lineTo(s*.27, s*.28); g.stroke();
+    g.beginPath(); g.moveTo(-s*.22, s*.74); g.lineTo(s*.22, s*.74); g.stroke();
+    g.beginPath(); g.moveTo(-s*.14, s*.16); g.lineTo(0, -s*.16); g.lineTo(s*.14, s*.16); g.stroke();
+    g.beginPath(); g.moveTo(-s*.95, -s*.55); g.lineTo(-s*.68, -s*.38); g.moveTo(s*.95, -s*.55); g.lineTo(s*.68, -s*.38); g.moveTo(0, -s*.98); g.lineTo(0, -s*.74); g.stroke();
+  } else if(idx === 3){
+    /* DESiGNiNG — pencil + underline */
+    g.save(); g.rotate(-Math.PI/4);
+    g.beginPath(); g.moveTo(-s*.16, -s*.95); g.lineTo(s*.16, -s*.95); g.lineTo(s*.16, s*.5); g.lineTo(0, s*.95); g.lineTo(-s*.16, s*.5); g.closePath(); g.stroke();
+    g.beginPath(); g.moveTo(-s*.16, -s*.62); g.lineTo(s*.16, -s*.62); g.moveTo(-s*.16, s*.5); g.lineTo(s*.16, s*.5); g.stroke();
+    g.restore();
+    g.beginPath(); g.moveTo(-s*.62, s*.98); g.lineTo(s*.62, s*.98); g.stroke();
+  } else {
+    /* EXECUTiON — gear + check */
+    const R = s*.62;
+    for(let k=0;k<8;k++){
+      const a = k * Math.PI/4;
+      g.beginPath();
+      g.moveTo(Math.cos(a-0.22)*R*1.02, Math.sin(a-0.22)*R*1.02);
+      g.lineTo(Math.cos(a-0.12)*R*1.42, Math.sin(a-0.12)*R*1.42);
+      g.lineTo(Math.cos(a+0.12)*R*1.42, Math.sin(a+0.12)*R*1.42);
+      g.lineTo(Math.cos(a+0.22)*R*1.02, Math.sin(a+0.22)*R*1.02);
+      g.stroke();
+    }
+    g.beginPath(); g.arc(0, 0, R, 0, 7); g.stroke();
+    g.beginPath(); g.arc(0, 0, R*.42, 0, 7); g.stroke();
+    g.beginPath(); g.moveTo(-s*.28, 0); g.lineTo(-s*.05, s*.26); g.lineTo(s*.34, -s*.24); g.stroke();
+  }
+  g.shadowBlur = 0;
+  g.restore();
+}
+
 function drawSegScene(t){
   if(!seg) return;
   const g = seg.ctx, W = seg.W, H = seg.H;
+  t = t || 0;
   /* interior walls — warm perspective room */
   const bg = g.createLinearGradient(0,0,0,H);
   bg.addColorStop(0,'#f3ede2'); bg.addColorStop(.7,'#e9e2d4'); bg.addColorStop(1,'#d9d1c0');
   g.fillStyle = bg; g.fillRect(0,0,W,H);
+  /* ceiling strip + cove shadow */
+  g.fillStyle = '#e6dfd0'; g.fillRect(0, 0, W, H*.09);
+  g.fillStyle = 'rgba(120,100,70,.12)'; g.fillRect(0, H*.085, W, 5);
   /* floor */
-  g.fillStyle = '#cfc7b6'; g.fillRect(0, H*.72, W, H*.28);
+  const fl = g.createLinearGradient(0, H*.72, 0, H);
+  fl.addColorStop(0, '#cfc7b6'); fl.addColorStop(1, '#b3a893');
+  g.fillStyle = fl; g.fillRect(0, H*.72, W, H*.28);
   g.strokeStyle = 'rgba(0,0,0,.07)'; g.lineWidth = 2;
   for(let i=0;i<8;i++){ const x = W*.5 + (i-4)*W*.16; g.beginPath(); g.moveTo(W*.5 + (i-4)*W*.05, H*.72); g.lineTo(x, H); g.stroke(); }
-  /* back wall red accent + brand circles */
-  g.fillStyle = '#ff0000'; g.fillRect(W*.06, H*.14, W*.26, H*.58);
-  g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(W*.19, H*.42, H*.14, 0, 7); g.fill();
-  g.fillStyle = '#171717'; g.beginPath(); g.arc(W*.19, H*.42, H*.09, 0, 7); g.fill();
-  g.fillStyle = '#ff0000'; g.beginPath(); g.arc(W*.19, H*.42, H*.045, 0, 7); g.fill();
-  /* gallery frames on wall — jhilmilate picture lights ke saath */
-  for(let i=0;i<3;i++){
-    const fx = W*.4 + i*W*.17, fy = H*.2;
-    g.fillStyle = '#171717'; g.fillRect(fx, fy, W*.12, H*.3);
-    g.fillStyle = i===1 ? '#ff0000' : '#f6f5f2';
-    g.fillRect(fx+6, fy+6, W*.12-12, H*.3-12);
-    g.fillStyle = i===1 ? '#f6f5f2' : '#ff0000';
-    g.beginPath(); g.arc(fx + W*.06, fy + H*.15, H*.05, 0, 7); g.fill();
-    /* warm picture light glow (pulse) */
-    const gl = .35 + .25*Math.sin(t*2 + i*2);
-    const rg = g.createRadialGradient(fx+W*.06, fy-6, 2, fx+W*.06, fy-6, 55);
-    rg.addColorStop(0, `rgba(255,220,150,${gl})`); rg.addColorStop(1, 'rgba(255,220,150,0)');
-    g.fillStyle = rg; g.beginPath(); g.arc(fx+W*.06, fy-6, 55, 0, 7); g.fill();
+  /* baseboard line */
+  g.fillStyle = 'rgba(90,80,62,.35)'; g.fillRect(0, H*.72 - 3, W, 3);
+
+  /* ===== 5 DIVISION BACKLIGHT FABRIC BOXES (bahar se dikhte hue) ===== */
+  const divBoxes = [
+    ['A', 'ADVERTiSiNG', '#ff0000'],
+    ['B', 'BRANDiNG',    '#171717'],
+    ['C', 'CREATiVE',    '#ff0000'],
+    ['D', 'DESiGNiNG',   '#171717'],
+    ['E', 'EXECUTiON',   '#ff0000'],
+  ];
+  const bw = W*.172, bh = H*.5, gap = W*.016;
+  const x0 = (W - (bw*5 + gap*4))/2, y0 = H*.15;
+  const boxCX = i => x0 + i*(bw+gap) + bw/2;
+
+  /* ---- presenter timeline: har service ~2.5s explain + ~1.5s walk to next box ---- */
+  const SEG_T = 4.0;
+  const cyc = t % (SEG_T * 5);
+  const st = Math.floor(cyc / SEG_T) % 5;
+  const ph = cyc - st * SEG_T;
+  const EX = 2.5;
+  const walking = ph > EX;
+  const easeIO = v => v<0?0 : v>1?1 : v*v*(3-2*v);
+  const nx = (st + 1) % 5;
+  const kOut = walking ? easeIO((ph - EX) / 1.5) : 0;
+  const stationX = i => boxCX(i) - bw*.72;
+  const girlX = stationX(st) + (stationX(nx) - stationX(st)) * kOut;
+  const activeA = walking ? Math.max(0, 1 - kOut*1.8) : Math.min(1, ph / .35);
+  const walkPhase = t * 2.2;
+  const sw = walking ? Math.sin(walkPhase * Math.PI * 2) : 0;
+  const bob = walking ? Math.abs(Math.sin(walkPhase * Math.PI)) * 3 : Math.sin(t*1.5) * 1.3;
+
+  divBoxes.forEach(([ltr, word, col], i)=>{
+    const x = x0 + i*(bw+gap), cx = boxCX(i), cy = y0 + bh/2;
+    const act = (i === st) ? activeA : 0;
+    /* backlit fabric halo — active box zyada chamakta hai */
+    const pulse = .22 + .06*Math.sin(t*1.6 + i*1.1) + .3*act;
+    const halo = g.createRadialGradient(cx, cy, bw*.2, cx, cy, bw*.95);
+    halo.addColorStop(0, `rgba(255,246,220,${pulse})`); halo.addColorStop(1, 'rgba(255,246,220,0)');
+    g.fillStyle = halo; g.fillRect(x - bw*.4, y0 - bh*.4, bw*1.8, bh*1.8);
+    /* SEG aluminium profile frame */
+    g.fillStyle = '#1c1c1e'; g.fillRect(x-5, y0-5, bw+10, bh+10);
+    g.strokeStyle = 'rgba(255,255,255,.16)'; g.lineWidth = 2; g.strokeRect(x-4, y0-4, bw+8, bh+8);
+    /* evenly-lit fabric face */
+    const face = g.createLinearGradient(0, y0, 0, y0+bh);
+    face.addColorStop(0, '#fffdf6'); face.addColorStop(.55, '#fff8ea'); face.addColorStop(1, '#f7eedb');
+    g.fillStyle = face; g.fillRect(x, y0, bw, bh);
+    const inner = g.createRadialGradient(cx, cy, 2, cx, cy, bw*.62);
+    inner.addColorStop(0, `rgba(255,255,255,${.42 + .1*Math.sin(t*1.6 + i*1.1)})`); inner.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = inner; g.fillRect(x, y0, bw, bh);
+    /* fabric sheen streak (real backlit fabric feel) */
+    g.fillStyle = 'rgba(255,255,255,.16)';
+    g.beginPath(); g.moveTo(x + bw*.12, y0+bh); g.lineTo(x + bw*.3, y0); g.lineTo(x + bw*.38, y0); g.lineTo(x + bw*.2, y0+bh); g.closePath(); g.fill();
+    /* bada service icon — letters ki jagah (active par warm glow) */
+    drawServiceIcon(g, i, cx, y0 + bh*.3, bh*.17, col, act);
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    /* red rule — active par highlight */
+    g.fillStyle = act > .02 ? '#ff2d20' : '#ff0000';
+    g.fillRect(x + bw*.32, y0 + bh*.5, bw*.36, 3 + 2.5*act);
+    /* division name — fit-to-width */
+    let fs = 25;
+    do { g.font = `700 ${fs}px Montserrat, Arial, sans-serif`; fs -= 1; } while(g.measureText(word).width > bw*.86 && fs > 9);
+    g.fillStyle = '#171717';
+    g.fillText(word, cx, y0 + bh*.67);
+    g.font = '600 13px Montserrat, Arial, sans-serif';
+    g.fillStyle = 'rgba(23,23,23,.55)';
+    g.fillText('DiViSiON 0' + (i+1), cx, y0 + bh*.83);
+    /* active highlight ring */
+    if(act > .02){
+      g.strokeStyle = `rgba(255,180,60,${.8*act})`; g.lineWidth = 4;
+      g.strokeRect(x-9, y0-9, bw+18, bh+18);
+    }
+    /* floor reflection */
+    const refl = g.createLinearGradient(0, H*.72, 0, H*.72 + bh*.3);
+    refl.addColorStop(0, `rgba(255,244,214,${.26 + .12*act})`); refl.addColorStop(1, 'rgba(255,244,214,0)');
+    g.fillStyle = refl; g.fillRect(x + bw*.12, H*.72, bw*.76, bh*.3);
+  });
+
+  /* ===== REAL BUSINESS GIRL PRESENTER — walk karke services explain ===== */
+  {
+    const x = girlX, yF = H*.845;
+    const dir = (walking && st === 4) ? -1 : 1;
+    /* floor shadow */
+    g.fillStyle = 'rgba(60,50,35,.22)';
+    g.beginPath(); g.ellipse(x, yF + 2, 30, 7, 0, 0, 7); g.fill();
+    g.save();
+    g.translate(x, yF - bob);
+    g.scale(dir, 1);
+
+    const SKIN = '#e3b494', SKIN_D = '#c99a7c', SKIN_D2 = '#b98a6c';
+    /* ---- legs + heels ---- */
+    const drawLeg = (front, ang)=>{
+      g.save();
+      g.translate(front ? 4 : -4, -72);
+      g.rotate(ang);
+      const grd = g.createLinearGradient(-6, 0, 7, 0);
+      grd.addColorStop(0, front ? SKIN : SKIN_D);
+      grd.addColorStop(1, front ? SKIN_D : SKIN_D2);
+      g.fillStyle = grd;
+      g.beginPath();
+      g.moveTo(-5.5, 0); g.lineTo(5.5, 0);
+      g.lineTo(4.2, 36); g.lineTo(5, 62); g.lineTo(-4.5, 62); g.lineTo(-4.2, 36);
+      g.closePath(); g.fill();
+      /* black pump */
+      g.fillStyle = front ? '#1c1d21' : '#111214';
+      g.beginPath();
+      g.moveTo(-4.5, 60); g.lineTo(8, 60); g.lineTo(11, 66.5); g.lineTo(-5.5, 66.5); g.closePath(); g.fill();
+      g.fillRect(-5.5, 56, 3.2, 10.5);
+      g.restore();
+    };
+    drawLeg(false, -sw * .4);
+    drawLeg(true,  sw * .4);
+
+    /* ---- skirt (charcoal pencil skirt) ---- */
+    const skirtG = g.createLinearGradient(-15, 0, 15, 0);
+    skirtG.addColorStop(0, '#262d3e'); skirtG.addColorStop(.5, '#39425a'); skirtG.addColorStop(1, '#1c2230');
+    g.fillStyle = skirtG;
+    g.beginPath();
+    g.moveTo(-12, -104); g.lineTo(12, -104);
+    g.lineTo(15.5, -58); g.lineTo(-15.5, -58);
+    g.closePath(); g.fill();
+
+    /* ---- far arm (walk swing) ---- */
+    g.save();
+    g.translate(-9, -122);
+    g.rotate(-sw * .3 - .1);
+    g.fillStyle = '#202736';
+    g.fillRect(-3.2, 0, 6.4, 32);
+    g.fillStyle = SKIN_D2;
+    g.fillRect(-2.4, 30, 4.8, 9);
+    g.restore();
+
+    /* ---- blazer / torso ---- */
+    const jac = g.createLinearGradient(-15, 0, 15, 0);
+    jac.addColorStop(0, '#242c3d'); jac.addColorStop(.45, '#333d54'); jac.addColorStop(1, '#1c2331');
+    g.fillStyle = jac;
+    g.beginPath();
+    g.moveTo(-13, -126);
+    g.quadraticCurveTo(-16.5, -110, -13, -98);
+    g.lineTo(13, -98);
+    g.quadraticCurveTo(16.5, -110, 13, -126);
+    g.quadraticCurveTo(0, -133, -13, -126);
+    g.closePath(); g.fill();
+    /* white shirt V */
+    g.fillStyle = '#f2f0ec';
+    g.beginPath(); g.moveTo(-6.5, -127); g.lineTo(0, -110); g.lineTo(6.5, -127); g.closePath(); g.fill();
+    /* lapels */
+    g.fillStyle = '#1c2331';
+    g.beginPath(); g.moveTo(-7.5, -128); g.lineTo(0, -110); g.lineTo(-2.2, -128); g.closePath(); g.fill();
+    g.beginPath(); g.moveTo(7.5, -128); g.lineTo(0, -110); g.lineTo(2.2, -128); g.closePath(); g.fill();
+    /* red brand pin — minimal accent */
+    g.fillStyle = '#e02020';
+    g.beginPath(); g.arc(8.2, -117, 2.1, 0, 7); g.fill();
+
+    /* ---- near arm — presenting gesture ---- */
+    const armUp = walking ? (sw * .3 + .08) : (-.62 - .3 * activeA + Math.sin(t*2.2) * .05 * activeA);
+    g.save();
+    g.translate(9.5, -122);
+    g.rotate(armUp);
+    const armG = g.createLinearGradient(-3.5, 0, 3.5, 0);
+    armG.addColorStop(0, '#2b344a'); armG.addColorStop(1, '#1e2534');
+    g.fillStyle = armG;
+    g.fillRect(-3.3, 0, 6.6, 29);
+    g.translate(0, 27);
+    g.rotate(walking ? .2 : -1.05 * activeA - .3);
+    g.fillRect(-2.9, 0, 5.8, 24);
+    /* open presenting hand */
+    g.fillStyle = SKIN;
+    g.beginPath(); g.ellipse(0, 27, 4, 5, .35, 0, 7); g.fill();
+    g.restore();
+
+    /* ---- neck + head ---- */
+    g.fillStyle = SKIN_D;
+    g.fillRect(-3.4, -135, 6.8, 11);
+    g.save();
+    g.translate(1, -148);
+    /* hair back */
+    g.fillStyle = '#3a2b1e';
+    g.beginPath(); g.ellipse(-1, -1, 14.5, 15.5, .05, 0, 7); g.fill();
+    /* face */
+    const fg = g.createLinearGradient(-10, 0, 11, 0);
+    fg.addColorStop(0, SKIN); fg.addColorStop(1, SKIN_D);
+    g.fillStyle = fg;
+    g.beginPath(); g.ellipse(1, 1.5, 11, 12.3, 0, 0, 7); g.fill();
+    /* fringe */
+    g.fillStyle = '#3a2b1e';
+    g.beginPath();
+    g.moveTo(-11, -3); g.quadraticCurveTo(-3, -18, 11, -9);
+    g.quadraticCurveTo(3, -11.5, -2, -5.5); g.quadraticCurveTo(-7, -.5, -11, -3);
+    g.closePath(); g.fill();
+    /* hair shine */
+    g.fillStyle = 'rgba(255,255,255,.16)';
+    g.beginPath(); g.ellipse(-3, -11, 5.6, 2, -.45, 0, 7); g.fill();
+    /* eyes */
+    g.fillStyle = '#241a12';
+    g.beginPath(); g.ellipse(2.2, -1, 1.5, 1.85, 0, 0, 7); g.fill();
+    g.beginPath(); g.ellipse(8.2, -.4, 1.35, 1.7, 0, 0, 7); g.fill();
+    /* brows */
+    g.strokeStyle = '#2c2016'; g.lineWidth = 1.1;
+    g.beginPath(); g.moveTo(.6, -4.3); g.quadraticCurveTo(2.3, -5.4, 4, -4.5); g.stroke();
+    g.beginPath(); g.moveTo(6.8, -3.9); g.quadraticCurveTo(8.4, -5, 10, -4.1); g.stroke();
+    /* nose */
+    g.strokeStyle = 'rgba(150,100,70,.55)'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(6.3, 1.4); g.quadraticCurveTo(7.4, 2.8, 6.1, 3.4); g.stroke();
+    /* smile */
+    g.strokeStyle = '#a8563e'; g.lineWidth = 1.35;
+    g.beginPath(); g.moveTo(3.4, 6.1); g.quadraticCurveTo(6.1, 8.2, 8.9, 5.9); g.stroke();
+    /* blush */
+    g.fillStyle = 'rgba(222,132,106,.26)';
+    g.beginPath(); g.ellipse(3.8, 3.9, 2.5, 1.4, 0, 0, 7); g.fill();
+    /* earring */
+    g.fillStyle = '#e8c469';
+    g.beginPath(); g.arc(-8.3, 2.4, 1.3, 0, 7); g.fill();
+    g.restore();
+    g.restore();
   }
-  /* reception desk */
-  g.fillStyle = '#1c1c1e'; g.fillRect(W*.62, H*.6, W*.24, H*.14);
-  g.fillStyle = '#f0ede6'; g.fillRect(W*.61, H*.58, W*.26, H*.03);
-  /* desk LED strip pulse */
-  g.fillStyle = `rgba(255,0,0,${.5+.3*Math.sin(t*3)})`; g.fillRect(W*.62, H*.71, W*.24, H*.012);
-  /* WALKING VISITOR silhouette — left-right ghoomta hua */
-  const wx = W*.5 + Math.sin(t*.45) * W*.3;
-  const dir = Math.cos(t*.45) >= 0 ? 1 : -1;
-  const step = Math.sin(t*5);
-  g.save(); g.translate(wx, H*.66); g.scale(dir, 1);
-  g.fillStyle = '#2a2a2e';
-  g.beginPath(); g.arc(0, -H*.22, H*.045, 0, 7); g.fill();           // head
-  g.fillRect(-H*.032, -H*.18, H*.064, H*.14);                        // body
-  g.save(); g.rotate(step*.35); g.fillRect(-H*.014, -H*.05, H*.028, H*.11); g.restore();   // leg 1
-  g.save(); g.rotate(-step*.35); g.fillRect(-H*.014, -H*.05, H*.028, H*.11); g.restore();  // leg 2
-  g.save(); g.translate(0,-H*.16); g.rotate(-step*.3); g.fillRect(-H*.011, 0, H*.022, H*.09); g.restore(); // arm
-  g.restore();
+
+  /* ===== speech bubble — current service explain ===== */
+  if(activeA > .05){
+    const ltr = divBoxes[st][0], word = divBoxes[st][1];
+    const rr = (x, y, w, h, r)=>{
+      g.beginPath();
+      g.moveTo(x+r, y); g.arcTo(x+w, y, x+w, y+h, r); g.arcTo(x+w, y+h, x, y+h, r);
+      g.arcTo(x, y+h, x, y, r); g.arcTo(x, y, x+w, y, r); g.closePath();
+    };
+    g.font = '700 13px Montserrat, Arial, sans-serif';
+    const tw = g.measureText(word).width;
+    const bW = tw + 52, bH = 28;
+    let bx = girlX - bW - 12;
+    if(bx < 10) bx = 10;
+    const by = H*.845 - bob - 204;
+    g.globalAlpha = Math.min(1, activeA * 1.25);
+    g.fillStyle = 'rgba(255,255,255,.97)';
+    g.strokeStyle = 'rgba(23,23,23,.4)'; g.lineWidth = 1.5;
+    rr(bx, by, bW, bH, 9); g.fill(); g.stroke();
+    /* tail — girl ke sar ki taraf */
+    g.beginPath();
+    g.moveTo(bx + bW - 16, by + bH - 1);
+    g.lineTo(girlX + 2, by + bH + 15);
+    g.lineTo(bx + bW - 2, by + bH - 8);
+    g.closePath(); g.fill();
+    g.textAlign = 'left'; g.textBaseline = 'middle';
+    drawServiceIcon(g, st, bx + 16, by + bH/2 + 1, 8, '#ff0000', 0);
+    g.fillStyle = '#171717';
+    g.font = '700 13px Montserrat, Arial, sans-serif';
+    g.fillText(word, bx + 32, by + bH/2 + 1);
+    g.globalAlpha = 1;
+  }
+
   /* ceiling spotlights sweep */
   for(let i=0;i<4;i++){
     const sx = W*(.15 + i*.24);
@@ -2186,14 +2571,18 @@ function drawSegScene(t){
     g.closePath(); g.fill();
     g.fillStyle = '#26282c'; g.fillRect(sx-10, 0, 20, 8);
   }
+  /* soft vignette — cinematic depth */
+  const vg = g.createRadialGradient(W/2, H/2, H*.35, W/2, H/2, W*.72);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(40,30,15,.08)');
+  g.fillStyle = vg; g.fillRect(0,0,W,H);
   /* thin red frame border (SEG edge) */
   g.strokeStyle = '#ff0000'; g.lineWidth = 8; g.strokeRect(4,4,W-8,H-8);
   seg.tex.needsUpdate = true;
 }
 register(backlit, {
-  name:'Backlight Fabric (SEG Lightbox)', sub:'Silicone Edge Graphics — Live Interior Preview',
-  desc:'SEG fabric lightbox — tension fabric पर dye-sublimation print, silicone edge से frame में seamless fit। इस display पर showroom के अंदर का animated preview चल रहा है: gallery wall, reception, घूमता visitor और झूलती spotlights — motion-graphics lightbox का demo। पूरा graphic अंदर से evenly glow करता है, कोई hotspot नहीं।',
-  specs:[['Fabric','Backlit polyester, dye-sub print'],['Frame','Aluminium SEG profile 80–120mm'],['Lighting','Edge-lit / lattice LED'],['Look','Zero-glare, seamless, fold-free'],['Change','Graphic 5 min में replace']],
+  name:'Backlight Fabric (SEG Lightbox)', sub:'Silicone Edge Graphics — Showroom Interior, 5 Division Boxes',
+  desc:'SEG fabric lightbox — tension fabric पर dye-sublimation print, silicone edge से frame में seamless fit, solid black ACP frame border और crystal clear glass face — bilkul Sale & Offer Window Display vitrine जैसा साफ़-सुथरा view। इस display पर showroom के अंदर का animated interior preview चल रहा है, जिसमें दीवार पर पाँचों divisions के glowing Backlight Fabric boxes बाहर से साफ़ दिखते हैं — ADVERTiSiNG, BRANDiNG, CREATiVE, DESiGNiNG और EXECUTiON — अपने service icons के साथ — megaphone, diamond, bulb, pencil और gear। एक business-girl presenter box-to-box walk करके एक-एक service explain करती है — हर service पर speech bubble, glowing highlight और gesturing hands के साथ। झूलती spotlights, fabric sheen और चमकती floor reflections — motion-graphics lightbox का live demo। पूरा graphic अंदर से evenly glow करता है, कोई hotspot नहीं।',
+  specs:[['Fabric','Backlit polyester, dye-sub print'],['Frame','Solid black ACP border + steel reveal'],['Face','Crystal clear glass — vitrine finish'],['Lighting','Edge-lit / lattice LED'],['Change','Graphic 5 min में replace']],
   tags:['Lightbox','Fabric','Night Impact'],
   camPos:[-13.1, 3.4, 8.5], camTarget:[-13.1, 3.1, -4.6]
 });
@@ -2205,25 +2594,28 @@ let welcomeSign;
 let printTable;   // Product 13 — alag clickable product
 {
   const px = 5.6, GZ = 20;
-  /* ===== MATT ACP materials — low-sheen composite panels (no gloss) — REVISED: black + steel silver ===== */
-  const acpBodyM  = detail(new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.9, metalness:.12 }), 'brushed', 3, 3, .35, .3);   // PURE RED ACP body panels (red carpet)
-  const acpBlackM = detail(new THREE.MeshStandardMaterial({ color: 0x1d1e21, roughness:.9,  metalness:.1 }), 'brushed', 3, 3, .35, .3);    // jet-black anchors (contrast)
-  const acpSteelM = detail(new THREE.MeshStandardMaterial({ color: 0x141518, roughness:.55, metalness:.45 }), 'brushed', 3, 3, .35, .3);   // jet-black ACP trim/reveals (red pe contrast lines)
-  const acpWhiteM = detail(new THREE.MeshStandardMaterial({ color: 0xeeebe4, roughness:.92, metalness:.05 }), 'brushed', 3, 3, .35, .3);
-  /* CNC-cut जाली on matt black ACP (cut-outs me steel-silver backing) */
+  /* ===== MATT ACP materials — SILVER colour combination (clean look, red sirf minimal accent lines) ===== */
+  const acpBodyM  = detail(new THREE.MeshStandardMaterial({ color: 0xc7ccd2, roughness:.62, metalness:.5 }), 'brushed', 3, 3, .35, .3);    // brushed silver ACP body panels
+  const acpBlackM = detail(new THREE.MeshStandardMaterial({ color: 0x1d1e21, roughness:.9,  metalness:.1 }), 'brushed', 3, 3, .35, .3);    // graphite anchors (clean contrast)
+  const acpSteelM = detail(new THREE.MeshStandardMaterial({ color: 0x8f969d, roughness:.45, metalness:.7 }), 'brushed', 3, 3, .35, .3);    // matt steel-silver ACP trim / reveal bands
+  const acpWhiteM = detail(new THREE.MeshStandardMaterial({ color: 0xeeebe4, roughness:.92, metalness:.05 }), 'brushed', 3, 3, .35, .3);   // pearl-white accent
+  const acpRedM   = detail(new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.72, metalness:.18 }), 'brushed', 3, 3, .35, .3);   // MINIMAL red — sirf patli accent lines
+  /* CNC-cut जाली on matt silver ACP (cut-outs me pearl-white backing) */
   const jaaliTex = makeTex(256, 256, (g)=>{
-    g.fillStyle = '#ff0000'; g.fillRect(0,0,256,256);
-    g.fillStyle = '#f2f2f2';
+    g.fillStyle = '#aeb4bb'; g.fillRect(0,0,256,256);                     // matt silver-grey ACP sheet
+    g.fillStyle = '#f4f2ee';                                               // cut-outs me pearl-white backing
     for(let y=0;y<4;y++) for(let x=0;x<4;x++){
       const cx = x*64+32, cy = y*64+32;
       g.beginPath();
       for(let i=0;i<8;i++){ const a = i/8*Math.PI*2, r = i%2 ? 10 : 22; g[i?'lineTo':'moveTo'](cx + Math.cos(a)*r, cy + Math.sin(a)*r); }
       g.closePath(); g.fill();
     }
-    g.strokeStyle = 'rgba(255,255,255,.06)'; g.lineWidth = 2;               // ACP panel groove joints
+    g.strokeStyle = 'rgba(60,66,74,.32)'; g.lineWidth = 2;                // ACP panel groove joints
     g.beginPath(); g.moveTo(0,128); g.lineTo(256,128); g.stroke();
   }, [1, 3]);
   const jaaliM = new THREE.MeshStandardMaterial({ map: jaaliTex, roughness:.88, metalness:.12 });
+  /* silver scheme — redCarpetApply se protected (warna greys dobara red ho jaate) */
+  [acpBodyM, acpBlackM, acpSteelM, acpWhiteM, acpRedM, jaaliM].forEach(m => m.userData.noRed = true);
 
   /* ---- PILLARS — square ACP-clad boxes: black plinth, matt steel reveals, जाली shaft, folded-ACP pyramid cap ---- */
   [-px, px].forEach(x=>{
@@ -2231,7 +2623,8 @@ let printTable;   // Product 13 — alag clickable product
     box(1.5, .08, 1.5, acpSteelM, x, .54, GZ, archGate);
     box(1.3, .35, 1.3, acpBodyM, x, .75, GZ, archGate);
     box(1.05, 5.8, 1.05, jaaliM, x, 3.82, GZ, archGate);
-    [2.3, 4.6].forEach(y=> box(1.12, .08, 1.12, acpSteelM, x, y, GZ, archGate));   // slim reveal bands
+    box(1.12, .06, 1.12, acpRedM, x, 2.3, GZ, archGate);                            // minimal red inlay ring (patli accent line)
+    box(1.12, .08, 1.12, acpSteelM, x, 4.6, GZ, archGate);                          // slim steel-silver reveal band
     box(1.3, .1, 1.3, acpSteelM, x, 6.77, GZ, archGate);
     box(1.5, .3, 1.5, acpBlackM, x, 6.97, GZ, archGate);
     const cap = new THREE.Mesh(new THREE.ConeGeometry(.95, .9, 4), acpBodyM);        // folded ACP pyramid (छतरी का minimal रूप)
@@ -2257,11 +2650,11 @@ let printTable;   // Product 13 — alag clickable product
   const bandGeo = (sh, d) => { const g = new THREE.ExtrudeGeometry(sh, { depth: d, bevelEnabled: false }); g.translate(0, 0, -d/2); return g; };
   const arch = new THREE.Mesh(bandGeo(archBand(px + .52, 3.7, .7, px - .5, 2.75, .55, .16), .7), acpBodyM);
   arch.position.z = GZ; arch.castShadow = true; archGate.add(arch);
-  /* matt silver-steel ACP trim — outer edge + inner scallop edge (dono taraf) */
-  const trimOuter = new THREE.Mesh(bandGeo(archBand(px + .64, 3.82, .74, px + .52, 3.7, .7), .74), acpSteelM);
+  /* graphite ACP outer trim — silver band ko crisp clean outline */
+  const trimOuter = new THREE.Mesh(bandGeo(archBand(px + .64, 3.82, .74, px + .52, 3.7, .7), .74), acpBlackM);
   trimOuter.position.z = GZ; archGate.add(trimOuter);
   [-1, 1].forEach(s=>{
-    const trimIn = new THREE.Mesh(bandGeo(archBand(px - .42, 2.83, .57, px - .5, 2.75, .55, .16), .06), acpSteelM);
+    const trimIn = new THREE.Mesh(bandGeo(archBand(px - .42, 2.83, .57, px - .5, 2.75, .55, .16), .06), acpRedM);   // minimal red piping — scalloped inner edge
     trimIn.position.z = GZ + s*.37; archGate.add(trimIn);
   });
   /* center peak — folded ACP finial */
@@ -2269,21 +2662,23 @@ let printTable;   // Product 13 — alag clickable product
   const peak = new THREE.Mesh(new THREE.ConeGeometry(.3, .7, 4), acpSteelM);
   peak.rotation.y = Math.PI/4; peak.position.set(0, peakBase.position.y + .47, GZ); archGate.add(peak);
 
-  /* ---- तोरण (गेंदा-फूल garland) — halka, kam blooms ---- */
+  /* ---- तोरण (गेंदा-फूल garland) — halka, kam blooms (soft marigold — red nahi) ---- */
+  const marigoldO = new THREE.MeshStandardMaterial({ color: 0xf59a2b, roughness:.9 });
+  const marigoldY = new THREE.MeshStandardMaterial({ color: 0xffc233, roughness:.9 });
+  marigoldO.userData.noRed = marigoldY.userData.noRed = true;
   for(let i=0;i<=10;i++){
     const k = i/10;
     const gx = -px + .8 + k*(px*2 - 1.6);
     const sag = 6.85 - Math.sin(k*Math.PI)*.5;
-    const bloom = new THREE.Mesh(new THREE.SphereGeometry(.11, 8, 6),
-      new THREE.MeshStandardMaterial({ color: i%2 ? 0xffa500 : 0xffcc33, roughness:.9 }));
+    const bloom = new THREE.Mesh(new THREE.SphereGeometry(.11, 8, 6), i%2 ? marigoldO : marigoldY);
     bloom.position.set(gx, sag, GZ + .42);
     archGate.add(bloom);
   }
 
-  /* ---- WELCOME board — matt black ACP tray + matt silver-steel ACP frame ---- */
+  /* ---- WELCOME board — graphite ACP tray + silver-steel frame, RED ACP face + white text ---- */
   welcomeSign = new THREE.Mesh(new THREE.BoxGeometry(6.4, 1.9, .3),
     [acpBlackM, acpBlackM, acpBlackM, acpBlackM,
-     new THREE.MeshStandardMaterial({ map: welcomeTex, emissive:0xffffff, emissiveMap: welcomeTex, emissiveIntensity:.42, roughness:.8 }),
+     new THREE.MeshStandardMaterial({ map: welcomeTex, emissive:0xffffff, emissiveMap: welcomeGlowTex, emissiveIntensity:.55, roughness:.8 }),   // glow sirf text par — red face solid
      acpBlackM]);
   welcomeSign.position.set(0, 8.6, GZ);
   welcomeSign.castShadow = true;
@@ -2291,7 +2686,7 @@ let printTable;   // Product 13 — alag clickable product
   box(6.7, 2.2, .12, acpSteelM, 0, 8.6, GZ - .12, archGate);
   /* back side: "पुनः पधारे — हमें खुशी होगी" (steel frame ke peeche, board ke saath jhoolta hai) */
   const welcomeBack = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 1.9),
-    new THREE.MeshStandardMaterial({ map: welcomeBackTex, emissive:0xffffff, emissiveMap: welcomeBackTex, emissiveIntensity:.42, roughness:.8 }));
+    new THREE.MeshStandardMaterial({ map: welcomeBackTex, emissive:0xffffff, emissiveMap: welcomeBackGlowTex, emissiveIntensity:.55, roughness:.8 }));
   welcomeBack.position.set(0, 0, -.2); welcomeBack.rotation.y = Math.PI;
   welcomeSign.add(welcomeBack);
   /* hanging rods — matt black */
@@ -2304,8 +2699,9 @@ let printTable;   // Product 13 — alag clickable product
   /* Sale & Offer Window Display ke saamne */
   printTable.position.set(10.3, 0, 2.2);
   printTable.rotation.y = .15;
-  const tWood = new THREE.MeshStandardMaterial({ color: 0x6e4a26, roughness:.7 });
-  const tWoodD = new THREE.MeshStandardMaterial({ color: 0x4a3016, roughness:.8 });
+  /* ===== GLOSSY SILVER combination — table ===== */
+  const tWood = new THREE.MeshPhysicalMaterial({ color: 0xc9ced4, metalness:.85, roughness:.16, clearcoat:.85, clearcoatRoughness:.12, userData:{ noRed:true } });
+  const tWoodD = new THREE.MeshPhysicalMaterial({ color: 0x8d949c, metalness:.85, roughness:.22, clearcoat:.6, clearcoatRoughness:.18, userData:{ noRed:true } });
   /* table */
   box(3, .12, 1.5, tWood, 0, 1.05, 0, printTable);
   box(3.1, .06, 1.6, tWoodD, 0, 1.13, 0, printTable);
@@ -2378,10 +2774,10 @@ let printTable;   // Product 13 — alag clickable product
 }
 
 register(archGate, {
-  name:'Arch Gate — Matt ACP Indian Entry', sub:'Matt ACP मेहराब Arch Fabrication · "Welcome" पर click करके अंदर आइए',
-  desc:'Premium Indian-style arch gate अब पूरी तरह Matt ACP से fabricate किया गया है — बिना gloss के clean, modern finish। Pillars square ACP-clad boxes हैं: jet-black plinth, jet-black ACP की slim reveal bands, CNC-cut जाली वाला pure-red ACP shaft और ऊपर folded-ACP pyramid cap (छतरी का minimal रूप)। ऊपर flat ACP band से बना pointed मेहराब arch, अंदर scalloped edge और दोनों तरफ़ jet-black ACP trim, बीच में black ACP finial। Welcome board matt black ACP tray और jet-black ACP frame में, नीचे गेंदा-फूल तोरण। पूरे environment में सिर्फ़ इसी पर लिखा है: "Welcome" — click कीजिए और अंदर enter हो जाइए। Side में paper-printing range की display table है। शादी, events, showroom launch — custom ACP arch gates design-to-install।',
-  specs:[['Cladding','4mm Matt ACP — pure red + jet black'],['Structure','MS pipe frame + ACP routed & folded'],['जाली','Pure red ACP + white CNC motif'],['Finish','Matt / low-sheen PVDF, no gloss'],['Details','Pointed मेहराब, pyramid caps, तोरण'],['Size','Custom — 10ft से 40ft तक']],
-  tags:['Matt ACP','Indian Arch','Fabrication'],
+  name:'Arch Gate — Matt ACP Indian Entry', sub:'Silver Matt ACP मेहराब Arch Fabrication · "Welcome" पर click करके अंदर आइए',
+  desc:'Premium Indian-style arch gate — अब silver colour combination में Matt ACP से fabricate: brushed-silver body panels, matt steel-silver trims, graphite anchors और pearl-white CNC जाली — बिना gloss के clean, modern finish। Red minimal accent lines + red Welcome board में: pillars पर पतली red inlay ring, मेहराब की scalloped inner edge पर red piping, और बीच में चमकदार red ACP का Welcome board — white "Welcome" text के साथ। Pillars square ACP-clad boxes हैं: graphite plinth, steel-silver reveal bands, CNC-cut जाली वाला silver ACP shaft और ऊपर folded-ACP silver pyramid cap (छतरी का minimal रूप)। ऊपर flat ACP band से बना pointed मेहराब arch — graphite outer trim, बीच में steel-silver finial। Welcome board red ACP face, white text और silver-steel frame में mount, नीचे गेंदा-फूल तोरण। पूरे environment में सिर्फ़ इसी पर लिखा है: "Welcome" — click कीजिए और अंदर enter हो जाइए। Side में paper-printing range की display table है। शादी, events, showroom launch — custom ACP arch gates design-to-install।',
+  specs:[['Cladding','4mm Matt ACP — brushed silver + graphite'],['Accent','Red piping, inlay + red ACP Welcome board'],['Structure','MS pipe frame + ACP routed & folded'],['जाली','Silver ACP + pearl-white CNC motif'],['Finish','Matt / low-sheen PVDF, no gloss'],['Size','Custom — 10ft से 40ft तक']],
+  tags:['Silver ACP','Indian Arch','Fabrication'],
   camPos:[3, 6, 31], camTarget:[1.5, 6, 20]
 });
 
@@ -2475,7 +2871,7 @@ outside.add(owl);
   /* feet — yellow acrylic */
   [-.38,.38].forEach(x=>{ const f = new THREE.Shape(); f.absellipse(x, .5, .26, .12, 0, Math.PI*2, false, 0); panel(f, .14, acrYellow, .12, null, true); });
 
-  /* ---- wings — black ACP panels on pivots (namaste animation same rahega) ---- */
+  /* ---- wings — black ACP panels on pivots (static pose — koi animation nahi) ---- */
   const wingPivots = {};
   [-1,1].forEach(s=>{
     const pivot = new THREE.Group();
@@ -2489,7 +2885,7 @@ outside.add(owl);
   owl.userData.wingL = wingPivots.L;
   owl.userData.wingR = wingPivots.R;
 
-  /* ---- DIRECTION ARROW — LEFT arrow: black ACP board + red acrylic arrow + clear acrylic face ---- */
+  /* ---- DIRECTION ARROW — LEFT arrow: black ACP board + red acrylic arrow ---- */
   cyl(.07, .07, 2.8, acpSilver, -1.9, 1.75, .1, owl);                         // pole (owl ke left side)
   const arrow = new THREE.Group();
   const aw = new THREE.Shape();                                               // arrow shape, nok LEFT (-x) ki taraf
@@ -2502,7 +2898,6 @@ outside.add(owl);
   panel(aw, .05, acrRed, .08, arrow, true);
   const dot = new THREE.Mesh(new THREE.CircleGeometry(.1, 20), new THREE.MeshBasicMaterial({ color: 0xffffff }));
   dot.position.set(.55, 0, .145); arrow.add(dot);
-  panel(back, .02, acrClear, .15, arrow);
   arrow.position.set(-1.9, 3.0, .1);
   arrow.rotation.y = -.35;
   owl.add(arrow);
@@ -2624,12 +3019,17 @@ let cncHead = null, cncSpark = null;
 {
   cnc.position.set(15.5, 0, 12.5);
   cnc.rotation.y = -.5;
-  const frameM = new THREE.MeshStandardMaterial({ color: 0x2a5db0, roughness:.4, metalness:.5 });
-  const railM = M.steel;
+  /* ===== GLOSSY SILVER combination — machine + table (bed) ===== */
+  const glossSilverM = new THREE.MeshPhysicalMaterial({ color: 0xc9ced4, metalness:.85, roughness:.16, clearcoat:.85, clearcoatRoughness:.12 });
+  const glossSteelM  = new THREE.MeshPhysicalMaterial({ color: 0x9aa1a8, metalness:.9,  roughness:.2,  clearcoat:.6,  clearcoatRoughness:.18 });
+  const glossBrightM = new THREE.MeshPhysicalMaterial({ color: 0xe2e6ea, metalness:.9, roughness:.12, clearcoat:.9, clearcoatRoughness:.1 });
+  [glossSilverM, glossSteelM, glossBrightM].forEach(m => m.userData.noRed = true);
+  const frameM = glossSteelM;
+  const railM = glossBrightM;
   /* machine bed */
-  box(3.6, .8, 2.2, new THREE.MeshStandardMaterial({ color: 0x3a3d42, roughness:.5, metalness:.4 }), 0, .4, 0, cnc);
+  box(3.6, .8, 2.2, glossSilverM, 0, .4, 0, cnc);
   /* work sheet (metal, jis par pattern cut ho raha) */
-  const sheet = box(3.1, .06, 1.7, new THREE.MeshStandardMaterial({ color: 0xb9bdc3, roughness:.35, metalness:.75 }), 0, .84, 0, cnc);
+  const sheet = box(3.1, .06, 1.7, glossBrightM, 0, .84, 0, cnc);
   /* cut pattern grooves on sheet */
   const grooveM = new THREE.MeshBasicMaterial({ color: 0x111114 });
   for(let i=0;i<3;i++){
@@ -2643,7 +3043,7 @@ let cncHead = null, cncSpark = null;
   const head = new THREE.Group();
   head.position.set(0, 1.62, 0);
   cnc.add(head);
-  box(.3, .5, .3, new THREE.MeshStandardMaterial({ color: 0xe8e5df, roughness:.4 }), 0, .1, 0, head);
+  box(.3, .5, .3, glossSilverM, 0, .1, 0, head);
   cyl(.05, .07, .4, railM, 0, -.3, 0, head);
   /* nozzle glow */
   const nz = new THREE.Mesh(new THREE.SphereGeometry(.05, 10, 8),
@@ -2661,7 +3061,7 @@ let cncHead = null, cncSpark = null;
 }
 register(cnc, {
   name:'CNC & Laser Cutting', sub:'Precision Fabrication — Metal, Acrylic, Wood, MDF',
-  desc:'In-house CNC router और laser cutting — signage letters, जाली panels, standee shapes, event props सब precision-cut। Demo में machine live pattern cut कर रही है: moving gantry head, glowing nozzle और sparks। 0.1mm accuracy, किसी भी vector file से सीधा production।',
+  desc:'In-house CNC router और laser cutting — signage letters, जाली panels, standee shapes, event props सब precision-cut। Machine glossy silver finish में — polished steel body, silver bed/table और graphite accents के साथ। Demo में machine live pattern cut कर रही है: moving gantry head, glowing nozzle और sparks। 0.1mm accuracy, किसी भी vector file से सीधा production।',
   specs:[['Bed size','4x8 ft / 5x10 ft'],['Materials','ACP, acrylic, MS, SS, MDF, wood'],['Accuracy','±0.1 mm'],['Files','CDR / AI / DXF direct'],['Finish','Cut + engrave + polish']],
   tags:['CNC','Laser','Fabrication'],
   camPos:[17.5, 2.4, 17.5], camTarget:[15.5, 1.4, 12.5]
@@ -2674,8 +3074,9 @@ let printRoll = null, printHead2 = null;
 {
   printer.position.set(21.5, 0, 6);
   printer.rotation.y = -.85;
-  const bodyM2 = new THREE.MeshStandardMaterial({ color: 0xe8e5df, roughness:.5 });
-  const darkM2 = new THREE.MeshStandardMaterial({ color: 0x2b2d31, roughness:.5, metalness:.3 });
+  /* ===== GLOSSY SILVER combination — machine body ===== */
+  const bodyM2 = new THREE.MeshPhysicalMaterial({ color: 0xc9ced4, metalness:.85, roughness:.16, clearcoat:.85, clearcoatRoughness:.12, userData:{ noRed:true } });
+  const darkM2 = new THREE.MeshPhysicalMaterial({ color: 0x2b2d31, roughness:.32, metalness:.55, clearcoat:.5, clearcoatRoughness:.2, userData:{ noRed:true } });   // graphite accents
   /* legs + body */
   [[-1.6],[1.6]].forEach(([x])=>{
     box(.15, 1.1, .8, darkM2, x, .55, 0, printer);
@@ -2702,7 +3103,7 @@ let printRoll = null, printHead2 = null;
   banner.position.set(0, .95, .48); banner.rotation.x = -.28;
   printer.add(banner);
   /* print head carriage (animate) */
-  const ph = box(.35, .22, .3, new THREE.MeshStandardMaterial({ color: RED, roughness:.4 }), 0, 1.72, .3, printer);
+  const ph = box(.35, .22, .3, darkM2, 0, 1.72, .3, printer);
   printHead2 = ph;
   /* control screen */
   const scr2 = new THREE.Mesh(new THREE.PlaneGeometry(.55, .3),
@@ -2714,7 +3115,7 @@ let printRoll = null, printHead2 = null;
 }
 register(printer, {
   name:'Large Format Printer', sub:'Eco-Solvent / UV Print — 1440 dpi Production',
-  desc:'Large format printing machine live action में — moving print head, colour ink tanks और निकलता हुआ vivid red brand banner। Flex, vinyl, star media, backlit, canvas, one-way vision — सब in-house print होता है। 10 ft तक seamless width, 1440 dpi तक sharpness।',
+  desc:'Large format printing machine glossy silver finish में — polished silver body और graphite accents। Live action में moving print head, colour ink tanks और निकलता हुआ vivid red brand banner। Flex, vinyl, star media, backlit, canvas, one-way vision — सब in-house print होता है। 10 ft तक seamless width, 1440 dpi तक sharpness।',
   specs:[['Width','10 ft seamless तक'],['Res','720–1440 dpi'],['Ink','Eco-solvent / UV'],['Media','Flex, vinyl, fabric, canvas'],['TAT','Same-day printing']],
   tags:['Printing','Large Format','Production'],
   camPos:[24, 2.4, 10], camTarget:[21.5, 1.5, 6]
@@ -2723,7 +3124,7 @@ register(printer, {
 /* ---------- 13. PAPER PRINTING DESIGN TABLE (gate ke side) ---------- */
 register(printTable, {
   name:'Paper Printing Designs', sub:'Stationery से Magazine तक — Complete Print Range',
-  desc:'हमारी पूरी paper-printing range एक display table पर — visiting cards (stack + fan spread), letterheads A4 tray में, bill books और challan pads bound covers के साथ, tri-fold pamphlets acrylic stand में, magazines का spread, और designer के working tools: scissors, cutter, steel scale, pens, glue, stapler। नीचे shelf पर paper rolls। Design से print-ready file, और print से delivery तक — सब in-house।',
+  desc:'हमारी पूरी paper-printing range एक glossy silver display table पर — visiting cards (stack + fan spread), letterheads A4 tray में, bill books और challan pads bound covers के साथ, tri-fold pamphlets acrylic stand में, magazines का spread, और designer के working tools: scissors, cutter, steel scale, pens, glue, stapler। नीचे shelf पर paper rolls। Design से print-ready file, और print से delivery तक — सब in-house।',
   specs:[['Cards','300gsm, matte / gloss / velvet + spot UV'],['Letterhead','100gsm bond, offset print'],['Bill book','2/3-ply carbonless, numbering'],['Pamphlet','Art paper, tri-fold / bi-fold'],['Magazine','Perfect / saddle binding']],
   tags:['Print Design','Stationery','Offset'],
   camPos:[11.5, 2.4, 6.5], camTarget:[10.3, 1.2, 2.2]
@@ -2734,7 +3135,7 @@ const ledDisplay = new THREE.Group();
 building.add(ledDisplay);
 let ledScreens = [];
 {
-  const LX = 18.2, LY = 18.3, LZ = -5.05;   // chhat ke FRONT edge se chipka, right corner tak
+  const LX = 12.2, LY = 18.3, LZ = -5.05;   // chhat ke FRONT edge — window display ke upar (home se clearly dikhe)
   /* animated video-ad canvas — EK hi display, front+side par continuous wrap */
   const ledCv = document.createElement('canvas'); ledCv.width = 768; ledCv.height = 256;
   const ledCtx = ledCv.getContext('2d');
@@ -2743,7 +3144,7 @@ let ledScreens = [];
   ledDisplay.userData.ledCtx = ledCtx;
   ledDisplay.userData.ledTex = ledTex;
   /* EK hi texture — front/side ko UV se hissa milta hai (100% sync) */
-  const screenM = new THREE.MeshStandardMaterial({ map: ledTex, emissive: 0xffffff, emissiveMap: ledTex, emissiveIntensity: 1.1, roughness:.6 });
+  const screenM = new THREE.MeshStandardMaterial({ map: ledTex, emissive: 0xffffff, emissiveMap: ledTex, emissiveIntensity: 1.35, roughness:.6 });
   function remapU(geo, u0, u1){
     const uv = geo.attributes.uv;
     for(let i=0;i<uv.count;i++) uv.setX(i, u0 + uv.getX(i)*(u1-u0));
@@ -2829,7 +3230,7 @@ function drawLedSky(ctx2, W, H, t, local){
   const key = ['rain','sunset','night'][idx];
   if(key === 'rain'){
     const g = ctx2.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#5c6a78'); g.addColorStop(.6,'#77848f'); g.addColorStop(1,'#93a0aa');
+    g.addColorStop(0,'#39424c'); g.addColorStop(.6,'#4c5862'); g.addColorStop(1,'#66727d');
     ctx2.fillStyle = g; ctx2.fillRect(0,0,W,H);
     for(let i=0;i<5;i++){
       const cx = ((t*.03 + i*.23) % 1.3 - .15) * W, cy = 30 + (i%3)*40;
@@ -2889,7 +3290,7 @@ register(ledDisplay, {
   desc:'Showroom की छत पर right corner में outdoor LED video wall — front में बड़ा screen और right side में उसका आधा companion screen, दोनों पर एक ही video-ad sync में चलता है: sweeping brand mark, equalizer bars और expanding rings — और उसके बाद ArtViSiON Production Design Studio की ceiling वाली live sky animation: बारिश, सूर्यास्त में उड़ते पंछी और तारों भरी रात। रात-दिन दोनों में visible, MS structure पर mounted। Traffic जहाँ से भी आए, ad हर angle से दिखता है।',
   specs:[['Pixel','P6 / P8 outdoor SMD'],['Brightness','5500+ nits, auto-dim'],['Cabinet','IP65 weatherproof'],['Content','Brand video + live sky animation'],['Structure','MS truss, roof-mounted']],
   tags:['LED Screen','Video Ad','Digital OOH'],
-  camPos:[26, 19, 8], camTarget:[18.2, 18.3, -5]
+  camPos:[19.5, 19, 8], camTarget:[12.2, 18.3, -5]
 });
 
 /* ---------- 15. ROUND DOUBLE-SIDED TRANSLITE BOX (left corner) ---------- */
@@ -2897,9 +3298,9 @@ const translite = new THREE.Group();
 const tSpin = new THREE.Group();   // rotating drum + faces
 building.add(translite);
 {
-  const TX = -20, TY = 22.5, TZ = -11;   // chhat ke upar lambe pole par
+  const TX = -12.2, TY = 21, TZ = -9;   // chhat ke upar pole par — SEG ke upar (home se dikhe)
   /* roof pole — lollipop style */
-  cyl(.16, .2, 6.5, M.steel, TX, 19.5, TZ, translite);
+  cyl(.16, .2, 3.4, M.steel, TX, 17.9, TZ, translite);
   cyl(.45, .5, .3, new THREE.MeshStandardMaterial({ color: 0x26282c, roughness:.5 }), TX, 16.35, TZ, translite);
   /* spinning head — left to right ghoomta hai */
   tSpin.position.set(TX, TY, TZ); translite.add(tSpin);
@@ -2915,7 +3316,7 @@ building.add(translite);
   const tFaceTex = new THREE.TextureLoader().load('assets/translit-face.png', tt => { tt.colorSpace = THREE.SRGBColorSpace; });
   [ .24, -.24].forEach((dz, i)=>{
     const face = new THREE.Mesh(new THREE.CircleGeometry(1.78, 48),
-      new THREE.MeshStandardMaterial({ map: tFaceTex, transparent:true, emissive: 0xffffff, emissiveMap: tFaceTex, emissiveIntensity: .7, roughness:.5 }));
+      new THREE.MeshStandardMaterial({ map: tFaceTex, transparent:true, emissive: 0xffffff, emissiveMap: tFaceTex, emissiveIntensity: 1.05, roughness:.5 }));
     face.position.set(0, 0, dz);
     if(i === 1) face.rotation.y = Math.PI;
     tSpin.add(face);
@@ -2927,7 +3328,7 @@ register(translite, {
   desc:'Showroom की छत पर pole-mounted round double-sided translite box — lollipop style, दोनों faces पर backlit brand icon जो अंदर से glow करता है। ऊँचाई पर होने से दूर से ही दोनों directions के traffic को दिखता है। MS pole पर roof-mount, LED modules से even glow, flex या acrylic face options।',
   specs:[['Faces','2-side backlit translite'],['Dia','2 ft से 5 ft custom'],['Lighting','LED modules, even glow'],['Body','MS drum + powder coat'],['Mount','Roof pole / lollipop']],
   tags:['Translite','Double Side','Backlit'],
-  camPos:[-16.5, 23, -2.5], camTarget:[-20, 22.5, -11]
+  camPos:[-8.5, 21.5, 0], camTarget:[-12.2, 21, -9]
 });
 
 /* ---------- 16. TOTEM — 360° + A B C D E typography ---------- */
@@ -3569,14 +3970,19 @@ function planter(x, z){
   foliage.position.y = 1.8; foliage.scale.y = 1.25; foliage.castShadow = true; g.add(foliage);
   cyl(.08,.1,.9, new THREE.MeshStandardMaterial({ color:0x5a4530 }), 0, 1.25, 0, g);
 }
-planter(-16.5, -3.5); planter(16.5, -3.5); planter(-3.9, -2.8); planter(3.9, -2.8);
+/* facade ke dono kinare wale gamle hata diye (window display ke samne clear view) */
+planter(-3.9, -2.8); planter(3.9, -2.8);
 planter(-11, 14); planter(11, 14);
 
-/* bollards along the carpet */
+/* bollards along the carpet — silver finials + sirf patli red ring (minimal red) */
+const bollardCapM = new THREE.MeshStandardMaterial({ color: 0xc5cad1, metalness:.75, roughness:.32 });
+const bollardRingM = new THREE.MeshStandardMaterial({ color: 0xff0000, roughness:.7 });
 for(let i=0;i<4;i++){
   [-2.9, 2.9].forEach(x=>{
     const b = cyl(.12,.14,.85, M.steel, x, .42, 15.5 - i*3.6);
-    const cap = new THREE.Mesh(new THREE.SphereGeometry(.13, 14, 10), M.redGloss);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(.125, .016, 8, 20), bollardRingM);
+    ring.rotation.x = Math.PI/2; ring.position.set(x, .83, 15.5 - i*3.6); outside.add(ring);
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(.13, 14, 10), bollardCapM);
     cap.position.set(x, .9, 15.5 - i*3.6); outside.add(cap);
   });
 }
@@ -4827,7 +5233,7 @@ function drawSky(dt, t){
   const c = CLIMATES[climIndex];
   if(c.key === 'rain'){
     const g = ctx2.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#5c6a78'); g.addColorStop(.6,'#77848f'); g.addColorStop(1,'#93a0aa');
+    g.addColorStop(0,'#39424c'); g.addColorStop(.6,'#4c5862'); g.addColorStop(1,'#66727d');
     ctx2.fillStyle = g; ctx2.fillRect(0,0,W,H);
     /* clouds */
     for(let i=0;i<3;i++){
@@ -5356,10 +5762,6 @@ function animate(){
     updateRickAudio();
   } else updateRickAudio();
 
-  /* owl gentle bob + head sway feel */
-  owl.position.y = Math.sin(t*1.4) * .06;
-  owl.rotation.y = -.5 + Math.sin(t*.5) * .07;
-
   /* acrylic monument — slow turntable spin (jab bahar dikhe tabhi) */
   if(outside.visible && acrSpin) acrSpin.rotation.y = t * .45;
 
@@ -5374,48 +5776,17 @@ function animate(){
     }
   }
 
-  /* owl WELCOME sequence (6s cycle):
-     0.0-1.0s  : dono haath jodkar NAMASTE me aana
-     1.0-4.0s  : namaste hold + halka sir jhukana
-     4.0-4.8s  : haath khulna
-     4.8-6.0s  : rest */
-  const wL = owl.userData.wingL, wR = owl.userData.wingR;
-  if(wL && wR){
-    const cyc = t % 6;
-    const ease = v => v<0?0 : v>1?1 : v*v*(3-2*v);
-    let bowX = 0;
-    if(cyc < 4.8){
-      /* --- NAMASTE --- */
-      const kIn  = ease(cyc / 1.0);                 // 0->1 joining
-      const kOut = ease((cyc - 4.0) / .8);          // 0->1 releasing
-      const k = kIn * (1 - kOut);
-      const pulse = Math.sin(t*3) * .04 * k;        // halka sa dhadkan feel
-      /* wings aage-andar mudke chest ke saamne milte hain */
-      wR.rotation.z = .35 + k * (-1.25 + pulse);
-      wL.rotation.z = -.35 + k * (1.25 - pulse);
-      wR.rotation.x = k * -.85;
-      wL.rotation.x = k * -.85;
-      bowX = k * .16;                               // namaste ke saath sir jhukna
-    } else {
-      /* --- REST --- */
-      wR.rotation.z += (.35 - wR.rotation.z) * .12;
-      wL.rotation.z += (-.35 - wL.rotation.z) * .12;
-      wR.rotation.x *= .88; wL.rotation.x *= .88;
-    }
-    owl.rotation.x += (bowX - owl.rotation.x) * .12;
-  }
-
-  /* welcome sign gentle swing */
-  if(welcomeSign) welcomeSign.rotation.z = Math.sin(t*.9) * .025;
 
   /* nature — ped, animals, birds, waterfall (sirf bahar) */
   if(outside.visible) updateNature(t, dt);
+  /* door ke andar waterfall — gentle scroll (home se thoda sa dikhe) */
+  if(doorGroup.userData.wfallTex) doorGroup.userData.wfallTex.offset.y -= dt * .55;
 
   /* SEG lightbox + LED ad — FIX B: 12fps throttle + FIX D: door se pause */
   if(outside.visible && t - (animate.lastSeg || 0) > (IS_MOBILE ? 10 : .085)){
     animate.lastSeg = t;
-    if(IS_MOBILE || camDistTo(-12.5, 3.1, -4.6) < 45) drawSegScene(t);
-    if(IS_MOBILE || camDistTo(18.5, 18.3, -6.2) < 70) drawLedAd(t);
+    if(IS_MOBILE || camDistTo(-12.5, 3.1, -4.6) < 140) drawSegScene(t);
+    if(IS_MOBILE || camDistTo(12.2, 18.3, -6.2) < 140) drawLedAd(t);
     if(IS_MOBILE || camDistTo(-24.6, 2, -1.2) < 55) drawStallAd(t);
   }
 
@@ -5776,5 +6147,5 @@ addEventListener('resize', ()=>{
 });
 </script>
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a411dd7ccc222666',t:'MTc5MDQyMTQ3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4144d625df5b1c5',t:'MTc5MDQ0NzAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4144d625df5b1c5',t:'MTc5MDQ0NzAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a431bb5eaf0dff99',t:'MTc5MDc1NTYyNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
