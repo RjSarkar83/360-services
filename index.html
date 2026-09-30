@@ -3160,123 +3160,118 @@ let ledScreens = [];
   ledScreens.push(scrR);
 
 }
-/* LED video-ad frames — animated brand promo */
+/* ================= GALLERY SLIDESHOW — ADVERTiSiNG se EXECUTION tak, L2R slide transition ================= */
+const GAL_SHOW = { hold:3.2, trans:.85, t0:0, list:null, imgs:new Map(), drawn:new Map() };
+function galList(){
+  if(!GAL_SHOW.list){
+    GAL_SHOW.list = [];
+    DIVISIONS.forEach(dv=>{
+      for(let i=1;i<=dv.photos;i++) GAL_SHOW.list.push({ url:`assets/gallery/${dv.key}-${i}.jpg`, label:dv.label });
+    });
+  }
+  return GAL_SHOW.list;
+}
+function galImg(idx){
+  const list = galList(), n = list.length;
+  idx = ((idx % n) + n) % n;
+  let img = GAL_SHOW.imgs.get(idx);
+  if(img) return img;
+  if(GAL_SHOW.imgs.size >= 6){                    // chhota window — 87 images kabhi ek saath memory me nahi
+    let far = -1, maxD = -1;
+    GAL_SHOW.imgs.forEach((_, k)=>{
+      const d = Math.min(Math.abs(k - idx), n - Math.abs(k - idx));
+      if(d > maxD){ maxD = d; far = k; }
+    });
+    GAL_SHOW.imgs.delete(far);
+  }
+  img = new Image();
+  img.crossOrigin = 'anonymous';                  // canvas tainted na ho → WebGL texture safe
+  img.decoding = 'async';
+  img.src = list[idx].url;
+  if(img.decode) img.decode().catch(()=>{});      // pehle se decode → slide aate waqt hitch nahi
+  GAL_SHOW.imgs.set(idx, img);
+  return img;
+}
+/* screen ka shape photo se bahut alag ho (mobile portrait) → peeche dhundhla blur-fill */
+function galBlur(img, W, H){
+  const key = W + 'x' + H;
+  const store = img._bg || (img._bg = {});
+  if(store[key]) return store[key];
+  const mk = (w, h)=>{ const c = document.createElement('canvas'); c.width = w; c.height = h; return c.getContext('2d'); };
+  const sw = 12, sh = Math.max(4, Math.round(12 * H / W));
+  const a = mk(sw, sh), sc = Math.max(sw / img.naturalWidth, sh / img.naturalHeight);
+  a.imageSmoothingQuality = 'high';
+  a.drawImage(img, (sw - img.naturalWidth * sc) / 2, (sh - img.naturalHeight * sc) / 2, img.naturalWidth * sc, img.naturalHeight * sc);
+  const b = mk(sw * 5, sh * 5);
+  b.imageSmoothingQuality = 'high';
+  b.drawImage(a.canvas, 0, 0, sw * 5, sh * 5);
+  return (store[key] = b.canvas);
+}
+function drawGalSlide(g, W, H, t){
+  const list = galList(), n = list.length;
+  const per = GAL_SHOW.hold + GAL_SHOW.trans;
+  const cyc = ((Math.max(t - GAL_SHOW.t0, 0) + GAL_SHOW.trans) / per) % n;   // slide-1 seedha hold se shuru hota hai
+  const idx = Math.floor(cyc);
+  const p = cyc - idx;
+  const inTrans = p * per < GAL_SHOW.trans;
+  const tp = inTrans ? (p * per) / GAL_SHOW.trans : 0;
+  const key = inTrans ? 't' : idx;                // hold me redraw skip, transition me har frame
+  if(GAL_SHOW.drawn.get(g) === key) return false;
+  galImg(idx); galImg(idx + 1); galImg(idx + 2);  // lookahead prefetch
+  let ready = true;
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  const slide = (i, x)=>{
+    const img = galImg(i);
+    if(!img.complete){ ready = false; return; }   // abhi load ho rahi hai → agle frame par dobara
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    if(!iw) return;                               // toota hua link — skip
+    const sc = Math.max(W / iw, H / ih);
+    if((W * H) / (iw * sc * ih * sc) >= .5){      // crop kam → full-bleed cover
+      g.drawImage(img, x + (W - iw * sc) / 2, (H - ih * sc) / 2, iw * sc, ih * sc);
+      return;
+    }
+    g.drawImage(galBlur(img, W, H), x, 0, W, H);  // crop bahut → poori photo + blur-fill
+    g.fillStyle = 'rgba(0,0,0,.4)'; g.fillRect(x, 0, W, H);
+    const s2 = Math.min(W / iw, H / ih);
+    g.drawImage(img, x + (W - iw * s2) / 2, (H - ih * s2) / 2, iw * s2, ih * s2);
+  };
+  g.fillStyle = '#0c0d0f'; g.fillRect(0, 0, W, H);
+  if(inTrans){ slide((idx - 1 + n) % n, W * tp); slide(idx, -W * (1 - tp)); }   // L2R: naya left se aata hai, purana right ko jata hai
+  else slide(idx, 0);
+  /* bottom strip — division label + counter + red progress */
+  const bh = Math.max(18, H * .13);
+  const gr = g.createLinearGradient(0, H - bh, 0, H);
+  gr.addColorStop(0, 'rgba(10,10,12,0)'); gr.addColorStop(.5, 'rgba(10,10,12,.7)'); gr.addColorStop(1, 'rgba(10,10,12,.92)');
+  g.fillStyle = gr; g.fillRect(0, H - bh, W, bh);
+  const fs = Math.max(9, Math.round(Math.min(H * .068, W * .08)));
+  const cy = H - bh / 2;
+  g.textBaseline = 'middle';
+  g.font = `700 ${fs}px Montserrat, Arial`;
+  const lab = list[idx].label, cnt = (idx + 1) + '/' + n, sfx = ' \u00b7 ArtViSiON \u00b7 Division Gallery';
+  const lw = g.measureText(lab).width, sw = g.measureText(sfx).width, cw = g.measureText(cnt).width;
+  g.textAlign = 'left'; g.fillStyle = '#ff2b2b'; g.fillText(lab, 12, cy);
+  if(12 + lw + sw + 10 + cw + 12 <= W){ g.fillStyle = 'rgba(255,255,255,.82)'; g.fillText(sfx, 12 + lw, cy); }
+  g.textAlign = 'right'; g.fillStyle = 'rgba(255,255,255,.72)'; g.fillText(cnt, W - 12, cy);
+  g.fillStyle = 'rgba(255,255,255,.16)'; g.fillRect(0, H - 3, W, 3);
+  g.fillStyle = '#ff0000'; g.fillRect(0, H - 3, W * ((idx + 1) / n), 3);
+  GAL_SHOW.drawn.set(g, ready ? key : null);
+  return true;
+}
+/* LED display — ArtViSiON gallery slideshow */
 function drawLedAd(t){
   const g = ledDisplay.userData.ledCtx;
   if(!g) return;
   const W = 768, H = 256;
-  /* cycle: 3 brand scenes (4s each) + 3 interior-ceiling sky scenes (6s each) = 30s */
-  const cyc = t % 30;
-  if(cyc >= 12){ drawLedSky(g, W, H, t, cyc - 12); ledDisplay.userData.ledTex.needsUpdate = true; return; }
-  const phase = Math.floor(cyc / 4) % 3;     // 3 scenes, 4s each
-  const k = (cyc % 4) / 4;
-  if(phase === 0){
-    /* scene 1: red sweep + circle brand mark */
-    const gr = g.createLinearGradient(0,0,W,0);
-    gr.addColorStop(0,'#ff0000'); gr.addColorStop(.5,'#ff0000'); gr.addColorStop(1,'#ff0000');
-    g.fillStyle = gr; g.fillRect(0,0,W,H);
-    const cx = W*(-.2 + k*1.4);
-    g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(cx, H/2, 62, 0, 7); g.fill();
-    g.fillStyle = '#171717'; g.beginPath(); g.arc(cx, H/2, 40, 0, 7); g.fill();
-    g.fillStyle = '#ff0000'; g.beginPath(); g.arc(cx, H/2, 19, 0, 7); g.fill();
-  } else if(phase === 1){
-    /* scene 2: black bg + rising red bars (equalizer feel) */
-    g.fillStyle = '#101013'; g.fillRect(0,0,W,H);
-    const nb = Math.floor(W/42);                 // full width bars
-    for(let i=0;i<nb;i++){
-      const bh = (Math.sin(t*3 + i*1.1)*.5 + .5) * H * .7 + 18;
-      g.fillStyle = i%3 ? '#ff0000' : '#f6f5f2';
-      g.fillRect(8 + i*42, H - bh, 30, bh);
-    }
-  } else {
-    /* scene 3: white flash + expanding rings */
-    g.fillStyle = '#f6f5f2'; g.fillRect(0,0,W,H);
-    [W*.3, W*.78].forEach(cx2=>{
-      for(let r=0;r<4;r++){
-        const rad = ((k + r*.25) % 1) * W * .35;
-        g.strokeStyle = r%2 ? '#ff0000' : '#171717';
-        g.lineWidth = 10 - r*2;
-        g.beginPath(); g.arc(cx2, H/2, rad, 0, 7); g.stroke();
-      }
-      g.fillStyle = '#ff0000'; g.beginPath(); g.arc(cx2, H/2, 26, 0, 7); g.fill();
-    });
-  }
+  if(!drawGalSlide(g, W, H, t)) return;
   /* LED pixel grid feel */
   g.fillStyle = 'rgba(0,0,0,.18)';
   for(let y=0;y<H;y+=4) g.fillRect(0, y, W, 1);
   ledDisplay.userData.ledTex.needsUpdate = true;
 }
-/* ---- Studio ceiling ki animated sky (baarish → suryast → raat) — sirf bahar ke LED display ke liye ---- */
-/* ceiling ke state se alag particles, taaki andar ka ceiling animation affect na ho */
-const ledRain  = Array.from({length: IS_MOBILE ? 40 : 80}, () => ({ x: Math.random(), y: Math.random(), s: .5 + Math.random()*.9 }));
-const ledStars = Array.from({length: IS_MOBILE ? 40 : 70}, () => ({ x: Math.random(), y: Math.random()*.8, tw: Math.random()*6 }));
-const ledBirds = Array.from({length: 6}, () => ({ p: Math.random(), y: .15 + Math.random()*.35, sp: .05 + Math.random()*.04 }));
-let ledSkyLastT = 0;
-function drawLedSky(ctx2, W, H, t, local){
-  const dt = Math.min(Math.max(t - ledSkyLastT, 0), .2); ledSkyLastT = t;
-  const SEG = 6, idx = Math.floor(local / SEG) % 3, lt = local % SEG;
-  const key = ['rain','sunset','night'][idx];
-  if(key === 'rain'){
-    const g = ctx2.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#39424c'); g.addColorStop(.6,'#4c5862'); g.addColorStop(1,'#66727d');
-    ctx2.fillStyle = g; ctx2.fillRect(0,0,W,H);
-    for(let i=0;i<5;i++){
-      const cx = ((t*.03 + i*.23) % 1.3 - .15) * W, cy = 30 + (i%3)*40;
-      ctx2.fillStyle = 'rgba(220,226,232,.18)';
-      ctx2.beginPath(); ctx2.ellipse(cx, cy, 150, 30, 0, 0, 7); ctx2.fill();
-    }
-    ctx2.strokeStyle = 'rgba(225,235,245,.6)'; ctx2.lineWidth = 1.6;
-    ledRain.forEach(d=>{
-      d.y += dt * d.s * 1.6; if(d.y > 1){ d.y -= 1; d.x = Math.random(); }
-      const x = d.x*W, y = d.y*H;
-      ctx2.beginPath(); ctx2.moveTo(x, y); ctx2.lineTo(x-3, y+12*d.s); ctx2.stroke();
-    });
-  } else if(key === 'sunset'){
-    const g = ctx2.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#3d2f52'); g.addColorStop(.42,'#c4553a'); g.addColorStop(.72,'#f2903f'); g.addColorStop(1,'#ffd489');
-    ctx2.fillStyle = g; ctx2.fillRect(0,0,W,H);
-    const sx = W*.33, sy = H*.72 + (lt/SEG)*18;     // front screen ke beech me dheere dhalta sooraj
-    const sg = ctx2.createRadialGradient(sx, sy, 6, sx, sy, 80);
-    sg.addColorStop(0,'#fff3c8'); sg.addColorStop(.35,'#ffcf6a'); sg.addColorStop(1,'rgba(255,190,90,0)');
-    ctx2.fillStyle = sg; ctx2.beginPath(); ctx2.arc(sx, sy, 80, 0, 7); ctx2.fill();
-    ctx2.fillStyle = '#ffe9ad'; ctx2.beginPath(); ctx2.arc(sx, sy, 30, 0, 7); ctx2.fill();
-    for(let i=0;i<4;i++){
-      ctx2.fillStyle = 'rgba(90,45,60,.28)';
-      const cx = ((t*.02 + i*.31)%1.2 - .1)*W;
-      ctx2.beginPath(); ctx2.ellipse(cx, 40+i*36, 120, 10, 0, 0, 7); ctx2.fill();
-    }
-    ctx2.strokeStyle = 'rgba(40,20,30,.85)'; ctx2.lineWidth = 2;
-    ledBirds.forEach(b=>{
-      b.p += dt * b.sp; if(b.p > 1.1) b.p = -.1;
-      const x = b.p*W, y = b.y*H + Math.sin(t*2 + x*.02)*5;
-      const w = 9, f = Math.sin(t*7 + x)*3;
-      ctx2.beginPath(); ctx2.moveTo(x-w, y-f); ctx2.quadraticCurveTo(x, y+3, x, y);
-      ctx2.quadraticCurveTo(x, y+3, x+w, y-f); ctx2.stroke();
-    });
-  } else {
-    const g = ctx2.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#070b1c'); g.addColorStop(.6,'#101a34'); g.addColorStop(1,'#1a2745');
-    ctx2.fillStyle = g; ctx2.fillRect(0,0,W,H);
-    ledStars.forEach(st=>{
-      ctx2.fillStyle = `rgba(255,255,235,${.35 + .45*(Math.sin(t*3 + st.tw)*.5 + .5)})`;
-      ctx2.fillRect(st.x*W, st.y*H, 2, 2);
-    });
-    ctx2.fillStyle = '#f2ecd8'; ctx2.beginPath(); ctx2.arc(W*.5, H*.32, 30, 0, 7); ctx2.fill();
-    ctx2.fillStyle = '#101a34'; ctx2.beginPath(); ctx2.arc(W*.5 + 12, H*.32 - 6, 26, 0, 7); ctx2.fill();
-    ctx2.fillStyle = 'rgba(200,210,235,.1)';
-    const cx = ((t*.03)%1.3 - .15)*W;
-    ctx2.beginPath(); ctx2.ellipse(cx, H*.62, 170, 20, 0, 0, 7); ctx2.fill();
-  }
-  /* scene badalte waqt soft fade (ceiling jaisa crossfade) */
-  const fade = Math.min(lt / .6, (SEG - lt) / .6, 1);
-  if(fade < 1){ ctx2.fillStyle = `rgba(12,12,14,${1 - fade})`; ctx2.fillRect(0,0,W,H); }
-  ctx2.fillStyle = 'rgba(0,0,0,.18)';
-  for(let y=0;y<H;y+=4) ctx2.fillRect(0, y, W, 1);
-}
 register(ledDisplay, {
   name:'Video Advertisement LED Display', sub:'Outdoor P6/P8 LED Screen — Roof-Top Video Wall',
-  desc:'Showroom की छत पर right corner में outdoor LED video wall — front में बड़ा screen और right side में उसका आधा companion screen, दोनों पर एक ही video-ad sync में चलता है: sweeping brand mark, equalizer bars और expanding rings — और उसके बाद ArtViSiON Production Design Studio की ceiling वाली live sky animation: बारिश, सूर्यास्त में उड़ते पंछी और तारों भरी रात। रात-दिन दोनों में visible, MS structure पर mounted। Traffic जहाँ से भी आए, ad हर angle से दिखता है।',
-  specs:[['Pixel','P6 / P8 outdoor SMD'],['Brightness','5500+ nits, auto-dim'],['Cabinet','IP65 weatherproof'],['Content','Brand video + live sky animation'],['Structure','MS truss, roof-mounted']],
+  desc:'Showroom की छत पर right corner में outdoor LED video wall — front में बड़ा screen और right side में उसका आधा companion screen, दोनों पर एक ही gallery slideshow sync में चलता है: ADVERTiSiNG se EXECUTION tak poori ArtViSiON Division Gallery — 87 work images ek ke baad ek, left-to-right slide transition mein. रात-दिन दोनों में visible, MS structure पर mounted। Traffic जहाँ से भी आए, ad हर angle से दिखता है।',
+  specs:[['Pixel','P6 / P8 outdoor SMD'],['Brightness','5500+ nits, auto-dim'],['Cabinet','IP65 weatherproof'],['Content','Gallery slideshow - 87 work slides, L2R'],['Structure','MS truss, roof-mounted']],
   tags:['LED Screen','Video Ad','Digital OOH'],
   camPos:[19.5, 19, 8], camTarget:[12.2, 18.3, -5]
 });
@@ -3772,43 +3767,15 @@ let stallAdL = null, stallAdP = null;   // landscape (PC/laptop/tablet) + portra
 }
 /* device screens par wahi Video-Advertisement LED animation (3 scenes, same timing) */
 function drawAdScenes(g, W, H, t){
-  const phase = Math.floor(t / 4) % 3;
-  const k = (t % 4) / 4;
-  const S = Math.min(W, H) / 256;
-  if(phase === 0){
-    const gr = g.createLinearGradient(0,0,W,0);
-    gr.addColorStop(0,'#ff0000'); gr.addColorStop(.5,'#ff0000'); gr.addColorStop(1,'#ff0000');
-    g.fillStyle = gr; g.fillRect(0,0,W,H);
-    const cx = W*(-.2 + k*1.4);
-    g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(cx, H/2, 62*S, 0, 7); g.fill();
-    g.fillStyle = '#171717'; g.beginPath(); g.arc(cx, H/2, 40*S, 0, 7); g.fill();
-    g.fillStyle = '#ff0000'; g.beginPath(); g.arc(cx, H/2, 19*S, 0, 7); g.fill();
-  } else if(phase === 1){
-    g.fillStyle = '#101013'; g.fillRect(0,0,W,H);
-    const bw = Math.max(10, 42*S*.6), nb = Math.floor(W/bw);
-    for(let i=0;i<nb;i++){
-      const bh = (Math.sin(t*3 + i*1.1)*.5 + .5) * H * .7 + 18*S;
-      g.fillStyle = i%3 ? '#ff0000' : '#f6f5f2';
-      g.fillRect(4 + i*bw, H - bh, bw*.72, bh);
-    }
-  } else {
-    g.fillStyle = '#f6f5f2'; g.fillRect(0,0,W,H);
-    const cx2 = W/2, cy2 = H/2, maxR = Math.max(W, H) * .6;
-    for(let r=0;r<4;r++){
-      const rad = ((k + r*.25) % 1) * maxR;
-      g.strokeStyle = r%2 ? '#ff0000' : '#171717';
-      g.lineWidth = (10 - r*2) * S;
-      g.beginPath(); g.arc(cx2, cy2, rad, 0, 7); g.stroke();
-    }
-    g.fillStyle = '#ff0000'; g.beginPath(); g.arc(cx2, cy2, 26*S, 0, 7); g.fill();
-  }
+  if(!drawGalSlide(g, W, H, t)) return false;
   g.fillStyle = 'rgba(0,0,0,.14)';
   for(let y=0;y<H;y+=4) g.fillRect(0, y, W, 1);
+  return true;
 }
 function drawStallAd(t){
   [stallAdL, stallAdP].forEach(a=>{
     if(!a) return;
-    drawAdScenes(a.ctx, a.w, a.h, t);
+    if(!drawAdScenes(a.ctx, a.w, a.h, t)) return;
     a.tex.needsUpdate = true;
   });
 }
@@ -5101,6 +5068,7 @@ function focusProduct(i){
   if(mode === 'entering' || mode === 'interior') return;
   mode = 'focus'; focusIndex = i;
   const p = products[i];
+  if(p.group === ledDisplay || p.group === eventStall) GAL_SHOW.t0 = clock.getElapsedTime();   // gallery slideshow: ADVERTiSiNG ki pehli image se shuru
   /* rickshaw showcase — focus par park (peeche ka logo dikhe); doosre product par switch → wapas chalu */
   if(rickPhase === 'showcase' && p.group !== rickshaw){ rickPhase = 'revving'; rickPhaseT = clock.getElapsedTime(); }
   if(p.group === rickshaw){ rickPhase = 'showcase'; rickshaw.position.copy(rickPark); rickshaw.rotation.y = 0; }
@@ -6146,5 +6114,5 @@ addEventListener('resize', ()=>{
 });
 </script>
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a411dd7ccc222666',t:'MTc5MDQyMTQ3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4144d625df5b1c5',t:'MTc5MDQ0NzAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a432d8ed4f33345a',t:'MTc5MDc2NzMyMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4144d625df5b1c5',t:'MTc5MDQ0NzAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a43607a30cd088e0',t:'MTc5MDgwMDY5MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
