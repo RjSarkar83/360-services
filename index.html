@@ -2079,50 +2079,36 @@ register(windowDisplay, {
 const doorGroup = new THREE.Group();
 building.add(doorGroup);
 {
-  /* door frame — FIXED silver (noRed lock; pehle red recolor hota tha = door par laal effect) */
+  /* door frame — BLACK + SILVER + RED (noRed lock — redCarpetApply safe) */
   const doorSilverM = glossSilver.clone(); doorSilverM.userData = { noRed:true };
+  const doorBlackM = new THREE.MeshStandardMaterial({ color: 0x17191c, roughness:.68, metalness:.14, userData:{ noRed:true } });
+  const doorRedM   = new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness:.52, metalness:.16, userData:{ noRed:true } });
   const dGlassM = M.glass.clone(); dGlassM.userData = { noRed:true };
-  /* hollow frame — 4 rails (andar se waterfall dikhe) */
-  box(6.4, .3, .4, doorSilverM, 0, 5.85, -4.9, doorGroup);
-  box(.4, 6, .4, doorSilverM, -3, 3, -4.9, doorGroup);
-  box(.4, 6, .4, doorSilverM, 3, 3, -4.9, doorGroup);
-  box(6.4, .45, .4, doorSilverM, 0, .225, -4.9, doorGroup);
+  /* hollow frame — 4 rails: matte BLACK ACP body */
+  box(6.4, .3, .4, doorBlackM, 0, 5.85, -4.9, doorGroup);
+  box(.4, 6, .4, doorBlackM, -3, 3, -4.9, doorGroup);
+  box(.4, 6, .4, doorBlackM, 3, 3, -4.9, doorGroup);
+  box(6.4, .45, .4, doorBlackM, 0, .225, -4.9, doorGroup);
+  /* patli RED accent line — top rail ke niche */
+  box(6.0, .08, .06, doorRedM, 0, 5.62, -4.58, doorGroup);
   const dGlass = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 5), dGlassM);
   dGlass.position.set(0, 2.8, -4.62); doorGroup.add(dGlass);
+  /* SILVER mullion + glass-surround reveals */
   box(.14, 5, .1, doorSilverM, 0, 2.8, -4.6, doorGroup);
-  box(.1, 1.4, .1, doorSilverM, -.55, 2.6, -4.5, doorGroup);
-  box(.1, 1.4, .1, doorSilverM, .55, 2.6, -4.5, doorGroup);
-  /* ===== door ke PICHE — dark lobby + chhota waterfall feature
-     (door PAR nahi — glass ke paar andar thoda sa door se dikhe) ===== */
+  box(5.5, .12, .1, doorSilverM, 0, 5.34, -4.57, doorGroup);
+  box(5.5, .12, .1, doorSilverM, 0, .3, -4.57, doorGroup);
+  /* RED handles */
+  box(.1, 1.4, .1, doorRedM, -.55, 2.6, -4.5, doorGroup);
+  box(.1, 1.4, .1, doorRedM, .55, 2.6, -4.5, doorGroup);
+  /* ===== door ke PICHE — clean dark lobby (WATERFALL HATA DIYA) ===== */
   const lobbyM = new THREE.MeshStandardMaterial({ color: 0x1a2027, roughness:.85, metalness:.05, userData:{ noRed:true } });
   const lobby = new THREE.Mesh(new THREE.PlaneGeometry(5.5, 5.15), lobbyM);
   lobby.position.set(0, 3.02, -4.97); doorGroup.add(lobby);
-  /* niche upar — accent ledge */
-  box(2.5, .12, .1, new THREE.MeshStandardMaterial({ color: 0x2c333b, roughness:.6, userData:{ noRed:true } }), 0, 4.05, -4.92, doorGroup);
-  const wfallTex = makeTex(64, 256, (g)=>{
-    g.fillStyle = '#24313c'; g.fillRect(0, 0, 64, 256);
-    for(let i=0;i<48;i++){ g.fillStyle = `rgba(210,232,246,${.22 + Math.random()*.5})`; g.fillRect(Math.random()*64, Math.random()*256, 1.5 + Math.random()*3, 16 + Math.random()*52); }
-    for(let i=0;i<18;i++){ g.fillStyle = 'rgba(120,170,205,.45)'; g.fillRect(Math.random()*64, Math.random()*256, 2, 22 + Math.random()*34); }
-  });
-  wfallTex.wrapS = wfallTex.wrapT = THREE.RepeatWrapping; wfallTex.repeat.set(1.2, 1);
-  const wfall = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 2.2),
-    new THREE.MeshBasicMaterial({ map: wfallTex }));
-  wfall.position.set(0, 2.75, -4.9); doorGroup.add(wfall);
-  /* stone pilasters dono taraf + basin */
-  box(.35, 2.6, .16, new THREE.MeshStandardMaterial({ color: 0x272e35, roughness:.8, userData:{ noRed:true } }), -.98, 2.75, -4.9, doorGroup);
-  box(.35, 2.6, .16, new THREE.MeshStandardMaterial({ color: 0x272e35, roughness:.8, userData:{ noRed:true } }), .98, 2.75, -4.9, doorGroup);
-  box(2.3, .3, .3, new THREE.MeshStandardMaterial({ color: 0x14181c, roughness:.45, metalness:.3, userData:{ noRed:true } }), 0, 1.5, -4.88, doorGroup);
-  const wfallGlow = new THREE.Mesh(new THREE.PlaneGeometry(2.2, .9),
-    new THREE.MeshBasicMaterial({ color: 0x9fd4ef, transparent:true, opacity:.22, depthWrite:false }));
-  wfallGlow.position.set(0, 1.75, -4.86); doorGroup.add(wfallGlow);
-  /* niche me warm downlight accent */
-  const wfallLight = new THREE.Mesh(new THREE.PlaneGeometry(1.9, .5),
-    new THREE.MeshBasicMaterial({ color: 0xffe2b0, transparent:true, opacity:.16, depthWrite:false }));
-  wfallLight.position.set(0, 4.15, -4.87); doorGroup.add(wfallLight);
-  doorGroup.userData.wfallTex = wfallTex;
   /* canopy — solid BLACK ACP (gate ka bahar wala canopy) */
   const doorCanopyM = detail(new THREE.MeshStandardMaterial({ map: blackAcpTex, roughness:.68, metalness:.14 }), 'brushed', 4, 2, .3, .28);
   box(8, .35, 3, doorCanopyM, 0, 6.4, -3.6, doorGroup);
+  /* poora door click/touch => turant entry */
+  doorGroup.traverse(o => { if(o.isMesh) o.userData.entryStructure = true; });
 }
 
 /* ---------- ROOFTOP MS STEEL ENTRY STRUCTURE (bulb-decorated, clickable => enter) ---------- */
@@ -5190,35 +5176,28 @@ function exitFocus(){
 function enterShowroom(){
   if(mode === 'entering' || mode === 'interior') return;
   mode = 'entering';
+  tween.active = false; tween.onDone = null;        // stale tour/flyTo cancel
+  enterShowroom.at = Date.now();                    // ghost-click guard ke liye
   clearFocusOffset();
   hideInfo(); tooltip.classList.remove('show'); hint.classList.add('hidden');
-  /* fly through the arch towards the door */
-  flyTo([0, 3.2, 24], [0, 3.2, -5], 1.5, ()=>{
-    flyTo([0, 3, 2], [0, 3, -5], 1.4, ()=>{
-      splash.classList.add('show');
-      setTimeout(()=>{
-        outside.visible = false;
-        interior.visible = true;
-        scene.background = interiorSky;
-        scene.fog = null;
-        if(!IS_MOBILE && interior.userData.ceilSkyTex){ climEnvT = 0; setEnvFromSky(interior.userData.ceilSkyTex); }
-        camera.position.set(0, 3.4, 8.4);
-        controls.target.set(0, 2.6, -4);
-        controls.minDistance = 2; controls.maxDistance = 13;
-        controls.maxPolarAngle = 1.55;
-        controls.enabled = true;
-        mode = 'interior';
-        climateChip.textContent = CLIMATES[climIndex].label;
-        setTimeout(()=>{
-          splash.classList.remove('show');
-          interiorUI.classList.add('show');
-        }, 1400);
-      }, 1200);
-    });
-  });
+  /* door animation HATA DIYA — click/touch = TURANT andar */
+  outside.visible = false;
+  interior.visible = true;
+  scene.background = interiorSky;
+  scene.fog = null;
+  if(!IS_MOBILE && interior.userData.ceilSkyTex){ climEnvT = 0; setEnvFromSky(interior.userData.ceilSkyTex); }
+  camera.position.set(0, 3.4, 8.4);
+  controls.target.set(0, 2.6, -4);
+  controls.minDistance = 2; controls.maxDistance = 13;
+  controls.maxPolarAngle = 1.55;
+  controls.enabled = true;
+  mode = 'interior';
+  climateChip.textContent = CLIMATES[climIndex].label;
+  interiorUI.classList.add('show');
 }
 function exitShowroom(){
   if(mode !== 'interior') return;
+  if(Date.now() - (enterShowroom.at || 0) < 900) return;   // door tap ka ghost click on btnExit
   closeGallery();
   lightview.classList.remove('show');
   splash.classList.add('show');
@@ -5806,7 +5785,6 @@ function animate(){
   /* nature — ped, animals, birds, waterfall (sirf bahar) */
   if(outside.visible) updateNature(t, dt);
   /* door ke andar waterfall — gentle scroll (home se thoda sa dikhe) */
-  if(doorGroup.userData.wfallTex) doorGroup.userData.wfallTex.offset.y -= dt * .55;
 
   /* SEG lightbox + LED ad — FIX B: 12fps throttle + FIX D: door se pause */
   if(outside.visible && (animate.frameNo <= 2 || t - (animate.lastSeg || 0) > (IS_MOBILE ? .35 : .085))){
@@ -6173,5 +6151,5 @@ addEventListener('resize', ()=>{
 });
 </script>
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a411dd7ccc222666',t:'MTc5MDQyMTQ3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4144d625df5b1c5',t:'MTc5MDQ0NzAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a43268c69ca680b8',t:'MTc5MDc2MjcyNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4144d625df5b1c5',t:'MTc5MDQ0NzAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
