@@ -1894,6 +1894,88 @@ windowDisplay.position.z = -1.3;
     roll.rotation.z = rz * .3;
   });
 
+  /* ===== SERVICES MINIATURES — pedastals par mini service models + back-wall division signs ===== */
+  {
+    const PZ = -3.5, FLOOR = 0.5;
+    const pedM = new THREE.MeshStandardMaterial({ color: 0xe9e4d8, roughness:.7 });
+    const glowRed = new THREE.MeshStandardMaterial({ color: 0x1a0000, emissive: RED, emissiveIntensity:1.3, roughness:.5 });
+    const glowWhite = new THREE.MeshStandardMaterial({ color: 0x141416, emissive: 0xfff2df, emissiveIntensity:1.5, roughness:.4 });
+    function ped(x, h){
+      box(1.08, h, 1.08, pedM, x, FLOOR + h/2, PZ, windowDisplay);
+      box(1.2, .05, 1.2, M.ink, x, FLOOR + h + .02, PZ, windowDisplay);
+      return FLOOR + h + .05;
+    }
+    /* 1. ACP SIGN BOARD (glowing lightbox) */
+    {
+      const ty = ped(4.7, .9);
+      box(.14, .46, .14, M.steel, 4.7, ty + .23, PZ, windowDisplay);
+      box(1.12, .6, .13, M.ink, 4.7, ty + .72, PZ, windowDisplay);
+      box(.98, .46, .02, glowWhite, 4.7, ty + .72, PZ + .075, windowDisplay);
+      box(.13, .13, .02, glowRed, 4.7, ty + .72, PZ + .085, windowDisplay);
+    }
+    /* 2. 3D ACRYLIC LETTERS (black / red / white blocks) */
+    {
+      const ty = ped(6.6, .68);
+      box(.3, .5, .2, M.ink, 6.3, ty + .25, PZ, windowDisplay);
+      box(.3, .5, .2, M.redGloss, 6.6, ty + .25, PZ, windowDisplay);
+      box(.3, .5, .2, M.cream, 6.9, ty + .25, PZ, windowDisplay);
+    }
+    /* 3. MINI LED SCREEN (glowing brand mark) */
+    {
+      const ty = ped(8.4, .9);
+      box(.12, .44, .12, M.steel, 8.4, ty + .22, PZ, windowDisplay);
+      box(1.1, .66, .11, M.ink, 8.4, ty + .6, PZ, windowDisplay);
+      const t = makeTex(256, 128, (g)=>{
+        g.fillStyle = '#ff0000'; g.fillRect(0,0,256,128);
+        g.fillStyle = '#f6f5f2'; g.beginPath(); g.arc(128, 64, 42, 0, 7); g.fill();
+        g.fillStyle = '#171717'; g.beginPath(); g.arc(128, 64, 27, 0, 7); g.fill();
+        g.fillStyle = '#ff0000'; g.beginPath(); g.arc(128, 64, 12, 0, 7); g.fill();
+      });
+      box(1.0, .56, .02, new THREE.MeshStandardMaterial({ map:t, emissive:0xffffff, emissiveMap:t, emissiveIntensity:1.3, roughness:.4 }), 8.4, ty + .6, PZ + .065, windowDisplay);
+    }
+    /* 4. LARGE FORMAT PRINTER (paper roll + sheet out front) */
+    {
+      const ty = ped(19.0, .5);
+      box(1.14, .72, .85, M.steel, 19.0, ty + .36, PZ, windowDisplay);
+      box(1.14, .1, .85, M.ink, 19.0, ty + .77, PZ, windowDisplay);
+      const pr = cyl(.1, .1, .92, M.paper, 19.0, ty + .77, PZ, windowDisplay, 16); pr.rotation.z = Math.PI/2;
+      box(.92, .5, .02, M.paper, 19.0, ty + .38, PZ + .44, windowDisplay);
+      box(.5, .22, .02, glowRed, 18.78, ty + .5, PZ + .43, windowDisplay);
+    }
+    /* 5. CNC / LASER MACHINE (base + bed + gantry + red cutting head) */
+    {
+      const ty = ped(20.8, .5);
+      box(1.14, .58, .85, M.ink, 20.8, ty + .29, PZ, windowDisplay);
+      box(1.14, .1, .85, M.steel, 20.8, ty + .62, PZ, windowDisplay);
+      box(1.1, .08, .08, M.steel, 20.8, ty + .82, PZ, windowDisplay);
+      box(.08, .36, .08, M.steel, 20.55, ty + .69, PZ + .1, windowDisplay);
+      box(.15, .15, .15, glowRed, 20.55, ty + .5, PZ + .1, windowDisplay);
+    }
+    /* back-wall: 5 division-letter mini signs (A B C D E) + neon "360° SERVICES" */
+    {
+      const WZ = -3.56, cols = [RED, 0xf6f5f2, RED, 0xf6f5f2, RED];
+      ['A','B','C','D','E'].forEach((L, i)=>{
+        const x = 9.2 + i * 1.9;
+        const t = makeTex(96, 96, (g)=>{
+          g.fillStyle = '#0c0d10'; g.fillRect(0,0,96,96);
+          g.strokeStyle = '#ff2b2b'; g.lineWidth=4; g.strokeRect(4,4,88,88);
+          g.fillStyle = cols[i] === RED ? '#ff4444' : '#f6f5f2';
+          g.font='900 58px Montserrat, Arial'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(L, 48, 52);
+        });
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(.85, .85),
+          new THREE.MeshStandardMaterial({ map:t, emissive:0xffffff, emissiveMap:t, emissiveIntensity:1.0, roughness:.5 }));
+        m.position.set(x, 4.7, WZ); windowDisplay.add(m);
+      });
+      const nt = makeTex(512, 96, (g)=>{
+        g.fillStyle = '#0a0a0c'; g.fillRect(0,0,512,96);
+        g.fillStyle = '#ff3b3b'; g.font='900 58px Montserrat, Arial'; g.textAlign='center'; g.textBaseline='middle';
+        g.fillText('360° SERVICES', 256, 52);
+      });
+      const nm = new THREE.Mesh(new THREE.PlaneGeometry(5, .85),
+        new THREE.MeshStandardMaterial({ map:nt, emissive:0xffffff, emissiveMap:nt, emissiveIntensity:1.35, roughness:.5 }));
+      nm.position.set(13.1, 5.55, WZ); windowDisplay.add(nm);
+    }
+  }
   /* --- STAR: BENGALI FASHIONABLE GIRL MANNEQUIN (laal-paar saree) --- */
   const mq = new THREE.Group(); windowDisplay.add(mq);
   mq.position.set(WX + .6, 0, ZP + .3);
@@ -2056,7 +2138,7 @@ windowDisplay.position.z = -1.3;
 
 }
 register(windowDisplay, {
-  name:'Sale & Offer Window Display', sub:'Retail Window Styling — Mannequin + Offer Staging',
+  name:'Sale & Offer Window Display', sub:'Retail Window Styling — Services Miniatures + Mannequin',
   desc:'Sale और offer season के लिए complete window display — center में fashionable mannequin जो राहगीर की नज़र रोक लेती है, साथ में offer staging: mini glowing lightbox, silver-steel award trophy, easel पर vector art canvas और rolled banner prints। मेहराब-pattern backdrop और spotlight staging से पूरी window एक offer-story कहती है।',
   specs:[['Styling','Mannequin + offer props'],['Podiums','MDF + laminate, LED wash'],['Lighting','Focused spotlights + ambient'],['Props','Lightbox, trophy, canvas, prints'],['Refresh','Sale / season-wise change']],
   tags:['Sale Display','Retail','Visual Merchandising'],
@@ -3123,7 +3205,7 @@ const ledDisplay = new THREE.Group();
 building.add(ledDisplay);
 let ledScreens = [];
 {
-  const LX = 12.2, LY = 18.3, LZ = -5.05;   // chhat ke FRONT edge — window display ke upar (home se clearly dikhe)
+  const LX = 18.3, LY = 18.3, LZ = -5.05;   // chhat ke RIGHT CORNER se chipka — front + right face par snug L-mount
   /* animated video-ad canvas — EK hi display, front+side par continuous wrap */
   const ledCv = document.createElement('canvas'); ledCv.width = 768; ledCv.height = 256;
   const ledCtx = ledCv.getContext('2d');
@@ -3145,6 +3227,8 @@ let ledScreens = [];
     box(.18, 4.4, .18, M.steel, LX + dx, 16.2 + 2.2 - 2.2 + 2.2, LZ + dz, ledDisplay);
   });
   box(9.2, .2, 1.5, M.steel, LX, 16.35, LZ, ledDisplay);
+  box(.2, .2, 4.9, M.steel, LX + 4.45, 16.35, LZ - 2.2, ledDisplay);   // right-leg roof mount (chipka)
+  box(.22, 4.5, .22, M.steel, LX + 4.6, 18.4, LZ - .12, ledDisplay);   // corner upright
   /* FRONT screen (bada) — front edge par */
   box(9.4, 4.4, .5, cabM, LX, LY, LZ, ledDisplay);
   const geoF = new THREE.PlaneGeometry(9, 4); remapU(geoF, 0, 9/13.5);
@@ -6142,5 +6226,5 @@ addEventListener('resize', ()=>{
 });
 </script>
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a411dd7ccc222666',t:'MTc5MDQyMTQ3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4144d625df5b1c5',t:'MTc5MDQ0NzAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a43655d0bd9747df',t:'MTc5MDgwMzg5Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4144d625df5b1c5',t:'MTc5MDQ0NzAzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4369e9d5a1980af',t:'MTc5MDgwNjg3NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
